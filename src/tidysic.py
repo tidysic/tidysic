@@ -2,6 +2,7 @@
 
 import sys, os, shutil
 from tinytag import TinyTag
+from __argparse__ import create_parser
 
 audio_extensions = [
     '.mp3',
@@ -92,11 +93,17 @@ TODO
 
 if __name__=='__main__':
 
-    if len(sys.argv) != 3:
-        print(usage)
-        sys.exit(1)
+    parser = create_parser()
+    args = parser.parse_args()
 
-    dir_src = sys.argv[1]
-    dir_target = sys.argv[2]
-    organise(dir_src, dir_target)
+    if args.version:
+        print("tidysic v0.01")
+        exit()
+    elif args.command == 'organize':
+        print(f"Beginning organizing {args.source} into {args.target}")
+        # organise(
+        #     args.source,
+        #     args.target,
+        #     args.dry_run
+        #     )
     
