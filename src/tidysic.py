@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 
-import sys, os, shutil
+import os
+import shutil
 from tinytag import TinyTag
 from __argparse__ import create_parser
 
@@ -9,17 +10,20 @@ audio_extensions = [
     '.wav',
 ]
 
+
 def filename(path):
     '''
     Returns the name of the file from the given path.
     '''
     return os.path.basename(path)
 
+
 def file_extension(path):
     '''
     Returns the file extension from the given path.
     '''
     return os.path.splitext(path)[1]
+
 
 def create_dir(dir_path):
     '''
@@ -28,12 +32,15 @@ def create_dir(dir_path):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
+
 def get_audio_files(directory_path):
     '''
     Returns the audio files present in the given directory.
     '''
-    audio_files = [os.path.join(directory_path, f) for f in os.listdir(directory_path) if os.path.splitext(f)[1] in audio_extensions]
+    audio_files = [os.path.join(directory_path, f) for f in os.listdir(
+        directory_path) if os.path.splitext(f)[1] in audio_extensions]
     return audio_files
+
 
 def guess_artist(title):
     '''
@@ -43,15 +50,17 @@ def guess_artist(title):
         if artist_separator > 0:
             artist = title[0:artist_separator].lstrip()
             new_title = title[artist_separator + 1:-1].lstrip()
-            
+
             return [artist, new_title]
-    except:
+    except BaseException:
         print_error('Could not parse the title: {0}'.format(title))
+
 
 def print_error(message):
     print('--- Error ---')
     print(message)
     print()
+
 
 def organise(dir_src, dir_target):
     audio_files = get_audio_files(dir_src)
@@ -71,7 +80,8 @@ def organise(dir_src, dir_target):
         '''
 
         if artist:
-            # Directory name of the file based on the target directory and the artist
+            # Directory name of the file based on the target directory and the
+            # artist
             f_dir_name = os.path.join(dir_target, artist)
             create_dir(f_dir_name)
 
@@ -81,9 +91,9 @@ def organise(dir_src, dir_target):
 
             # Moves the file to its new path
             try:
-                #shutil.move(f, f_target_path)
+                # shutil.move(f, f_target_path)
                 shutil.copyfile(f, f_target_path)
-            except:
+            except BaseException:
                 print_error('Could not move the file: {0}'.format(filename(f)))
 
 
@@ -91,7 +101,7 @@ usage = '''
 TODO
 '''
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     parser = create_parser()
     args = parser.parse_args()
@@ -106,4 +116,3 @@ if __name__=='__main__':
         #     args.target,
         #     args.dry_run
         #     )
-    

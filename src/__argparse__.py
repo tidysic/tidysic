@@ -1,11 +1,13 @@
 import argparse
 import os
 
+
 class PathType(object):
     """
     Custom type we will use for folders, courtesy of
     https://stackoverflow.com/questions/11415570/directory-path-types-with-argparse#11415816
     """
+
     def __init__(self, exists=True, type='file', dash_ok=True):
         '''exists:
                 True: a path that does exist
@@ -16,51 +18,69 @@ class PathType(object):
            dash_ok: whether to allow "-" as stdin/stdout'''
 
         assert exists in (True, False, None)
-        assert type in ('file','dir','symlink',None) or hasattr(type,'__call__')
+        assert type in (
+            'file',
+            'dir',
+            'symlink',
+            None) or hasattr(
+            type,
+            '__call__')
 
         self._exists = exists
         self._type = type
         self._dash_ok = dash_ok
 
     def __call__(self, string):
-        if string=='-':
+        if string == '-':
             # the special argument "-" means sys.std{in,out}
             if self._type == 'dir':
-                raise argparse.ArgumentTypeError('standard input/output (-) not allowed as directory path')
+                raise argparse.ArgumentTypeError(
+                    'standard input/output (-) not allowed as directory path')
             elif self._type == 'symlink':
-                raise argparse.ArgumentTypeError('standard input/output (-) not allowed as symlink path')
+                raise argparse.ArgumentTypeError(
+                    'standard input/output (-) not allowed as symlink path')
             elif not self._dash_ok:
-                raise argparse.ArgumentTypeError('standard input/output (-) not allowed')
+                raise argparse.ArgumentTypeError(
+                    'standard input/output (-) not allowed')
         else:
             e = os.path.exists(string)
-            if self._exists==True:
+            if self._exists:
                 if not e:
-                    raise argparse.ArgumentTypeError("path does not exist: '%s'" % string)
+                    raise argparse.ArgumentTypeError(
+                        "path does not exist: '%s'" % string)
 
                 if self._type is None:
                     pass
-                elif self._type=='file':
+                elif self._type == 'file':
                     if not os.path.isfile(string):
-                        raise argparse.ArgumentTypeError("path is not a file: '%s'" % string)
-                elif self._type=='symlink':
+                        raise argparse.ArgumentTypeError(
+                            "path is not a file: '%s'" % string)
+                elif self._type == 'symlink':
                     if not os.path.symlink(string):
-                        raise argparse.ArgumentTypeError("path is not a symlink: '%s'" % string)
-                elif self._type=='dir':
+                        raise argparse.ArgumentTypeError(
+                            "path is not a symlink: '%s'" % string)
+                elif self._type == 'dir':
                     if not os.path.isdir(string):
-                        raise argparse.ArgumentTypeError("path is not a directory: '%s'" % string)
+                        raise argparse.ArgumentTypeError(
+                            "path is not a directory: '%s'" % string)
                 elif not self._type(string):
-                    raise argparse.ArgumentTypeError("path not valid: '%s'" % string)
+                    raise argparse.ArgumentTypeError(
+                        "path not valid: '%s'" % string)
             else:
-                if self._exists==False and e:
-                    raise argparse.ArgumentTypeError("path exists: '%s'" % string)
+                if self._exists == False and e:
+                    raise argparse.ArgumentTypeError(
+                        "path exists: '%s'" % string)
 
                 p = os.path.dirname(os.path.normpath(string)) or '.'
                 if not os.path.isdir(p):
-                    raise argparse.ArgumentTypeError("parent path is not a directory: '%s'" % p)
+                    raise argparse.ArgumentTypeError(
+                        "parent path is not a directory: '%s'" % p)
                 elif not os.path.exists(p):
-                    raise argparse.ArgumentTypeError("parent directory does not exist: '%s'" % p)
+                    raise argparse.ArgumentTypeError(
+                        "parent directory does not exist: '%s'" % p)
 
         return string
+
 
 def add_subcommand_organize(subparsers):
     """
@@ -77,7 +97,7 @@ def add_subcommand_organize(subparsers):
             exists=True,
             type='dir',
             dash_ok=False
-            ),
+        ),
         help='directory whose content will be organized',
     )
 
@@ -87,7 +107,7 @@ def add_subcommand_organize(subparsers):
             exists=None,
             type='dir',
             dash_ok=False
-            ),
+        ),
         help='directory (will be created if needed) in which the files will be organized',
     )
 
@@ -99,13 +119,13 @@ def add_subcommand_organize(subparsers):
         dest='dry_run',
     )
 
+
 def create_parser():
     """
     Creates the argument parser for the whole program
     """
     parser = argparse.ArgumentParser(
-        epilog='use "%(prog)s <command> --help" for more info about each command',
-    )
+        epilog='use "%(prog)s <command> --help" for more info about each command', )
 
     parser.add_argument(
         '-V',
