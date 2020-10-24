@@ -97,10 +97,6 @@ def organise(dir_src, dir_target):
                 print_error('Could not move the file: {0}'.format(filename(f)))
 
 
-usage = '''
-TODO
-'''
-
 if __name__ == '__main__':
 
     parser = create_parser()
@@ -116,3 +112,7 @@ if __name__ == '__main__':
         #     args.target,
         #     args.dry_run
         #     )
+    elif args.command == 'lint':
+        os.system('flake8 .')
+    elif args.command == 'lintfix':
+        os.system('autopep8 --in-place --recursive .')

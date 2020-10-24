@@ -13,7 +13,8 @@ class PathType(object):
                 True: a path that does exist
                 False: a path that does not exist, in a valid parent directory
                 None: don't care
-           type: file, dir, symlink, None, or a function returning True for valid paths
+           type: file, dir, symlink, None, or a function returning True
+                 for valid paths
                 None: don't care
            dash_ok: whether to allow "-" as stdin/stdout'''
 
@@ -67,7 +68,7 @@ class PathType(object):
                     raise argparse.ArgumentTypeError(
                         "path not valid: '%s'" % string)
             else:
-                if self._exists == False and e:
+                if not self._exists and e:
                     raise argparse.ArgumentTypeError(
                         "path exists: '%s'" % string)
 
@@ -88,7 +89,8 @@ def add_subcommand_organize(subparsers):
     """
     subparser = subparsers.add_parser(
         'organize',
-        help='move every audio file in the given source directory into the target directory, sorted neatly into folders',
+        help='''move every audio file in the given source directory
+            into the target directory, sorted neatly into folders''',
     )
 
     subparser.add_argument(
@@ -108,15 +110,37 @@ def add_subcommand_organize(subparsers):
             type='dir',
             dash_ok=False
         ),
-        help='directory (will be created if needed) in which the files will be organized',
+        help='''directory (will be created if needed) in which the
+            files will be organized''',
     )
 
     subparser.add_argument(
         '-d',
         '--dry-run',
-        help='do nothing on the files themselves, but print out the actions that would happen',
+        help='''do nothing on the files themselves, but print out the
+            actions that would happen''',
         action='store_true',
         dest='dry_run',
+    )
+
+
+def add_subcommand_lint(subparsers):
+    """
+    Defines the arguments of the `lint` subcommand
+    """
+    subparsers.add_parser(
+        'lint',
+        help='analyze the project code style',
+    )
+
+
+def add_subcommand_lintfix(subparsers):
+    """
+    Defines the arguments of the `lintfix` subcommand
+    """
+    subparsers.add_parser(
+        'lintfix',
+        help='try to fix the code',
     )
 
 
@@ -125,7 +149,8 @@ def create_parser():
     Creates the argument parser for the whole program
     """
     parser = argparse.ArgumentParser(
-        epilog='use "%(prog)s <command> --help" for more info about each command', )
+        epilog='''use "%(prog)s <command> --help" for more info
+            about each command''', )
 
     parser.add_argument(
         '-V',
@@ -140,5 +165,9 @@ def create_parser():
     )
 
     add_subcommand_organize(subparsers)
+
+    add_subcommand_lint(subparsers)
+
+    add_subcommand_lintfix(subparsers)
 
     return parser
