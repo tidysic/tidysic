@@ -1,8 +1,9 @@
 from unittest import TestCase
 
-#######################################################
-# See https://docs.python.org/3/library/unittest.html # 
-#######################################################
+'''
+See https://docs.python.org/3/library/unittest.html
+'''
+
 
 class ExampleTest(TestCase):
 

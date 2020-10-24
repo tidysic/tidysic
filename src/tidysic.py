@@ -97,6 +97,22 @@ def organise(dir_src, dir_target):
                 print_error('Could not move the file: {0}'.format(filename(f)))
 
 
+def project_root_folder():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def project_src_folder():
+    return os.path.join(project_root_folder(), 'src')
+
+
+def project_test_folder():
+    return os.path.join(project_root_folder(), 'test')
+
+
+def lint_folders():
+    return [project_src_folder(), project_test_folder()]
+
+
 if __name__ == '__main__':
 
     parser = create_parser()
@@ -113,6 +129,9 @@ if __name__ == '__main__':
         #     args.dry_run
         #     )
     elif args.command == 'lint':
-        os.system('flake8 .')
+        folders = lint_folders()
+        os.system(f'flake8 {folders[0]} {folders[1]}')
     elif args.command == 'lintfix':
-        os.system('autopep8 --in-place --recursive .')
+        folders = lint_folders()
+        os.system(
+            f'autopep8 --in-place --recursive {folders[0]} {folders[1]}')
