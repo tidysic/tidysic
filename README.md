@@ -1,1 +1,9 @@
-# Work in progress, please be patient!
+# tidysic
+
+Keep your music library tidy
+
+## Dev
+
+### Lint
+
+flake8 src/
