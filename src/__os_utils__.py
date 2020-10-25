@@ -12,6 +12,9 @@ audio_extensions = [
 
 
 def _log_dry_run(message):
+    '''
+    Shortcut to call logger with specific "dry run" prefix
+    '''
     log(message, prefix="dry run")
 
 
