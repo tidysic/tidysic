@@ -1,9 +1,14 @@
 autopep8==1.5.4
+colorama==0.4.4
+commonmark==0.9.1
 flake8==3.8.4
 mccabe==0.6.1
 pycodestyle==2.6.0
 pyflakes==2.2.0
+Pygments==2.7.2
 PyQt5==5.15.1
 PyQt5-sip==12.8.1
+rich==9.1.0
 tinytag==1.4.0
 toml==0.10.1
+typing-extensions==3.7.4.3
