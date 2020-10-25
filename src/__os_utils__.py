@@ -15,11 +15,17 @@ def _log_dry_run(message):
     print(f"[green]\[tidysic] [italic]dry run[/italic]:[/green] {message}")
 
 
-def filename(path):
+def filename(path, with_extension=True):
     '''
-    Returns the name of the file from the given path.
+    Returns the name of the file from the given path
+    with or without the extension.
     '''
-    return os.path.basename(path)
+    name = os.path.basename(path)
+
+    if not with_extension:
+        name = os.path.splitext(name)[0]
+
+    return name
 
 
 def file_extension(path):
