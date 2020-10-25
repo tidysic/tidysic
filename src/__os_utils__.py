@@ -12,7 +12,7 @@ audio_extensions = [
 
 
 def _log_dry_run(message):
-    print(f"[bold][tidysic][/bold] [italic]dry run[/italic]: {message}")
+    print(f"[green]\[tidysic] [italic]dry run[/italic]:[/green] {message}")
 
 
 def filename(path):
