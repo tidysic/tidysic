@@ -1,6 +1,6 @@
 import os
 import shutil
-from rich import print
+from __logger__ import log
 
 
 audio_extensions = [
@@ -12,7 +12,10 @@ audio_extensions = [
 
 
 def _log_dry_run(message):
-    print(f"[green]\[tidysic] [italic]dry run[/italic]:[/green] {message}")
+    '''
+    Shortcut to call logger with specific "dry run" prefix
+    '''
+    log(message, prefix="dry run")
 
 
 def filename(path, with_extension=True):
@@ -59,9 +62,17 @@ def move_file(file, target_path, dry_run=False):
     Moves the given file onto the given path
     '''
     if dry_run:
-        _log_dry_run(
-            f"Moving file\n\t{file}\nto its new path\n\t{target_path}"
-        )
+        # We don't display the two whole paths
+        # Only the source's filename and the target directory
+        src = file.split("/")[-1]
+        target = "/".join(target_path.split("/")[:-1])
+        
+        _log_dry_run([
+            "Moving file",
+            f"'{src}'",
+            "to",
+            target
+        ])
     else:
         shutil.move(file, target_path)
 
