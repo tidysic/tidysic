@@ -176,3 +176,5 @@ if __name__ == '__main__':
         folders = lint_folders()
         os.system(
             f'autopep8 --in-place --recursive {folders[0]} {folders[1]}')
+    else:
+        parser.print_usage()
