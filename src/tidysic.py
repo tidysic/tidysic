@@ -119,7 +119,12 @@ if __name__ == '__main__':
         log("v0.01", prefix="Version")
         exit()
     elif args.command == 'organize':
-        log(f"Beginning organizing {args.source} into {args.target}")
+        if args.verbose:
+            log(
+                f"Beginning organizing {args.source} into {args.target}",
+                prefix="verbose",
+                color="green"
+            )
         organise(
             args.source,
             args.target,

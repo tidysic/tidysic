@@ -165,6 +165,13 @@ def create_parser():
         action='store_true',
     )
 
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        help='display more info when running',
+        action='store_true',
+    )
+
     subparsers = parser.add_subparsers(
         title='commands',
         dest='command',
