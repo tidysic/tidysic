@@ -59,9 +59,16 @@ def move_file(file, target_path, dry_run=False):
     Moves the given file onto the given path
     '''
     if dry_run:
+        # We don't display the two whole paths
+        # Only the source's filename and the target directory
+        src = file.split("/")[-1]
+        target = "/".join(target_path.split("/")[:-1])
+        
         _log_dry_run([
-            "Moving file\t" + file,
-            "to\t" + target_path
+            "Moving file",
+            f"'{src}'",
+            "to",
+            target
         ])
     else:
         shutil.move(file, target_path)
