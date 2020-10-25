@@ -26,7 +26,7 @@ def print_error(message):
     print()
 
 
-def parse_in_directory(dir_src):
+def parse_in_directory(dir_src, with_album):
     '''
     Creates a tree-like structure of dicts structured as such:
     artists -> albums -> titles
@@ -38,57 +38,62 @@ def parse_in_directory(dir_src):
     for f in audio_files:
         tag = TinyTag.get(f)
         artist = tag.artist
-        album = tag.album
         title = tag.title
-        '''
-        if not artist:
-            try:
-                guessed = guess_artist(title)
-                artist = guessed[0]
-                title = guessed[1]
-            except:
-                print_error('Could not guess artist: {0}'.format(title))
-        '''
 
-        if artist not in artists:
-            artists[artist] = {}
-        
-        albums = artists[artist]
-        if album not in albums:
-            albums[album] = {}
-        
-        titles = albums[album]
-        titles[title] = f
-    
+        if artist:
+            # Add artist key
+            if artist not in artists:
+                artists[artist] = {}
+
+            if with_album:
+                album = tag.album
+                albums = artists[artist]
+
+                # Add album key
+                if album not in albums:
+                    albums[album] = {}
+
+                titles = albums[album]
+                titles[title] = f
+            else:
+                artists[artist][title] = f
+        else:
+            print(f'Could not get artist: {title}')
+
     return artists
 
 
-def move_files(artists, dir_target, dry_run=False):
+def move_files(artists, dir_target, with_album, dry_run=False):
     for artist in artists:
         # Directory name of the file based on the target directory and the
         # artist
         artist_dir_name = os.path.join(dir_target, artist)
-        
+
         create_dir(artist_dir_name, dry_run)
 
-        for album in artists[artist]:
-            # Subdirectory for the album
-            album_dir_name = os.path.join(artist_dir_name, album)
-            create_dir(album_dir_name, dry_run)
+        if with_album:
+            for album in artists[artist]:
+                # Subdirectory for the album
+                album_dir_name = os.path.join(artist_dir_name, album)
+                create_dir(album_dir_name, dry_run)
 
-            for title in artists[artist][album]:
-                file = artists[artist][album][title]
+                for title in artists[artist][album]:
+                    file = artists[artist][album][title]
+                    # Rename the file
+                    f_name = title + file_extension(file)
+                    f_target_path = os.path.join(album_dir_name, f_name)
+
+                    # Moves the file to its new path
+                    move_file(file, f_target_path, dry_run)
+        else:
+            for title in artists[artist]:
+                file = artists[artist][title]
                 # Rename the file
                 f_name = title + file_extension(file)
-                f_target_path = os.path.join(album_dir_name, f_name)
+                f_target_path = os.path.join(artist_dir_name, f_name)
 
                 # Moves the file to its new path
-                try:
-                    move_file(file, f_target_path, dry_run)
-                except BaseException:
-                    print_error(
-                        f'Could not move the file: {filename(file)}'
-                        )
+                move_file(file, f_target_path, dry_run)
 
 
 def clean_up(dir_src, dry_run=False):
@@ -99,10 +104,10 @@ def clean_up(dir_src, dry_run=False):
     pass
 
 
-def organise(dir_src, dir_target, dry_run):
-    artists = parse_in_directory(dir_src)
-    
-    move_files(artists, dir_target, dry_run)
+def organise(dir_src, dir_target, with_album, dry_run):
+    artists = parse_in_directory(dir_src, with_album)
+
+    move_files(artists, dir_target, with_album, dry_run)
 
     clean_up(dir_src, dry_run)
 
@@ -120,8 +125,9 @@ if __name__ == '__main__':
         organise(
             args.source,
             args.target,
+            args.with_album,
             args.dry_run
-            )
+        )
     elif args.command == 'lint':
         folders = lint_folders()
         os.system(f'flake8 {folders[0]} {folders[1]}')
