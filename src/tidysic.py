@@ -5,6 +5,7 @@ import os
 from __argparse__ import create_parser
 from __os_utils__ import (file_extension,
                           create_dir, get_audio_files, move_file, lint_folders)
+from __logger__ import log
 
 
 def guess_artist(title):
@@ -22,9 +23,7 @@ def guess_artist(title):
 
 
 def print_error(message):
-    print('--- Error ---')
-    print(message)
-    print()
+    log(message, prefix="Error", color="red")
 
 
 def parse_in_directory(dir_src, with_album):
@@ -59,7 +58,7 @@ def parse_in_directory(dir_src, with_album):
             else:
                 artists[artist][title] = f
         else:
-            print(f'Could not get artist: {title}')
+            print_error(f'Could not get artist: {title}')
 
     return artists
 
@@ -117,10 +116,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.version:
-        print("tidysic v0.01")
+        log("v0.01", prefix="Version")
         exit()
     elif args.command == 'organize':
-        print(f"Beginning organizing {args.source} into {args.target}")
+        if args.verbose:
+            log(
+                f"Beginning organizing {args.source} into {args.target}",
+                prefix="verbose",
+                color="green"
+            )
         organise(
             args.source,
             args.target,
