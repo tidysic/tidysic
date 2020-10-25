@@ -12,7 +12,13 @@ audio_extensions = [
 
 
 def _log_dry_run(message):
-    print(f"[green]\[tidysic] [italic]dry run[/italic]:[/green] {message}")
+    prefix = "[green]\[tidysic] [italic]dry run[/italic]:[/green] "
+    if isinstance(message, str):
+        print(prefix + message)
+    else:
+        print(prefix)
+        for line in message:
+            print("\t" + line)
 
 
 def filename(path):
@@ -53,9 +59,10 @@ def move_file(file, target_path, dry_run=False):
     Moves the given file onto the given path
     '''
     if dry_run:
-        _log_dry_run(
-            f"Moving file\n\t{file}\nto its new path\n\t{target_path}"
-        )
+        _log_dry_run([
+            "Moving file\t" + file,
+            "to\t" + target_path
+        ])
     else:
         shutil.move(file, target_path)
 
