@@ -3,7 +3,8 @@
 from tinytag import TinyTag
 import os
 from __argparse__ import create_parser
-from __os_utils__ import *
+from __os_utils__ import (file_extension,
+                          create_dir, get_audio_files, move_file, lint_folders)
 
 
 def guess_artist(title):
@@ -41,7 +42,7 @@ def parse_in_directory(dir_src, with_album):
         title = tag.title
 
         if artist:
-            # Add artist key
+            # Add artist key
             if artist not in artists:
                 artists[artist] = {}
 
