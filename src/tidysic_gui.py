@@ -1,4 +1,4 @@
-import tidysic
+# import tidysic
 
 from PyQt5 import QtWidgets
 
