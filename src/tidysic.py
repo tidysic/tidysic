@@ -62,13 +62,20 @@ def print_error(message):
     print()
 
 
-def organise(dir_src, dir_target):
+def parse_in_directory(dir_src):
+    '''
+    Creates a tree-like structure of dicts structured as such:
+    artists -> albums -> titles
+    where each of these is a dict, and titles point to the files themselves
+    '''
+    artists = {}
     audio_files = get_audio_files(dir_src)
+
     for f in audio_files:
         tag = TinyTag.get(f)
         artist = tag.artist
+        album = tag.album
         title = tag.title
-
         '''
         if not artist:
             try:
@@ -79,22 +86,56 @@ def organise(dir_src, dir_target):
                 print_error('Could not guess artist: {0}'.format(title))
         '''
 
-        if artist:
-            # Directory name of the file based on the target directory and the
-            # artist
-            f_dir_name = os.path.join(dir_target, artist)
-            create_dir(f_dir_name)
+        if artist not in artists:
+            artists[artist] = {}
+        
+        albums = artists[artist]
+        if album not in albums:
+            albums[album] = {}
+        
+        titles = albums[album]
+        titles[title] = f
 
-            # New path for the file
-            f_name = title.join(file_extension(f))
-            f_target_path = os.path.join(f_dir_name, f_name)
 
-            # Moves the file to its new path
-            try:
-                # shutil.move(f, f_target_path)
-                shutil.copyfile(f, f_target_path)
-            except BaseException:
-                print_error('Could not move the file: {0}'.format(filename(f)))
+def move_files(artists, dir_target):
+    for artist in artists.keys:
+        # Directory name of the file based on the target directory and the
+        # artist
+        artist_dir_name = os.path.join(dir_target, artist)
+        create_dir(artist_dir_name)
+
+        for album in artist:
+            # Subdirectory for the album
+            album_dir_name = os.path.join(artist_dir_name, album)
+            create_dir(album_dir_name)
+
+            for title in album:
+                # Rename the file
+                f_name = title.join(file_extension(f)
+                f_target_path = os.path.join(album_dir_name, f_name)
+
+                # Moves the file to its new path
+                try:
+                    # shutil.move(f, f_target_path)
+                    shutil.copyfile(f, f_target_path)
+                except BaseException:
+                    print_error(f'Could not move the file: {filename(f)}')
+
+
+def clean_up(dir_src):
+    '''
+    TODO: remove empty folders in the source directory
+    if the dry_run argument wasn't given
+    '''
+    pass
+
+
+def organise(dir_src, dir_target):
+    artists = parse_in_directory(dir_src)
+    
+    move_files(artists, dir_target)
+
+    clean_up(dir_src)
 
 
 def project_root_folder():
