@@ -3,5 +3,7 @@ flake8==3.8.4
 mccabe==0.6.1
 pycodestyle==2.6.0
 pyflakes==2.2.0
+PyQt5==5.15.1
+PyQt5-sip==12.8.1
 tinytag==1.4.0
 toml==0.10.1

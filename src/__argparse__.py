@@ -68,7 +68,7 @@ class PathType(object):
                     raise argparse.ArgumentTypeError(
                         "path not valid: '%s'" % string)
             else:
-                if not self._exists and e:
+                if self._exists is False and e:
                     raise argparse.ArgumentTypeError(
                         "path exists: '%s'" % string)
 
