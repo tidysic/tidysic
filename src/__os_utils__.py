@@ -1,6 +1,6 @@
 import os
 import shutil
-from rich import print
+from __logger__ import log
 
 
 audio_extensions = [
@@ -12,13 +12,7 @@ audio_extensions = [
 
 
 def _log_dry_run(message):
-    prefix = "[green]\[tidysic] [italic]dry run[/italic]:[/green] "
-    if isinstance(message, str):
-        print(prefix + message)
-    else:
-        print(prefix)
-        for line in message:
-            print("\t" + line)
+    log(message, prefix="dry run")
 
 
 def filename(path):
