@@ -79,7 +79,7 @@ def move_files(artists, dir_target, dry_run=False):
             for title in artists[artist][album]:
                 file = artists[artist][album][title]
                 # Rename the file
-                f_name = title.join(file_extension(file))
+                f_name = title + file_extension(file)
                 f_target_path = os.path.join(album_dir_name, f_name)
 
                 # Moves the file to its new path
