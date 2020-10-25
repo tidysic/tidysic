@@ -65,7 +65,7 @@ def parse_in_directory(dir_src, with_album):
 
 
 def move_files(artists, dir_target, with_album, dry_run=False):
-    for artist in artists:
+    for artist, second_level in artists.items():
         # Directory name of the file based on the target directory and the
         # artist
         artist_dir_name = os.path.join(dir_target, artist)
@@ -73,13 +73,12 @@ def move_files(artists, dir_target, with_album, dry_run=False):
         create_dir(artist_dir_name, dry_run)
 
         if with_album:
-            for album in artists[artist]:
+            for album, titles in second_level.items():
                 # Subdirectory for the album
                 album_dir_name = os.path.join(artist_dir_name, album)
                 create_dir(album_dir_name, dry_run)
 
-                for title in artists[artist][album]:
-                    file = artists[artist][album][title]
+                for title, file in titles.items():
                     # Rename the file
                     f_name = title + file_extension(file)
                     f_target_path = os.path.join(album_dir_name, f_name)
@@ -87,8 +86,7 @@ def move_files(artists, dir_target, with_album, dry_run=False):
                     # Moves the file to its new path
                     move_file(file, f_target_path, dry_run)
         else:
-            for title in artists[artist]:
-                file = artists[artist][title]
+            for title, file in second_level.items():
                 # Rename the file
                 f_name = title + file_extension(file)
                 f_target_path = os.path.join(artist_dir_name, f_name)
