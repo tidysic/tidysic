@@ -3,7 +3,8 @@
 from tinytag import TinyTag
 import os
 from __argparse__ import create_parser
-from __os_utils__ import *
+from __os_utils__ import (filename, file_extension,
+                          create_dir, get_audio_files, move_file, lint_folders)
 
 
 def guess_artist(title):
@@ -52,14 +53,14 @@ def parse_in_directory(dir_src):
 
         if artist not in artists:
             artists[artist] = {}
-        
+
         albums = artists[artist]
         if album not in albums:
             albums[album] = {}
-        
+
         titles = albums[album]
         titles[title] = f
-    
+
     return artists
 
 
@@ -68,7 +69,7 @@ def move_files(artists, dir_target, dry_run=False):
         # Directory name of the file based on the target directory and the
         # artist
         artist_dir_name = os.path.join(dir_target, artist)
-        
+
         create_dir(artist_dir_name, dry_run)
 
         for album in artists[artist]:
@@ -88,7 +89,7 @@ def move_files(artists, dir_target, dry_run=False):
                 except BaseException:
                     print_error(
                         f'Could not move the file: {filename(file)}'
-                        )
+                    )
 
 
 def clean_up(dir_src, dry_run=False):
@@ -101,7 +102,7 @@ def clean_up(dir_src, dry_run=False):
 
 def organise(dir_src, dir_target, dry_run):
     artists = parse_in_directory(dir_src)
-    
+
     move_files(artists, dir_target, dry_run)
 
     clean_up(dir_src, dry_run)
@@ -121,7 +122,7 @@ if __name__ == '__main__':
             args.source,
             args.target,
             args.dry_run
-            )
+        )
     elif args.command == 'lint':
         folders = lint_folders()
         os.system(f'flake8 {folders[0]} {folders[1]}')

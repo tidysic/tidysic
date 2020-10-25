@@ -55,7 +55,7 @@ def move_file(file, target_path, dry_run=False):
     if dry_run:
         _log_dry_run(
             f"Moving file {file} to its new path {target_path}"
-            )
+        )
     else:
         shutil.move(file, target_path)
 
