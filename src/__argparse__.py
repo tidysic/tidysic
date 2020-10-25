@@ -115,6 +115,12 @@ def add_subcommand_organize(subparsers):
     )
 
     subparser.add_argument(
+        '--with-album',
+        help='''create an album directory inside the artist directory''',
+        action='store_true',
+    )
+
+    subparser.add_argument(
         '-d',
         '--dry-run',
         help='''do nothing on the files themselves, but print out the
