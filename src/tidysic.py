@@ -21,7 +21,8 @@ def guess_file_metadata(filename):
             title = filename[separator + 2:len(filename)].lstrip()
 
             return (artist, title)
-        return (None, None)
+        else:
+            return (None, None)
     except BaseException:
         print_error(f'Could not parse the title: {title}')
 
@@ -44,7 +45,7 @@ def parse_in_directory(dir_src, with_album, guess):
         artist = tag.artist
         title = tag.title
 
-        if guess and not artist or not title:
+        if guess and (not artist or not title):
             # artist and/or title not in the id3 metadata
             guessed_artist, guessed_title = guess_file_metadata(
                 filename(f, with_extension=False))
@@ -78,7 +79,7 @@ def parse_in_directory(dir_src, with_album, guess):
             else:
                 artists[artist][title] = f
         else:
-            print(f'Could not move the file: {f}')
+            print(f'Could not get artist and/or title: {f}')
 
     return artists
 

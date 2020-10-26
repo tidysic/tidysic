@@ -66,7 +66,7 @@ def move_file(file, target_path, dry_run=False):
         # Only the source's filename and the target directory
         src = file.split("/")[-1]
         target = "/".join(target_path.split("/")[:-1])
-        
+
         _log_dry_run([
             "Moving file",
             f"'{src}'",
