@@ -18,11 +18,17 @@ def _log_dry_run(message):
     log(message, prefix="dry run")
 
 
-def filename(path):
+def filename(path, with_extension=True):
     '''
-    Returns the name of the file from the given path.
+    Returns the name of the file from the given path
+    with or without the extension.
     '''
-    return os.path.basename(path)
+    name = os.path.basename(path)
+
+    if not with_extension:
+        name = os.path.splitext(name)[0]
+
+    return name
 
 
 def file_extension(path):
@@ -60,7 +66,7 @@ def move_file(file, target_path, dry_run=False):
         # Only the source's filename and the target directory
         src = file.split("/")[-1]
         target = "/".join(target_path.split("/")[:-1])
-        
+
         _log_dry_run([
             "Moving file",
             f"'{src}'",

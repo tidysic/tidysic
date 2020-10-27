@@ -121,6 +121,14 @@ def add_subcommand_organize(subparsers):
     )
 
     subparser.add_argument(
+        '-g',
+        '--guess',
+        help='''
+            guess the audio file title and artist when there is no IDE tags''',
+        action='store_true',
+    )
+
+    subparser.add_argument(
         '-d',
         '--dry-run',
         help='''do nothing on the files themselves, but print out the

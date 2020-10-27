@@ -1,32 +1,37 @@
 #!/usr/local/bin/python3
 
 from tinytag import TinyTag
+import eyed3
 import os
 from __argparse__ import create_parser
-from __os_utils__ import (file_extension,
+from __os_utils__ import (file_extension, filename,
                           create_dir, get_audio_files, move_file, lint_folders)
 from __logger__ import log
 
 
-def guess_artist(title):
+def guess_file_metadata(filename):
     '''
+    Guess the artist and title based on the filename
     '''
     try:
-        artist_separator = title.find('-')
-        if artist_separator > 0:
-            artist = title[0:artist_separator].lstrip()
-            new_title = title[artist_separator + 1:-1].lstrip()
+        # Artist and title are often seprated by ' - '
+        separator = filename.find(' - ')
+        if separator > 0:
+            artist = filename[0:separator].lstrip()
+            title = filename[separator + 2:len(filename)].lstrip()
 
-            return [artist, new_title]
+            return (artist, title)
+        else:
+            return (None, None)
     except BaseException:
-        print_error('Could not parse the title: {0}'.format(title))
+        print_error(f'Could not parse the title: {title}')
 
 
 def print_error(message):
     log(message, prefix="Error", color="red")
 
 
-def parse_in_directory(dir_src, with_album):
+def parse_in_directory(dir_src, with_album, guess):
     '''
     Creates a tree-like structure of dicts structured as such:
     artists -> albums -> titles
@@ -40,7 +45,23 @@ def parse_in_directory(dir_src, with_album):
         artist = tag.artist
         title = tag.title
 
-        if artist:
+        if guess and (not artist or not title):
+            # artist and/or title not in the id3 metadata
+            guessed_artist, guessed_title = guess_file_metadata(
+                filename(f, with_extension=False))
+            audiofile = eyed3.load(f)
+
+            if not artist and guessed_artist:
+                artist = guessed_artist
+                audiofile.tag.artist = artist
+            if not title and guessed_title:
+                title = guessed_title
+                audiofile.tag.title = title
+
+            # Save the id3 tags
+            audiofile.tag.save()
+
+        if artist and title:
             # Add artist key
             if artist not in artists:
                 artists[artist] = {}
@@ -58,7 +79,7 @@ def parse_in_directory(dir_src, with_album):
             else:
                 artists[artist][title] = f
         else:
-            print_error(f'Could not get artist: {title}')
+            print(f'Could not get artist and/or title: {f}')
 
     return artists
 
@@ -102,8 +123,8 @@ def clean_up(dir_src, dry_run=False):
     pass
 
 
-def organise(dir_src, dir_target, with_album, dry_run):
-    artists = parse_in_directory(dir_src, with_album)
+def organise(dir_src, dir_target, with_album, guess, dry_run):
+    artists = parse_in_directory(dir_src, with_album, guess)
 
     move_files(artists, dir_target, with_album, dry_run)
 
@@ -129,6 +150,7 @@ if __name__ == '__main__':
             args.source,
             args.target,
             args.with_album,
+            args.guess,
             args.dry_run
         )
     elif args.command == 'lint':
