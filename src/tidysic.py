@@ -19,19 +19,67 @@ def guess_file_metadata(filename):
         if separator > 0:
             artist = filename[0:separator].lstrip()
             title = filename[separator + 2:len(filename)].lstrip()
-
-            return (artist, title)
+            
+            if guess_file_metadata.accept_all:
+                return (artist, title)
+            else:
+                # ask user what to do
+                message = [
+                    f"Guessed {artist}, {title} ",
+                    f"Accept (y)",
+                    f"Accept all (a)",
+                    f"Discard (d)",
+                    f"Rename (r)"
+                    ]
+                log(message, prefix="Asking", color="orange1")
+                answer = input("answer : ")
+                while answer not in ["y", "a", "d", "r"]:
+                    log("Answer not understood")
+                    log(message, prefix="Asking", color="orange1")
+                    answer = input("answer : ")
+                # accept once
+                if answer == "y":
+                    return (artist, title)
+                # accept all
+                elif answer == "a":
+                    guess_file_metadata.accept_all = True
+                    return (artist, title)
+                elif answer == "d":
+                    return(None,None)
+                elif answer == "r":
+                    artist = input("Artist : ")
+                    title = input("Title : ")
+                    return(artist, title)
         else:
-            return (None, None)
+            # if nothing is guessed, ask user what to do
+            message = [
+                    f"Can't guess artist and/or title",
+                    f"Discard (d)",
+                    f"Rename (r)"
+                    ]
+            log(message, prefix="Asking", color="orange1")
+            answer = input("answer : ")
+            while answer not in ["d", "r"]:
+                log("Answer not understood)
+                log(message, prefix="Asking", color="orange1")
+                answer = input("answer : ")
+            # accept once
+            if answer == "d":
+                return(None,None)
+            elif answer == "r":
+                artist = input("Artist : ")
+                title = input("Title : ")
+                return(artist, title)
     except BaseException:
         print_error(f'Could not parse the title: {title}')
 
+guess_file_metadata.accept_all = False
 
 def print_error(message):
     log(message, prefix="Error", color="red")
 
 
-def parse_in_directory(dir_src, with_album, guess):
+def parse_in_directory(dir_src, with_album, guess, verbose):
     '''
     Creates a tree-like structure of dicts structured as such:
     artists -> albums -> titles
@@ -50,7 +98,6 @@ def parse_in_directory(dir_src, with_album, guess):
             guessed_artist, guessed_title = guess_file_metadata(
                 filename(f, with_extension=False))
             audiofile = eyed3.load(f)
-
             if not artist and guessed_artist:
                 artist = guessed_artist
                 audiofile.tag.artist = artist
@@ -79,7 +126,8 @@ def parse_in_directory(dir_src, with_album, guess):
             else:
                 artists[artist][title] = f
         else:
-            print(f'Could not get artist and/or title: {f}')
+            if verbose:
+                log("file discarded", prefix="warn", color="red")
 
     return artists
 
@@ -123,8 +171,8 @@ def clean_up(dir_src, dry_run=False):
     pass
 
 
-def organise(dir_src, dir_target, with_album, guess, dry_run):
-    artists = parse_in_directory(dir_src, with_album, guess)
+def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
+    artists = parse_in_directory(dir_src, with_album, guess, verbose)
 
     move_files(artists, dir_target, with_album, dry_run)
 
@@ -151,7 +199,8 @@ if __name__ == '__main__':
             args.target,
             args.with_album,
             args.guess,
-            args.dry_run
+            args.dry_run,
+            args.verbose
         )
     elif args.command == 'lint':
         folders = lint_folders()
