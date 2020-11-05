@@ -27,9 +27,9 @@ jobs:
     - name: Lint with flake8
       run: |
         # Stop the build if there are one of the following error codes
-        flake8 ./src/ ./test/ --count --select=E9,F63,F7,F81,F82,F83,F84,F401 --show-source --statistics
+        flake8 ./tidysic/ ./test/ --count --select=E9,F63,F7,F81,F82,F83,F84,F401 --show-source --statistics
         # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 ./src/ ./test/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 ./tidysic/ ./test/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unittest
       run: |
         python -m unittest discover
