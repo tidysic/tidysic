@@ -18,18 +18,65 @@ def guess_file_metadata(filename):
             artist = filename[0:separator].lstrip()
             title = filename[separator + 2:len(filename)].lstrip()
 
-            return (artist, title)
+            if guess_file_metadata.accept_all:
+                return (artist, title)
+            else:
+                # ask user what to do
+                log([
+                    f"""Guessed [blue]{artist}[/blue], \
+                        [yellow]{title}[/yellow]""",
+                    "Accept (y)",
+                    "Accept all (a)",
+                    "Discard (d)",
+                    "Rename (r)"
+                    ])
+                answer = input("(y/a/d/r) ? ")
+                while answer not in ["y", "a", "d", "r"]:
+                    log("Answer not understood")
+                    answer = input("(y/a/d/r) ? ")
+                # accept once
+                if answer == "y":
+                    return (artist, title)
+                # accept all
+                elif answer == "a":
+                    guess_file_metadata.accept_all = True
+                    return (artist, title)
+                elif answer == "d":
+                    return(None, None)
+                elif answer == "r":
+                    artist = input("Artist : ")
+                    title = input("Title : ")
+                    return(artist, title)
         else:
-            return (None, None)
+            # if nothing is guessed, ask user what to do
+            log([
+                "Can't guess artist and/or title. What do you want to do ?",
+                "Rename manually (r)",
+                "Discard (d)"
+                ])
+            answer = input("(r/d) ? ")
+            while answer not in ["d", "r"]:
+                log("Answer not understood")
+                answer = input("(r/d) ? ")
+            # accept once
+            if answer == "d":
+                return(None, None)
+            elif answer == "r":
+                artist = input("Artist : ")
+                title = input("Title : ")
+                return(artist, title)
     except BaseException:
         print_error(f'Could not parse the title: {title}')
+
+
+guess_file_metadata.accept_all = False
 
 
 def print_error(message):
     log(message, prefix='Error', color='red')
 
 
-def parse_in_directory(dir_src, with_album, guess):
+def parse_in_directory(dir_src, with_album, guess, verbose):
     '''
     Creates a tree-like structure of dicts structured as such:
     artists -> albums -> titles
@@ -48,7 +95,6 @@ def parse_in_directory(dir_src, with_album, guess):
             guessed_artist, guessed_title = guess_file_metadata(
                 filename(f, with_extension=False))
             audiofile = eyed3.load(f)
-
             if not artist and guessed_artist:
                 artist = guessed_artist
                 audiofile.tag.artist = artist
@@ -77,7 +123,8 @@ def parse_in_directory(dir_src, with_album, guess):
             else:
                 artists[artist][title] = f
         else:
-            print(f'Could not get artist and/or title: {f}')
+            if verbose:
+                log("file discarded", prefix="warn", color="red")
 
     return artists
 
@@ -121,8 +168,8 @@ def clean_up(dir_src, dry_run=False):
     pass
 
 
-def organise(dir_src, dir_target, with_album, guess, dry_run):
-    artists = parse_in_directory(dir_src, with_album, guess)
+def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
+    artists = parse_in_directory(dir_src, with_album, guess, verbose)
 
     move_files(artists, dir_target, with_album, dry_run)
 

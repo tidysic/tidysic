@@ -25,7 +25,8 @@ def run():
             args.target,
             args.with_album,
             args.guess,
-            args.dry_run
+            args.dry_run,
+            args.verbose
         )
     elif args.command == 'lint':
         folders = lint_folders()
