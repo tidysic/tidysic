@@ -26,7 +26,7 @@ def guess_file_metadata(filename):
 
 
 def print_error(message):
-    log(message, prefix="Error", color="red")
+    log(message, prefix='Error', color='red')
 
 
 def parse_in_directory(dir_src, with_album, guess):

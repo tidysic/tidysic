@@ -14,9 +14,9 @@ audio_extensions = [
 
 def _log_dry_run(message):
     '''
-    Shortcut to call logger with specific "dry run" prefix
+    Shortcut to call logger with specific 'dry run' prefix
     '''
-    log(message, prefix="dry run")
+    log(message, prefix='dry run')
 
 
 def filename(path, with_extension=True):
@@ -44,7 +44,7 @@ def create_dir(dir_path, dry_run):
     Creates the given directory if it does not exist yet.
     '''
     if dry_run:
-        _log_dry_run(f"Create directory {dir_path}")
+        _log_dry_run(f'Create directory {dir_path}')
     elif not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
@@ -65,13 +65,13 @@ def move_file(file, target_path, dry_run=False):
     if dry_run:
         # We don't display the two whole paths
         # Only the source's filename and the target directory
-        src = file.split("/")[-1]
-        target = "/".join(target_path.split("/")[:-1])
+        src = file.split('/')[-1]
+        target = '/'.join(target_path.split('/')[:-1])
 
         _log_dry_run([
-            "Moving file",
-            f"'{src}'",
-            "to",
+            'Moving file',
+            f'{src}',
+            'to',
             target
         ])
     else:
@@ -83,7 +83,7 @@ def remove_directory(dir_path, dry_run=False):
     Deletes the given directory
     '''
     if dry_run:
-        _log_dry_run(f"Deleting directory {dir_path}")
+        _log_dry_run(f'Deleting directory {dir_path}')
     else:
         os.rmdir(dir_path)
 

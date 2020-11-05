@@ -1,9 +1,6 @@
-# import tidysic
-
 from PyQt5 import QtWidgets
 
 from .. import parse_in_directory, log
-
 from .folder_select_dialog import FolderSelectDialog
 
 
@@ -22,17 +19,17 @@ def run():
         # Debug
         message = []
         for artist, albums in artists.items():
-            message.append(f"Artist : {artist}")
+            message.append(f'Artist : {artist}')
             for album, titles in albums.items():
-                message.append(f"\tAlbum : {album}")
+                message.append(f'\tAlbum : {album}')
                 for title in titles.items():
-                    message.append(f"\t\tTitle : {title}")
+                    message.append(f'\t\tTitle : {title}')
         log(message)
 
     window.show()
     app.exec()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     run()

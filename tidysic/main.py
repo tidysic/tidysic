@@ -11,14 +11,14 @@ def run():
     args = parser.parse_args()
 
     if args.version:
-        log("v0.01", prefix="Version")
+        log('v0.01', prefix='Version')
         exit()
     elif args.command == 'organize':
         if args.verbose:
             log(
-                f"Beginning organizing {args.source} into {args.target}",
-                prefix="verbose",
-                color="green"
+                f'Beginning organizing {args.source} into {args.target}',
+                prefix='verbose',
+                color='green'
             )
         organise(
             args.source,
@@ -38,6 +38,6 @@ def run():
         parser.print_usage()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     run()
