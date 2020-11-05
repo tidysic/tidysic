@@ -25,9 +25,9 @@ jobs:
         sudo apt-get install python3-pyqt5  
         sudo apt-get install pyqt5-dev-tools
         sudo apt-get install qttools5-dev-tools
-        python -m pip install pyqt5
-        python -m pip install --upgrade pip
-        pip install vext.pyqt5
+        pip install --upgrade pip
+        pip install pyqt5
+        pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         # Stop the build if there are one of the following error codes
