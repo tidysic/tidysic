@@ -8,7 +8,7 @@ from .folder_select_dialog import FolderSelectDialog
 
 
 def run():
-    
+
     app = QtWidgets.QApplication([])
     window = QtWidgets.QMainWindow()
 
