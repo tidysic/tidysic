@@ -1,12 +1,4 @@
-from .main import (parse_in_directory,
+from .algorithms import (parse_in_directory,  # noqa
     move_files, clean_up, organise)  # noqa
 
-from .logger import log
-
-__all__ = [
-    parse_in_directory,
-    move_files,
-    clean_up,
-    organise,
-    log
-]
+from .logger import log  # noqa
