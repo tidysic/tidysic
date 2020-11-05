@@ -1,5 +1,3 @@
-#!/usr/local/bin/python3
-
 from tinytag import TinyTag
 import eyed3
 import os
