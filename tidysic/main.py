@@ -3,10 +3,11 @@
 from tinytag import TinyTag
 import eyed3
 import os
-from __argparse__ import create_parser
-from __os_utils__ import (file_extension, filename,
-                          create_dir, get_audio_files, move_file, lint_folders)
-from __logger__ import log
+
+from .argparser import create_parser
+from .os_utils import (file_extension, filename,
+                       create_dir, get_audio_files, move_file, lint_folders)
+from .logger import log
 
 
 def guess_file_metadata(filename):

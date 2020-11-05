@@ -1,6 +1,7 @@
 import os
 import shutil
-from __logger__ import log
+
+from .logger import log
 
 
 audio_extensions = [
