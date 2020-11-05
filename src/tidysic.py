@@ -25,18 +25,17 @@ def guess_file_metadata(filename):
             else:
                 # ask user what to do
                 message = [
-                    f"Guessed {artist}, {title} ",
-                    f"Accept (y)",
-                    f"Accept all (a)",
-                    f"Discard (d)",
-                    f"Rename (r)"
+                    f"""Guessed [blue]{artist}[/blue], \
+                        [yellow]{title}[/yellow] """,
+                    "Accept (y)",
+                    "Accept all (a)",
+                    "Discard (d)",
+                    "Rename (r)"
                     ]
-                log(message, prefix="Asking", color="orange1")
-                answer = input("answer : ")
+                answer = input("(y/a/d/r) ? ")
                 while answer not in ["y", "a", "d", "r"]:
                     log("Answer not understood")
-                    log(message, prefix="Asking", color="orange1")
-                    answer = input("answer : ")
+                    answer = input("(y/a/d/r) ? ")
                 # accept once
                 if answer == "y":
                     return (artist, title)
@@ -53,16 +52,14 @@ def guess_file_metadata(filename):
         else:
             # if nothing is guessed, ask user what to do
             message = [
-                    f"Can't guess artist and/or title",
-                    f"Discard (d)",
-                    f"Rename (r)"
+                    "Can't guess artist and/or title",
+                    "Rename manually (r)",
+                    "Discard (d)"
                     ]
-            log(message, prefix="Asking", color="orange1")
-            answer = input("answer : ")
+            answer = input("(r/d) ? ")
             while answer not in ["d", "r"]:
                 log("Answer not understood)
-                log(message, prefix="Asking", color="orange1")
-                answer = input("answer : ")
+                answer = input("(r/d) ? ")
             # accept once
             if answer == "d":
                 return(None,None)
