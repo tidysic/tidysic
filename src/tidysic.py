@@ -19,19 +19,19 @@ def guess_file_metadata(filename):
         if separator > 0:
             artist = filename[0:separator].lstrip()
             title = filename[separator + 2:len(filename)].lstrip()
-            
+
             if guess_file_metadata.accept_all:
                 return (artist, title)
             else:
                 # ask user what to do
-                message = [
+                log([
                     f"""Guessed [blue]{artist}[/blue], \
-                        [yellow]{title}[/yellow] """,
+                        [yellow]{title}[/yellow]""",
                     "Accept (y)",
                     "Accept all (a)",
                     "Discard (d)",
                     "Rename (r)"
-                    ]
+                    ])
                 answer = input("(y/a/d/r) ? ")
                 while answer not in ["y", "a", "d", "r"]:
                     log("Answer not understood")
@@ -44,25 +44,25 @@ def guess_file_metadata(filename):
                     guess_file_metadata.accept_all = True
                     return (artist, title)
                 elif answer == "d":
-                    return(None,None)
+                    return(None, None)
                 elif answer == "r":
                     artist = input("Artist : ")
                     title = input("Title : ")
                     return(artist, title)
         else:
             # if nothing is guessed, ask user what to do
-            message = [
-                    "Can't guess artist and/or title",
-                    "Rename manually (r)",
-                    "Discard (d)"
-                    ]
+            log([
+                "Can't guess artist and/or title. What do you want to do ?",
+                "Rename manually (r)",
+                "Discard (d)"
+                ])
             answer = input("(r/d) ? ")
             while answer not in ["d", "r"]:
-                log("Answer not understood)
+                log("Answer not understood")
                 answer = input("(r/d) ? ")
             # accept once
             if answer == "d":
-                return(None,None)
+                return(None, None)
             elif answer == "r":
                 artist = input("Artist : ")
                 title = input("Title : ")
@@ -70,7 +70,9 @@ def guess_file_metadata(filename):
     except BaseException:
         print_error(f'Could not parse the title: {title}')
 
+
 guess_file_metadata.accept_all = False
+
 
 def print_error(message):
     log(message, prefix="Error", color="red")
