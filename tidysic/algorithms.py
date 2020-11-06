@@ -84,6 +84,26 @@ def print_error(message):
     log(message, prefix='Error', color='red')
 
 
+def apply_guessing(file, order_tag, dry_run):
+    guessed_artist, guessed_title = guess_file_metadata(
+        filename(file, with_extension=False))
+
+    audiofile = eyed3.load(file)
+
+    if order_tag == Tag.Artist and guessed_artist:
+        if not dry_run:
+            audiofile.tag.artist = guessed_artist
+            audiofile.tag.save()
+        return guessed_artist
+    elif guessed_title:
+        if not dry_run:
+            audiofile.tag.title = guessed_title
+            audiofile.tag.save()
+        return guessed_title
+    else:
+        return None
+
+
 def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
     '''
     Given a list of files and a tag type, creates a StructureLevel object.
@@ -106,25 +126,12 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
         tag = get_tags(file)[order_tag]
         if tag is None:
             if order_tag in [Tag.Artist, Tag.Title] and guess:
-
-                guessed_artist, guessed_title = guess_file_metadata(
-                    filename(file, with_extension=False))
-
-                audiofile = eyed3.load(file)
-
-                if order_tag == Tag.Artist and guessed_artist:
-                    tag = guessed_artist
-                    if not dry_run:
-                        audiofile.tag.artist = guessed_artist
-                        audiofile.tag.save()
-                elif guessed_title:
-                    tag = guessed_title
-                    if not dry_run:
-                        audiofile.tag.title = guessed_title
-                        audiofile.tag.save()
-                else:
+                tag = apply_guessing(file, order_tag, dry_run)
+                if tag is None:
                     log(f'Discarded file: {file}')
             else:
+                # Default behavior is letting the file in the
+                # lowest folder we can.
                 unordered.append(file)
 
         if tag is not None:
@@ -137,7 +144,8 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
             ordered[tag_value] = create_structure(
                 files,
                 structure[1:],
-                guess
+                guess,
+                dry_run
             )
 
     return StructureLevel(ordered, unordered)
@@ -153,7 +161,7 @@ def parse_in_directory(dir_src, structure, guess, verbose, dry_run):
     '''
     audio_files = get_audio_files(dir_src)
 
-    root = create_structure(audio_files, structure, guess)
+    root = create_structure(audio_files, structure, guess, dry_run)
 
     return root
 
