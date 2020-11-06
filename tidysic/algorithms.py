@@ -208,7 +208,7 @@ def clean_up(dir_src, dry_run=False):
     pass
 
 
-def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
+def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
 
     structure = [Tag.Artist]
     if with_album:
