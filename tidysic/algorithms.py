@@ -1,10 +1,18 @@
 from tinytag import TinyTag
 import eyed3
 import os
+from collections import namedtuple
 
+from .tag import Tag, get_tags
 from .os_utils import (file_extension, filename,
                        create_dir, get_audio_files, move_file)
 from .logger import log
+
+
+StructureLevel = namedtuple(
+    'StructureLevel',
+    ['ordered', 'unordered']
+)
 
 
 def guess_file_metadata(filename):
@@ -76,31 +84,71 @@ def print_error(message):
     log(message, prefix='Error', color='red')
 
 
-def parse_in_directory(dir_src, with_album, guess, verbose):
+def order_by(files: list, order_tag: Tag, guess: bool):
     '''
-    Creates a tree-like structure of dicts structured as such:
-    artists -> albums -> titles
-    where each of these is a dict, and titles point to the files themselves
+    Given a list of files and a tag, creates a StructureLevel object.
+
+    It consists of a pair whose first element is a dict whose keys
+    are the values of the tag that were found in the files,
+    and whose values are lists of files.
+
+    The second element of the pair is a list of all the files for
+    which the tag was not found.
     '''
-    artists = {}
+    ordered = {}
+    unordered = []
+
+    for file in files:
+        tag = get_tags(file)[order_tag]
+
+        if tag is None:
+            if order_tag in [Tag.Artist, Tag.Title]:
+                # TODO call guess_metadata
+                pass
+            else:
+                unordered.append(file)
+        else:
+            if tag not in ordered:
+                ordered[tag] = []
+            ordered[tag].append(file)
+
+    return StructureLevel(ordered, unordered)
+
+
+def get_structure_leaves(root: StructureLevel):
+    '''
+    Returns all the 'ordered' parts of the leaves of the given structure,
+    as a list
+    '''
+    leaves = []
+
+    for x in root.ordered.values():
+        if isinstance(x, StructureLevel):
+            leaves.append(get_structure_leaves(x))
+        else:
+            leaves.append(x)
+
+    return leaves
+
+
+def parse_in_directory(dir_src, structure, guess, verbose):
+    '''
+    Creates a tree-like structure whose nodes are StructureLevel objects.
+
+    The depths of the tree coincide with the structure passed as argument.
+    For instance, if the structure given is `[Tag.Artist, Tag.Title]`, the root
+    of the structure will be a dict of artists.
+    '''
     audio_files = get_audio_files(dir_src)
 
-    for f in audio_files:
-        tag = TinyTag.get(f)
-        artist = tag.artist
-        title = tag.title
+    root = order_by(audio_files, structure[0], guess)
 
-        if guess and (not artist or not title):
-            # artist and/or title not in the id3 metadata
-            guessed_artist, guessed_title = guess_file_metadata(
-                filename(f, with_extension=False))
-            audiofile = eyed3.load(f)
-            if not artist and guessed_artist:
-                artist = guessed_artist
-                audiofile.tag.artist = artist
-            if not title and guessed_title:
-                title = guessed_title
-                audiofile.tag.title = title
+    for order_tag in structure[1:]:
+        for to_order in get_structure_leaves(root):
+            to_order = order_by(to_order, order_tag, guess)
+
+    return root
+
 
             # Save the id3 tags
             audiofile.tag.save()
@@ -169,7 +217,18 @@ def clean_up(dir_src, dry_run=False):
 
 
 def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
-    artists = parse_in_directory(dir_src, with_album, guess, verbose)
+
+    structure = [Tag.Artist]
+    if with_album:
+        structure.append(Tag.Album)
+    structure.append(Tag.Title)
+
+    structure = parse_in_directory(
+        dir_src,
+        structure,
+        guess,
+        verbose
+    )
 
     move_files(artists, dir_target, with_album, dry_run)
 
