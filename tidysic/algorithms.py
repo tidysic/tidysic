@@ -30,48 +30,49 @@ def guess_file_metadata(filename):
             else:
                 # ask user what to do
                 log([
-                    f"""Guessed [blue]{artist}[/blue], \
-                        [yellow]{title}[/yellow]""",
-                    "Accept (y)",
-                    "Accept all (a)",
-                    "Discard (d)",
-                    "Rename (r)"
+                    f'''Guessed [blue]{artist}[/blue], \
+                        [yellow]{title}[/yellow]''',
+                    'Accept (y)',
+                    'Accept all (a)',
+                    'Discard (d)',
+                    'Rename (r)'
                     ])
-                answer = input("(y/a/d/r) ? ")
-                while answer not in ["y", "a", "d", "r"]:
-                    log("Answer not understood")
-                    answer = input("(y/a/d/r) ? ")
+                answer = input('(y/a/d/r) ? ')
+                while answer not in ['y', 'a', 'd', 'r']:
+                    log('Answer not understood')
+                    answer = input('(y/a/d/r) ? ')
                 # accept once
-                if answer == "y":
+                if answer == 'y':
                     return (artist, title)
                 # accept all
-                elif answer == "a":
+                elif answer == 'a':
                     guess_file_metadata.accept_all = True
                     return (artist, title)
-                elif answer == "d":
-                    return(None, None)
-                elif answer == "r":
-                    artist = input("Artist : ")
-                    title = input("Title : ")
-                    return(artist, title)
+                elif answer == 'd':
+                    return (None, None)
+                elif answer == 'r':
+                    artist = input('Artist : ')
+                    title = input('Title : ')
+                    return (artist, title)
         else:
             # if nothing is guessed, ask user what to do
             log([
-                "Can't guess artist and/or title. What do you want to do ?",
-                "Rename manually (r)",
-                "Discard (d)"
+                'Cannot guess artist and/or title. What do you want to do ?',
+                'Rename manually (r)',
+                'Discard (d)'
                 ])
-            answer = input("(r/d) ? ")
-            while answer not in ["d", "r"]:
-                log("Answer not understood")
-                answer = input("(r/d) ? ")
+            answer = input('(r/d) ? ')
+            while answer not in ['d', 'r']:
+                log('Answer not understood')
+                answer = input('(r/d) ? ')
             # accept once
-            if answer == "d":
-                return(None, None)
-            elif answer == "r":
-                artist = input("Artist : ")
-                title = input("Title : ")
-                return(artist, title)
+            if answer == 'd':
+                return (None, None)
+            elif answer == 'r':
+                artist = input('Artist : ')
+                title = input('Title : ')
+                return (artist, title)
+
     except BaseException:
         print_error(f'Could not parse the title: {title}')
 
