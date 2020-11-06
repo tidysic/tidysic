@@ -179,9 +179,6 @@ def move_files(
 
     for tag, content in files.ordered.items():
 
-        dir_name = os.path.join(dir_target, tag)
-        create_dir(dir_name, dry_run)
-
         if isinstance(content, list):  # Leaf of the structure tree
             file = content[0]
             tag = structure[0]
@@ -190,6 +187,10 @@ def move_files(
             file_path = os.path.join(dir_target, file_name)
             move_file(file, file_path, dry_run)
         else:
+ 
+            dir_name = os.path.join(dir_target, tag)
+            create_dir(dir_name, dry_run)
+ 
             move_files(
                 content,
                 dir_name,
