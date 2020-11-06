@@ -1,4 +1,3 @@
-from tinytag import TinyTag
 import eyed3
 import os
 from collections import namedtuple
@@ -96,7 +95,8 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
     which the tag was not found.
     '''
     ordered = {}
-    unordered = []
+    unordered = []  # This isn't used as of now, but
+    #                 hopefully we will make good use of it
 
     order_tag = structure[0]
 
@@ -105,9 +105,12 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
         tag = get_tags(file)[order_tag]
         if tag is None:
             if order_tag in [Tag.Artist, Tag.Title] and guess:
+
                 guessed_artist, guessed_title = guess_file_metadata(
                     filename(file, with_extension=False))
+
                 audiofile = eyed3.load(file)
+
                 if order_tag == Tag.Artist and guessed_artist:
                     tag = guessed_artist
                     if not dry_run:
@@ -119,10 +122,11 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
                         audiofile.tag.title = guessed_title
                         audiofile.tag.save()
                 else:
-                    unordered.append(file)
+                    log(f'Discarded file: {file}')
             else:
                 unordered.append(file)
-        else:
+
+        if tag is not None:
             if tag not in ordered:
                 ordered[tag] = []
             ordered[tag].append(file)
