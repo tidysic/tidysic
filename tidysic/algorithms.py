@@ -84,9 +84,9 @@ def print_error(message):
     log(message, prefix='Error', color='red')
 
 
-def order_by(files: list, order_tag: Tag, guess: bool):
+def create_structure(files: list, structure: list, guess: bool):
     '''
-    Given a list of files and a tag, creates a StructureLevel object.
+    Given a list of files and a tag type, creates a StructureLevel object.
 
     It consists of a pair whose first element is a dict whose keys
     are the values of the tag that were found in the files,
@@ -98,9 +98,11 @@ def order_by(files: list, order_tag: Tag, guess: bool):
     ordered = {}
     unordered = []
 
-    for file in files:
-        tag = get_tags(file)[order_tag]
+    order_tag = structure[0]
 
+    for file in files:
+
+        tag = get_tags(file)[order_tag]
         if tag is None:
             if order_tag in [Tag.Artist, Tag.Title]:
                 # TODO call guess_metadata
@@ -112,23 +114,15 @@ def order_by(files: list, order_tag: Tag, guess: bool):
                 ordered[tag] = []
             ordered[tag].append(file)
 
+    if len(structure) > 1:
+        for tag_value, files in ordered.items():
+            ordered[tag_value] = create_structure(
+                files,
+                structure[1:],
+                guess
+            )
+
     return StructureLevel(ordered, unordered)
-
-
-def get_structure_leaves(root: StructureLevel):
-    '''
-    Returns all the 'ordered' parts of the leaves of the given structure,
-    as a list
-    '''
-    leaves = []
-
-    for x in root.ordered.values():
-        if isinstance(x, StructureLevel):
-            leaves.append(get_structure_leaves(x))
-        else:
-            leaves.append(x)
-
-    return leaves
 
 
 def parse_in_directory(dir_src, structure, guess, verbose):
@@ -141,11 +135,7 @@ def parse_in_directory(dir_src, structure, guess, verbose):
     '''
     audio_files = get_audio_files(dir_src)
 
-    root = order_by(audio_files, structure[0], guess)
-
-    for order_tag in structure[1:]:
-        for to_order in get_structure_leaves(root):
-            to_order = order_by(to_order, order_tag, guess)
+    root = create_structure(audio_files, structure, guess)
 
     return root
 
