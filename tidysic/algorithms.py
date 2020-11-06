@@ -167,35 +167,37 @@ def parse_in_directory(dir_src, structure, guess, verbose):
     return artists
 
 
-def move_files(artists, dir_target, with_album, dry_run=False):
-    for artist, second_level in artists.items():
-        # Directory name of the file based on the target directory and the
-        # artist
-        artist_dir_name = os.path.join(dir_target, artist)
 
-        create_dir(artist_dir_name, dry_run)
+def move_files(
+    files: StructureLevel,
+    dir_target: str,
+    structure: list,
+    dry_run=False,
+):
+    for file in files.unordered:
+        file_name = filename(file)
+        file_path = os.path.join(dir_target, file_name)
+        move_file(file, file_path, dry_run)
 
-        if with_album:
-            for album, titles in second_level.items():
-                # Subdirectory for the album
-                album_dir_name = os.path.join(artist_dir_name, album)
-                create_dir(album_dir_name, dry_run)
+    for tag, content in files.ordered.items():
 
-                for title, file in titles.items():
-                    # Rename the file
-                    f_name = title + file_extension(file)
-                    f_target_path = os.path.join(album_dir_name, f_name)
+        dir_name = os.path.join(dir_target, tag)
+        create_dir(dir_name, dry_run)
 
-                    # Moves the file to its new path
-                    move_file(file, f_target_path, dry_run)
+        if isinstance(content, list):  # Leaf of the structure tree
+            file = content[0]
+            tag = structure[0]
+
+            file_name = str(tag) + file_extension(file)
+            file_path = os.path.join(dir_target, file_name)
+            move_file(file, file_path, dry_run)
         else:
-            for title, file in second_level.items():
-                # Rename the file
-                f_name = title + file_extension(file)
-                f_target_path = os.path.join(artist_dir_name, f_name)
-
-                # Moves the file to its new path
-                move_file(file, f_target_path, dry_run)
+            move_files(
+                content,
+                dir_name,
+                structure[:1],
+                dry_run
+            )
 
 
 def clean_up(dir_src, dry_run=False):
@@ -213,13 +215,18 @@ def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
         structure.append(Tag.Album)
     structure.append(Tag.Title)
 
-    structure = parse_in_directory(
+    root = parse_in_directory(
         dir_src,
         structure,
         guess,
         verbose
     )
 
-    move_files(artists, dir_target, with_album, dry_run)
+    move_files(
+        root,
+        dir_target,
+        structure,
+        dry_run
+    )
 
     clean_up(dir_src, dry_run)
