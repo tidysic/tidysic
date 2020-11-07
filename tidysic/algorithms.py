@@ -4,7 +4,7 @@ import os
 
 from .os_utils import (file_extension, filename,
                        create_dir, get_audio_files, move_file)
-from .logger import log
+from .logger import log, error, warning
 
 
 def guess_file_metadata(filename):
@@ -66,14 +66,10 @@ def guess_file_metadata(filename):
                 title = input("Title : ")
                 return(artist, title)
     except BaseException:
-        print_error(f'Could not parse the title: {title}')
+        error(f'Could not parse the title: {title}')
 
 
 guess_file_metadata.accept_all = False
-
-
-def print_error(message):
-    log(message, prefix='Error', color='red')
 
 
 def parse_in_directory(dir_src, with_album, guess, verbose):
@@ -124,7 +120,7 @@ def parse_in_directory(dir_src, with_album, guess, verbose):
                 artists[artist][title] = f
         else:
             if verbose:
-                log("file discarded", prefix="warn", color="red")
+                warning("file discarded")
 
     return artists
 

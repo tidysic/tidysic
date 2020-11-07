@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-from .logger import log
+from .logger import _log_dry_run
 
 
 audio_extensions = [
@@ -11,13 +11,6 @@ audio_extensions = [
     '.flac',
     '.ogg',
 ]
-
-
-def _log_dry_run(message):
-    '''
-    Shortcut to call logger with specific 'dry run' prefix
-    '''
-    log(message, prefix='dry run')
 
 
 def filename(path, with_extension=True):
@@ -54,8 +47,11 @@ def get_audio_files(directory_path):
     '''
     Returns the audio files present in the given directory.
     '''
-    audio_files = [os.path.join(directory_path, path) for ext in audio_extensions
-         for path in Path(directory_path).rglob('*'+ext)]
+    audio_files = [
+        os.path.join(directory_path, path)
+        for ext in audio_extensions
+        for path in Path(directory_path).rglob('*'+ext)
+    ]
     return audio_files
 
 
