@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QComboBox
 
 from tidysic.tag import Tag
+from tidysic.logger import log
 
 
 class StructureLevelSelect(QComboBox):
@@ -17,11 +18,14 @@ class StructureLevelSelect(QComboBox):
             self.addItem(str(tag))
             if tag == value:
                 self.setCurrentIndex(i)
+        
+        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
-    def currentIndexChanged(self, index):
-        if self.currentText == "None":
+    def onCurrentIndexChanged(self, index):
+        new_text = self.currentText()
+        if new_text == "None":
             self.value = None
         else:
             for tag in Tag:
-                if self.currentText == str(tag):
+                if new_text == str(tag):
                     self.value = tag
