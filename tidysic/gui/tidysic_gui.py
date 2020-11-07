@@ -8,27 +8,36 @@ from tidysic.gui.dialogs import FolderSelect, StructureSelect
 def run():
 
     app = QtWidgets.QApplication([])
-    window = QtWidgets.QMainWindow()
 
-    input_dialog = FolderSelectDialog(window, True)
+    in_directory_selector = FolderSelect(None, is_input_folder=True)
+    while not in_directory_selector.exec():
+        pass
+    source = in_directory_selector.selectedFiles()[0]
 
-    if input_dialog.exec():
-        input_dir = input_dialog.selectedFiles()[0]
+    out_directory_selector = FolderSelect(None, is_input_folder=False)
+    while not out_directory_selector.exec():
+        pass
+    target = out_directory_selector.selectedFiles()[0]
 
-        artists = parse_in_directory(input_dir, True, False)
+    structure_select = StructureSelect(None)
+    while not structure_select.exec():
+        pass
+    structure = structure_select.get_structure() + [Tag.Title]
 
-        # Debug
-        message = []
-        for artist, albums in artists.items():
-            message.append(f'Artist : {artist}')
-            for album, titles in albums.items():
-                message.append(f'\tAlbum : {album}')
-                for title in titles.items():
-                    message.append(f'\t\tTitle : {title}')
-        log(message)
+    log("sauce")
+    
+    organise(
+        source,
+        target,
+        with_album=True,
+        guess=False,
+        dry_run=True,
+        verbose=True
+    )
 
-    window.show()
-    app.exec()
+    log("sauce")
+
+    # app.exec()
 
 
 if __name__ == '__main__':
