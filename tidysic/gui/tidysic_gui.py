@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets
 
 from .. import parse_in_directory, log
-from .folder_select_dialog import FolderSelectDialog
+from .dialogs import FolderSelect, StructureSelect
 
 
 def run():
