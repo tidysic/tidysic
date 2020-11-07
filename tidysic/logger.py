@@ -20,3 +20,18 @@ def log(message, prefix='', color='blue'):
         print(prefix)
         for line in message:
             print('\t' + line)
+
+
+def error(message):
+    log(message, prefix='Error', color='red')
+
+
+def warning(message):
+    log(message, prefix='Warning', color='orange1')
+
+
+def dry_run(message):
+    '''
+    Shortcut to call logger with specific 'dry run' prefix
+    '''
+    log(message, prefix='dry run')
