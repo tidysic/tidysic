@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QComboBox
 
 from tidysic.tag import Tag
-from tidysic.logger import log
 
 
 class StructureLevelSelect(QComboBox):

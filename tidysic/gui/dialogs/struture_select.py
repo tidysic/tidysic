@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout
 
-from ..widgets import StructureLevelSelect
+from tidysic.gui.widgets import StructureLevelSelect
 from tidysic.tag import Tag
 
 

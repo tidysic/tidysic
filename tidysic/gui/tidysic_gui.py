@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets
 
-from .. import parse_in_directory, log
-from .dialogs import FolderSelect, StructureSelect
+from tidysic import organise, log
+from tidysic.tag import Tag
+from tidysic.gui.dialogs import FolderSelect, StructureSelect
 
 
 def run():
