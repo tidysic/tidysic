@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-from .logger import _log_dry_run
+from tidysic import logger
 
 
 audio_extensions = [
@@ -38,7 +38,7 @@ def create_dir(dir_path, dry_run):
     Creates the given directory if it does not exist yet.
     '''
     if dry_run:
-        _log_dry_run(f'Create directory {dir_path}')
+        logger.dry_run(f'Create directory {dir_path}')
     elif not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
@@ -65,7 +65,7 @@ def move_file(file, target_path, dry_run=False):
         src = file.split('/')[-1]
         target = '/'.join(target_path.split('/')[:-1])
 
-        _log_dry_run([
+        logger.dry_run([
             'Moving file',
             f'{src}',
             'to',
@@ -80,7 +80,7 @@ def remove_directory(dir_path, dry_run=False):
     Deletes the given directory
     '''
     if dry_run:
-        _log_dry_run(f'Deleting directory {dir_path}')
+        logger.dry_run(f'Deleting directory {dir_path}')
     else:
         os.rmdir(dir_path)
 

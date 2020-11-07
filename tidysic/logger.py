@@ -30,7 +30,7 @@ def warning(message):
     log(message, prefix='Warning', color='orange1')
 
 
-def _log_dry_run(message):
+def dry_run(message):
     '''
     Shortcut to call logger with specific 'dry run' prefix
     '''
