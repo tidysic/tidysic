@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 from .logger import log
 
@@ -53,8 +54,8 @@ def get_audio_files(directory_path):
     '''
     Returns the audio files present in the given directory.
     '''
-    audio_files = [os.path.join(directory_path, f) for f in os.listdir(
-        directory_path) if os.path.splitext(f)[1] in audio_extensions]
+    audio_files = [os.path.join(directory_path, path) for ext in audio_extensions
+         for path in Path(directory_path).rglob('*'+ext)]
     return audio_files
 
 
