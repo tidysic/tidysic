@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
 
-from .. import parse_in_directory, log
+from tidysic import parse_in_directory
+from tidysic.logger import log
 from .folder_select_dialog import FolderSelectDialog
 
 
