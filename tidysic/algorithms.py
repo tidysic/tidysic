@@ -4,7 +4,8 @@ from collections import namedtuple
 
 from .tag import Tag, get_tags
 from .os_utils import (file_extension, filename,
-                       create_dir, get_audio_files, move_file)
+                       create_dir, get_audio_files, move_file,
+                       remove_directory)
 from .logger import log, error, warning
 
 
@@ -156,7 +157,7 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
     return StructureLevel(ordered, unordered)
 
 
-def parse_in_directory(dir_src, structure, guess, verbose, dry_run):
+def parse_in_directory(audio_files, structure, guess, verbose, dry_run):
     '''
     Creates a tree-like structure whose nodes are StructureLevel objects.
 
@@ -164,8 +165,6 @@ def parse_in_directory(dir_src, structure, guess, verbose, dry_run):
     For instance, if the structure given is `[Tag.Artist, Tag.Title]`, the root
     of the structure will be a dict of artists.
     '''
-    audio_files = get_audio_files(dir_src)
-
     root = create_structure(audio_files, structure, guess, dry_run)
 
     return root
@@ -208,12 +207,25 @@ def move_files(
             )
 
 
-def clean_up(dir_src, dry_run=False):
-    '''
-    TODO: remove empty folders in the source directory
-    if the dry_run argument wasn't given
-    '''
-    pass
+def clean_up(dir_src, audio_files, dry_run=False):
+    if not os.path.isdir(dir_src):
+        return
+
+    # remove empty subfolders
+    files = os.listdir(dir_src)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(dir_src, f)
+            if os.path.isdir(fullpath):
+                clean_up(fullpath, audio_files, dry_run)
+
+    # if folder empty, delete it
+    files = os.listdir(dir_src)
+    if not any([
+        file in audio_files
+        for file in files
+    ]):
+        remove_directory(dir_src, dry_run)
 
 
 def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
@@ -227,8 +239,10 @@ def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
     else:
         structure = [Tag.Artist, Tag.Title]
 
+    audio_files = get_audio_files(dir_src)
+
     root = parse_in_directory(
-        dir_src,
+        audio_files,
         structure,
         guess,
         verbose,
@@ -242,4 +256,4 @@ def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
         dry_run
     )
 
-    clean_up(dir_src, dry_run)
+    clean_up(dir_src, audio_files, dry_run)
