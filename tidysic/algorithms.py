@@ -3,7 +3,8 @@ import eyed3
 import os
 
 from .os_utils import (file_extension, filename,
-                       create_dir, get_audio_files, move_file)
+                       create_dir, get_audio_files, move_file,
+                       remove_directory)
 from .logger import log, error, warning
 
 
@@ -72,14 +73,13 @@ def guess_file_metadata(filename):
 guess_file_metadata.accept_all = False
 
 
-def parse_in_directory(dir_src, with_album, guess, verbose):
+def parse_in_directory(audio_files, with_album, guess, verbose):
     '''
     Creates a tree-like structure of dicts structured as such:
     artists -> albums -> titles
     where each of these is a dict, and titles point to the files themselves
     '''
     artists = {}
-    audio_files = get_audio_files(dir_src)
 
     for f in audio_files:
         tag = TinyTag.get(f)
@@ -156,17 +156,32 @@ def move_files(artists, dir_target, with_album, dry_run=False):
                 move_file(file, f_target_path, dry_run)
 
 
-def clean_up(dir_src, dry_run=False):
-    '''
-    TODO: remove empty folders in the source directory
-    if the dry_run argument wasn't given
-    '''
-    pass
+def clean_up(dir_src, audio_files, dry_run=False):
+    if not os.path.isdir(dir_src):
+        return
+
+    # remove empty subfolders
+    files = os.listdir(dir_src)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(dir_src, f)
+            if os.path.isdir(fullpath):
+                clean_up(fullpath, audio_files, dry_run)
+
+    # if folder empty, delete it
+    files = os.listdir(dir_src)
+    if not any([
+        file in audio_files
+        for file in files
+    ]):
+        remove_directory(dir_src, dry_run)
 
 
 def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
-    artists = parse_in_directory(dir_src, with_album, guess, verbose)
+    audio_files = get_audio_files(dir_src)
+
+    artists = parse_in_directory(audio_files, with_album, guess, verbose)
 
     move_files(artists, dir_target, with_album, dry_run)
 
-    clean_up(dir_src, dry_run)
+    clean_up(dir_src, audio_files, dry_run)
