@@ -5,7 +5,7 @@ from collections import namedtuple
 from .tag import Tag, get_tags
 from .os_utils import (file_extension, filename,
                        create_dir, get_audio_files, move_file)
-from .logger import log
+from .logger import log, error, warning
 
 
 StructureLevel = namedtuple(
@@ -74,14 +74,10 @@ def guess_file_metadata(filename):
                 return (artist, title)
 
     except BaseException:
-        print_error(f'Could not parse the title: {title}')
+        error(f'Could not parse the title: {title}')
 
 
 guess_file_metadata.accept_all = False
-
-
-def print_error(message):
-    log(message, prefix='Error', color='red')
 
 
 def apply_guessing(file, order_tag, dry_run):
@@ -132,6 +128,10 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
             else:
                 # Default behavior is letting the file in the
                 # lowest folder we can.
+                warning(f'''\
+                    File {file} could not be sorted any lower \
+                    after the {str(order_tag)} level.\
+                ''')
                 unordered.append(file)
 
         if tag is not None:
@@ -187,10 +187,10 @@ def move_files(
             file_path = os.path.join(dir_target, file_name)
             move_file(file, file_path, dry_run)
         else:
- 
+
             dir_name = os.path.join(dir_target, tag)
             create_dir(dir_name, dry_run)
- 
+
             move_files(
                 content,
                 dir_name,
