@@ -36,7 +36,7 @@ def guess_file_metadata(filename):
                     'Accept all (a)',
                     'Discard (d)',
                     'Rename (r)'
-                    ])
+                ])
                 answer = input('(y/a/d/r) ? ')
                 while answer not in ['y', 'a', 'd', 'r']:
                     log('Answer not understood')
@@ -60,7 +60,7 @@ def guess_file_metadata(filename):
                 'Cannot guess artist and/or title. What do you want to do ?',
                 'Rename manually (r)',
                 'Discard (d)'
-                ])
+            ])
             answer = input('(r/d) ? ')
             while answer not in ['d', 'r']:
                 log('Answer not understood')
@@ -81,6 +81,10 @@ guess_file_metadata.accept_all = False
 
 
 def apply_guessing(file, order_tag, dry_run):
+    '''
+    Runs the `guess_file_metadata` and applies the result
+    to the file.
+    '''
     guessed_artist, guessed_title = guess_file_metadata(
         filename(file, with_extension=False))
 
@@ -129,8 +133,9 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
                 # Default behavior is letting the file in the
                 # lowest folder we can.
                 warning(f'''\
-                    File {file} could not be sorted any lower \
-                    after the {str(order_tag)} level.\
+                    File {file}
+                    could not have its {str(order_tag)} tag determined.
+                    It will stay in the parent folder.
                 ''')
                 unordered.append(file)
 
@@ -172,6 +177,10 @@ def move_files(
     structure: list,
     dry_run=False,
 ):
+    '''
+    Moves the given files into a folder hierarchy following
+    the given structure.
+    '''
     for file in files.unordered:
         file_name = filename(file)
         file_path = os.path.join(dir_target, file_name)
@@ -208,11 +217,15 @@ def clean_up(dir_src, dry_run=False):
 
 
 def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
+    '''
+    Concisely runs the three parts of the algorithm.
+    '''
 
-    structure = [Tag.Artist]
+    structure = []
     if with_album:
-        structure.append(Tag.Album)
-    structure.append(Tag.Title)
+        structure = [Tag.Artist, Tag.Album, Tag.Title]
+    else:
+        structure = [Tag.Artist, Tag.Title]
 
     root = parse_in_directory(
         dir_src,
