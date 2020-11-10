@@ -3,6 +3,7 @@ import os
 from collections import namedtuple
 
 from .tag import Tag
+from .audio_file import AudioFile
 from .os_utils import (file_extension, filename,
                        create_dir, get_audio_files, move_file,
                        remove_directory)
@@ -13,96 +14,6 @@ StructureLevel = namedtuple(
     'StructureLevel',
     ['ordered', 'unordered']
 )
-
-
-def guess_file_metadata(filename):
-    '''
-    Guess the artist and title based on the filename
-    '''
-    try:
-        # Artist and title are often seprated by ' - '
-        separator = filename.find(' - ')
-        if separator > 0:
-            artist = filename[0:separator].lstrip()
-            title = filename[separator + 2:len(filename)].lstrip()
-
-            if guess_file_metadata.accept_all:
-                return (artist, title)
-            else:
-                # ask user what to do
-                log([
-                    f'''Guessed [blue]{artist}[/blue], \
-                        [yellow]{title}[/yellow]''',
-                    'Accept (y)',
-                    'Accept all (a)',
-                    'Discard (d)',
-                    'Rename (r)'
-                ])
-                answer = input('(y/a/d/r) ? ')
-                while answer not in ['y', 'a', 'd', 'r']:
-                    log('Answer not understood')
-                    answer = input('(y/a/d/r) ? ')
-                # accept once
-                if answer == 'y':
-                    return (artist, title)
-                # accept all
-                elif answer == 'a':
-                    guess_file_metadata.accept_all = True
-                    return (artist, title)
-                elif answer == 'd':
-                    return (None, None)
-                elif answer == 'r':
-                    artist = input('Artist : ')
-                    title = input('Title : ')
-                    return (artist, title)
-        else:
-            # if nothing is guessed, ask user what to do
-            log([
-                'Cannot guess artist and/or title. What do you want to do ?',
-                'Rename manually (r)',
-                'Discard (d)'
-            ])
-            answer = input('(r/d) ? ')
-            while answer not in ['d', 'r']:
-                log('Answer not understood')
-                answer = input('(r/d) ? ')
-            # accept once
-            if answer == 'd':
-                return (None, None)
-            elif answer == 'r':
-                artist = input('Artist : ')
-                title = input('Title : ')
-                return (artist, title)
-
-    except BaseException:
-        error(f'Could not parse the title: {title}')
-
-
-guess_file_metadata.accept_all = False
-
-
-def apply_guessing(file, order_tag, dry_run):
-    '''
-    Runs the `guess_file_metadata` and applies the result
-    to the file.
-    '''
-    guessed_artist, guessed_title = guess_file_metadata(
-        filename(file, with_extension=False))
-
-    audiofile = eyed3.load(file)
-
-    if order_tag == Tag.Artist and guessed_artist:
-        if not dry_run:
-            audiofile.tag.artist = guessed_artist
-            audiofile.tag.save()
-        return guessed_artist
-    elif guessed_title:
-        if not dry_run:
-            audiofile.tag.title = guessed_title
-            audiofile.tag.save()
-        return guessed_title
-    else:
-        return None
 
 
 def create_structure(
@@ -132,6 +43,7 @@ def create_structure(
         if tag is None:
             if order_tag in [Tag.Artist, Tag.Title] and guess:
                 file.guess_tags(dry_run)
+
                 tag = file.tags[order_tag]
 
                 if tag is None:
