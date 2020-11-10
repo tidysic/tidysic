@@ -106,16 +106,17 @@ def move_files(
 
     for tag, content in audio_files.ordered.items():
 
+        dir_name = os.path.join(dir_target, tag)
+        create_dir(dir_name, dry_run)
+
         if isinstance(content, list):  # Leaf of the structure tree
             for audio_file in content:
+                log(tag)
                 file_name = audio_file.build_file_name(format)
-                file_path = os.path.join(dir_target, file_name)
+                file_path = os.path.join(dir_name, file_name)
                 move_file(audio_file.file, file_path, dry_run)
+        
         else:
-
-            dir_name = os.path.join(dir_target, tag)
-            create_dir(dir_name, dry_run)
-
             move_files(
                 content,
                 dir_name,
