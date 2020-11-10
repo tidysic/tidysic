@@ -1,13 +1,14 @@
-import eyed3
 import os
 from collections import namedtuple
 
 from .tag import Tag
-from .audio_file import AudioFile
-from .os_utils import (file_extension, filename,
-                       create_dir, get_audio_files, move_file,
-                       remove_directory)
-from .logger import log, error, warning
+from .os_utils import (
+    create_dir,
+    get_audio_files,
+    move_file,
+    remove_directory
+)
+from .logger import log, warning
 
 
 StructureLevel = namedtuple(
