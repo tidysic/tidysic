@@ -64,13 +64,12 @@ def move_file(file, target_path, dry_run=False):
         # We don't display the two whole paths
         # Only the source's filename and the target directory
         src = file.split('/')[-1]
-        target = '/'.join(target_path.split('/')[:-1])
 
         logger.dry_run([
             'Moving file',
             f'{src}',
             'to',
-            target
+            target_path
         ])
     else:
         shutil.move(file, target_path)
