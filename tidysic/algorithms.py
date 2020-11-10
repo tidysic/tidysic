@@ -2,7 +2,7 @@ import eyed3
 import os
 from collections import namedtuple
 
-from .tag import Tag, get_tags
+from .tag import Tag
 from .os_utils import (file_extension, filename,
                        create_dir, get_audio_files, move_file,
                        remove_directory)
@@ -105,9 +105,14 @@ def apply_guessing(file, order_tag, dry_run):
         return None
 
 
-def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
+def create_structure(
+    audio_files: list,
+    structure: list,
+    guess: bool,
+    dry_run: bool
+):
     '''
-    Given a list of files and a tag type, creates a StructureLevel object.
+    Given a list of AudioFiles and a tag type, creates a StructureLevel object.
 
     It consists of a pair whose first element is a dict whose keys
     are the values of the tag that were found in the files,
@@ -117,17 +122,18 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
     which the tag was not found.
     '''
     ordered = {}
-    unordered = []  # This isn't used as of now, but
-    #                 hopefully we will make good use of it
+    unordered = []
 
     order_tag = structure[0]
 
-    for file in files:
+    for file in audio_files:
 
-        tag = get_tags(file)[order_tag]
+        tag = file.tags[order_tag]
         if tag is None:
             if order_tag in [Tag.Artist, Tag.Title] and guess:
-                tag = apply_guessing(file, order_tag, dry_run)
+                file.guess_tags(dry_run)
+                tag = file.tags[order_tag]
+
                 if tag is None:
                     log(f'Discarded file: {file}')
             else:
@@ -136,7 +142,7 @@ def create_structure(files: list, structure: list, guess: bool, dry_run: bool):
                 warning(f'''\
                     File {file}
                     could not have its {str(order_tag)} tag determined.
-                    It will stay in the parent folder.
+                    It will stay in the parent folder.\
                 ''')
                 unordered.append(file)
 
@@ -171,29 +177,28 @@ def parse_in_directory(audio_files, structure, guess, verbose, dry_run):
 
 
 def move_files(
-    files: StructureLevel,
+    audio_files: StructureLevel,
     dir_target: str,
     structure: list,
+    format: str,
     dry_run=False,
 ):
     '''
     Moves the given files into a folder hierarchy following
     the given structure.
     '''
-    for file in files.unordered:
-        file_name = filename(file)
+    for file in audio_files.unordered:
+        file_name = file.build_file_name(format)
         file_path = os.path.join(dir_target, file_name)
-        move_file(file, file_path, dry_run)
+        move_file(file.file, file_path, dry_run)
 
-    for tag, content in files.ordered.items():
+    for tag, content in audio_files.ordered.items():
 
         if isinstance(content, list):  # Leaf of the structure tree
-            file = content[0]
-            tag = structure[0]
-
-            file_name = str(tag) + file_extension(file)
-            file_path = os.path.join(dir_target, file_name)
-            move_file(file, file_path, dry_run)
+            for audio_file in content:
+                file_name = audio_file.build_file_name(format)
+                file_path = os.path.join(dir_target, file_name)
+                move_file(audio_file.file, file_path, dry_run)
         else:
 
             dir_name = os.path.join(dir_target, tag)
@@ -203,6 +208,7 @@ def move_files(
                 content,
                 dir_name,
                 structure[:1],
+                format,
                 dry_run
             )
 
@@ -222,7 +228,10 @@ def clean_up(dir_src, audio_files, dry_run=False):
     # if folder empty, delete it
     files = os.listdir(dir_src)
     if not any([
-        file in audio_files
+        file in [
+            audio_file.file
+            for audio_file in audio_files
+        ]
         for file in files
     ]):
         remove_directory(dir_src, dry_run)
@@ -233,11 +242,9 @@ def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
     Concisely runs the three parts of the algorithm.
     '''
 
-    structure = []
+    structure = [Tag.Artist]
     if with_album:
-        structure = [Tag.Artist, Tag.Album, Tag.Title]
-    else:
-        structure = [Tag.Artist, Tag.Title]
+        structure += [Tag.Album]
 
     audio_files = get_audio_files(dir_src)
 
@@ -249,10 +256,12 @@ def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
         dry_run
     )
 
+    format = '{track:02}) {title}'
     move_files(
         root,
         dir_target,
         structure,
+        format,
         dry_run
     )
 

@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 from tidysic import logger
+from .audio_file import AudioFile
 
 
 audio_extensions = [
@@ -48,7 +49,7 @@ def get_audio_files(directory_path):
     Returns the audio files present in the given directory.
     '''
     audio_files = [
-        os.path.join(directory_path, path)
+        AudioFile(os.path.join(directory_path, path))
         for ext in audio_extensions
         for path in Path(directory_path).rglob('*'+ext)
     ]
