@@ -1,4 +1,5 @@
 from .algorithms import (
+    create_structure,
     move_files,
     clean_up,
     organize
@@ -13,6 +14,7 @@ from .logger import (
 )
 
 __all__ = [
+    create_structure,
     move_files,
     clean_up,
     organize,
