@@ -24,14 +24,15 @@ def create_structure(
     dry_run: bool
 ):
     '''
-    Given a list of AudioFiles and a tag type, creates a StructureLevel object.
+    Given a list of AudioFiles and an ordering,
+    creates a StructureLevel object.
 
     It consists of a pair whose first element is a dict whose keys
     are the values of the tag that were found in the files,
-    and whose values are lists of files.
+    and whose values are lists of AudioFiles or further StructureLevel.
 
-    The second element of the pair is a list of all the files for
-    which the tag was not found.
+    The second element of the pair is a list of all the AudioFiles
+    for which the tag was not found.
     '''
     ordered = {}
     unordered = []
@@ -92,7 +93,6 @@ def parse_in_directory(audio_files, structure, guess, verbose, dry_run):
 def move_files(
     audio_files: StructureLevel,
     dir_target: str,
-    structure: list,
     format: str,
     dry_run=False,
 ):
@@ -112,7 +112,6 @@ def move_files(
 
         if isinstance(content, list):  # Leaf of the structure tree
             for audio_file in content:
-                log(tag)
                 file_name = audio_file.build_file_name(format)
                 file_path = os.path.join(dir_name, file_name)
                 move_file(audio_file.file, file_path, dry_run)
@@ -121,13 +120,14 @@ def move_files(
             move_files(
                 content,
                 dir_name,
-                structure[:1],
                 format,
                 dry_run
             )
 
 
-def clean_up(dir_src, audio_files, dry_run=False):
+    '''
+    Remove empty folders in the source directory.
+    '''
     if not os.path.isdir(dir_src):
         return
 
@@ -174,7 +174,6 @@ def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
     move_files(
         root,
         dir_target,
-        structure,
         format,
         dry_run
     )

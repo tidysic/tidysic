@@ -5,11 +5,13 @@ from .logger import log, warning, dry_run as log_dry_run
 
 
 class AudioFile(object):
+    '''
+    Class describing a file, and its associated tags
+    '''
 
     accept_all_guesses = False
 
     def __init__(self, file):
-
         self.file = file
         self.tags = get_tags(file)
         self.guessed_tags = None
@@ -18,7 +20,7 @@ class AudioFile(object):
         '''
         Guess the artist and title based on the filename
         '''
-        from .os_utils import filename
+        from .os_utils import filename  # Avoid circular import
         name = filename(self.file, with_extension=False)
         try:
             # Artist and title are often seprated by ' - '
@@ -84,6 +86,10 @@ class AudioFile(object):
             warning(f'Could not parse the title: {title}')
 
     def save_tags(self, new_tags, dry_run):
+        '''
+        Applies the given collection of tags to itself and
+        saves them to the file (if `dry_run == True`)
+        '''
         if dry_run:
             message = ['Saving tags into file:']
             message += [
@@ -106,6 +112,9 @@ class AudioFile(object):
             tags_wrapper.tag.save()
 
     def build_file_name(self, format: str):
+        '''
+        Creates the new file's name from the tags in the desired format
+        '''
         from .os_utils import file_extension  # Avoid circular import
         return format.format(
             title=self.tags[Tag.Title],
