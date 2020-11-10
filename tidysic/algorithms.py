@@ -139,7 +139,7 @@ def clean_up(dir_src, audio_files, dry_run=False):
 
     # if folder empty, delete it
     files = os.listdir(dir_src)
-    if not any([
+    if all([
         file in [
             audio_file.file
             for audio_file in audio_files
