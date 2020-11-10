@@ -1,7 +1,9 @@
 import os
 from collections import namedtuple
+from typing import List
 
 from .tag import Tag
+from .audio_file import AudioFile
 from .os_utils import (
     create_dir,
     get_audio_files,
@@ -18,8 +20,8 @@ StructureLevel = namedtuple(
 
 
 def create_structure(
-    audio_files: list,
-    structure: list,
+    audio_files: List[AudioFile],
+    ordering: List[Tag],
     guess: bool,
     dry_run: bool
 ):
@@ -37,7 +39,7 @@ def create_structure(
     ordered = {}
     unordered = []
 
-    order_tag = structure[0]
+    order_tag = ordering[0]
 
     for file in audio_files:
 
@@ -65,29 +67,16 @@ def create_structure(
                 ordered[tag] = []
             ordered[tag].append(file)
 
-    if len(structure) > 1:
+    if len(ordering) > 1:
         for tag_value, files in ordered.items():
             ordered[tag_value] = create_structure(
                 files,
-                structure[1:],
+                ordering[1:],
                 guess,
                 dry_run
             )
 
     return StructureLevel(ordered, unordered)
-
-
-def parse_in_directory(audio_files, structure, guess, verbose, dry_run):
-    '''
-    Creates a tree-like structure whose nodes are StructureLevel objects.
-
-    The depths of the tree coincide with the structure passed as argument.
-    For instance, if the structure given is `[Tag.Artist, Tag.Title]`, the root
-    of the structure will be a dict of artists.
-    '''
-    root = create_structure(audio_files, structure, guess, dry_run)
-
-    return root
 
 
 def move_files(
@@ -125,6 +114,11 @@ def move_files(
             )
 
 
+def clean_up(
+    dir_src: str,
+    audio_files: List[AudioFile],
+    dry_run: bool
+):
     '''
     Remove empty folders in the source directory.
     '''
@@ -151,7 +145,14 @@ def move_files(
         remove_directory(dir_src, dry_run)
 
 
-def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
+def organize(
+    dir_src: str,
+    dir_target: str,
+    with_album: bool,
+    guess: bool,
+    dry_run: bool,
+    verbose: bool
+):
     '''
     Concisely runs the three parts of the algorithm.
     '''
@@ -162,11 +163,10 @@ def organize(dir_src, dir_target, with_album, guess, dry_run, verbose):
 
     audio_files = get_audio_files(dir_src)
 
-    root = parse_in_directory(
+    root = create_structure(
         audio_files,
         structure,
         guess,
-        verbose,
         dry_run
     )
 
