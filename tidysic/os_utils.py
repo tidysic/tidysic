@@ -34,14 +34,19 @@ def file_extension(path):
     return os.path.splitext(path)[1]
 
 
-def create_dir(dir_path, dry_run):
+def create_dir(dir_name, parent_path, dry_run):
     '''
-    Creates the given directory if it does not exist yet.
+    Creates a directory with the given name
+    in the given parent directory
     '''
+    dir_name = dir_name.replace('/', '-')
+    full_path = os.path.join(parent_path, dir_name)
     if dry_run:
-        logger.dry_run(f'Create directory {dir_path}')
-    elif not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+        logger.dry_run(f'Create directory {full_path}')
+    elif not os.path.exists(full_path):
+        os.makedirs(full_path)
+
+    return full_path
 
 
 def get_audio_files(directory_path):
@@ -56,10 +61,12 @@ def get_audio_files(directory_path):
     return audio_files
 
 
-def move_file(file, target_path, dry_run=False):
+def move_file(file, target_name, target_path, dry_run=False):
     '''
     Moves the given file onto the given path
     '''
+    target_name = target_name.replace('/', '-')
+    full_path = os.path.join(target_path, target_name)
     if dry_run:
         # We don't display the two whole paths
         # Only the source's filename and the target directory
@@ -69,10 +76,10 @@ def move_file(file, target_path, dry_run=False):
             'Moving file',
             f'{src}',
             'to',
-            target_path
+            full_path
         ])
     else:
-        shutil.move(file, target_path)
+        shutil.move(file, full_path)
 
 
 def remove_directory(dir_path, dry_run=False):

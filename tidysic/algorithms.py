@@ -90,25 +90,29 @@ def move_files(
     the given structure.
     '''
     for file in audio_files.unordered:
-        file_name = file.build_file_name(format)
-        file_path = os.path.join(dir_target, file_name)
-        move_file(file.file, file_path, dry_run)
+        move_file(
+            file.file,
+            file.build_file_name(format),
+            dir_target,
+            dry_run
+        )
 
     for tag, content in audio_files.ordered.items():
-
-        dir_name = os.path.join(dir_target, tag)
-        create_dir(dir_name, dry_run)
+        sub_dir_target = create_dir(tag, dir_target, dry_run)
 
         if isinstance(content, list):  # Leaf of the structure tree
             for audio_file in content:
-                file_name = audio_file.build_file_name(format)
-                file_path = os.path.join(dir_name, file_name)
-                move_file(audio_file.file, file_path, dry_run)
-        
+                move_file(
+                    audio_file.file,
+                    audio_file.build_file_name(format),
+                    sub_dir_target,
+                    dry_run
+                )
+
         else:
             move_files(
                 content,
-                dir_name,
+                sub_dir_target,
                 format,
                 dry_run
             )
