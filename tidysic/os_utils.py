@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 from tidysic import logger
+from .audio_file import AudioFile
 
 
 audio_extensions = [
@@ -53,7 +54,7 @@ def get_audio_files(directory_path):
     Returns the audio files present in the given directory.
     '''
     audio_files = [
-        os.path.join(directory_path, path)
+        AudioFile(os.path.join(directory_path, path))
         for ext in audio_extensions
         for path in Path(directory_path).rglob('*'+ext)
     ]
@@ -65,20 +66,17 @@ def move_file(file, target_name, target_path, dry_run=False):
     Moves the given file onto the given path
     '''
     target_name = target_name.replace('/', '-')
-    target_name += file_extension(file)
-    
     full_path = os.path.join(target_path, target_name)
     if dry_run:
         # We don't display the two whole paths
         # Only the source's filename and the target directory
         src = file.split('/')[-1]
-        target = '/'.join(full_path.split('/')[:-1])
 
         logger.dry_run([
             'Moving file',
             f'{src}',
             'to',
-            target
+            full_path
         ])
     else:
         shutil.move(file, full_path)

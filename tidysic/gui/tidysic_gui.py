@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets
 
-from tidysic import parse_in_directory
-from tidysic.logger import log
+from tidysic import Tag, create_structure
+
 from .folder_select_dialog import FolderSelectDialog
 
 
@@ -14,18 +14,9 @@ def run():
 
     if input_dialog.exec():
         input_dir = input_dialog.selectedFiles()[0]
+        ordering = [Tag.Artist, Tag.Album]
 
-        artists = parse_in_directory(input_dir, True, False)
-
-        # Debug
-        message = []
-        for artist, albums in artists.items():
-            message.append(f'Artist : {artist}')
-            for album, titles in albums.items():
-                message.append(f'\tAlbum : {album}')
-                for title in titles.items():
-                    message.append(f'\t\tTitle : {title}')
-        log(message)
+        artists = create_structure(input_dir, ordering, False, True)  # noqa
 
     window.show()
     app.exec()

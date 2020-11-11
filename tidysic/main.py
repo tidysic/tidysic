@@ -2,7 +2,7 @@ import os
 
 from .argparser import create_parser
 from .logger import log
-from .algorithms import organise
+from .algorithms import organize
 from .os_utils import lint_folders
 
 
@@ -20,7 +20,7 @@ def run():
                 prefix='verbose',
                 color='green'
             )
-        organise(
+        organize(
             args.source,
             args.target,
             args.with_album,
