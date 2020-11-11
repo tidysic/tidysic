@@ -2,7 +2,7 @@ from tinytag import TinyTag
 import eyed3
 import os
 
-from .os_utils import (file_extension, filename,
+from .os_utils import (filename,
                        create_dir, get_audio_files, move_file,
                        remove_directory)
 from .logger import log, error, warning

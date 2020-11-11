@@ -65,6 +65,8 @@ def move_file(file, target_name, target_path, dry_run=False):
     Moves the given file onto the given path
     '''
     target_name = target_name.replace('/', '-')
+    target_name += file_extension(file)
+    
     full_path = os.path.join(target_path, target_name)
     if dry_run:
         # We don't display the two whole paths
