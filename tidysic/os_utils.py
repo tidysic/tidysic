@@ -34,16 +34,17 @@ def file_extension(path):
     return os.path.splitext(path)[1]
 
 
-def create_dir(dir_name, parent_path, dry_run):
+def create_dir(dir_name, parent_path, dry_run, verbose):
     '''
     Creates a directory with the given name
     in the given parent directory
     '''
     dir_name = dir_name.replace('/', '-')
     full_path = os.path.join(parent_path, dir_name)
-    if dry_run:
+
+    if dry_run or verbose:
         logger.dry_run(f'Create directory {full_path}')
-    elif not os.path.exists(full_path):
+    if not verbose:
         os.makedirs(full_path)
 
     return full_path
@@ -61,15 +62,15 @@ def get_audio_files(directory_path):
     return audio_files
 
 
-def move_file(file, target_name, target_path, dry_run=False):
+def move_file(file, target_name, target_path, dry_run, verbose):
     '''
     Moves the given file onto the given path
     '''
     target_name = target_name.replace('/', '-')
     full_path = os.path.join(target_path, target_name)
-    if dry_run:
-        # We don't display the two whole paths
-        # Only the source's filename and the target directory
+
+    if dry_run or verbose:
+        # We only display the source's filename
         src = file.split('/')[-1]
 
         logger.dry_run([
@@ -78,17 +79,19 @@ def move_file(file, target_name, target_path, dry_run=False):
             'to',
             full_path
         ])
-    else:
+
+    if not dry_run:
         shutil.move(file, full_path)
 
 
-def remove_directory(dir_path, dry_run=False):
+def remove_directory(dir_path, dry_run, verbose):
     '''
     Deletes the given directory
     '''
-    if dry_run:
+    if dry_run or verbose:
         logger.dry_run(f'Deleting directory {dir_path}')
-    else:
+
+    if not dry_run:
         os.rmdir(dir_path)
 
 
