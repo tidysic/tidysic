@@ -14,7 +14,10 @@ audio_extensions = [
 ]
 
 
-def filename(path, with_extension=True):
+def filename(
+    path: str,
+    with_extension: bool = True
+):
     '''
     Returns the name of the file from the given path
     with or without the extension.
@@ -27,14 +30,21 @@ def filename(path, with_extension=True):
     return name
 
 
-def file_extension(path):
+def file_extension(
+    path: str
+):
     '''
     Returns the file extension from the given path.
     '''
     return os.path.splitext(path)[1]
 
 
-def create_dir(dir_name, parent_path, dry_run, verbose):
+def create_dir(
+    dir_name: str,
+    parent_path: str,
+    dry_run: bool,
+    verbose: bool
+):
     '''
     Creates a directory with the given name
     in the given parent directory
@@ -50,7 +60,9 @@ def create_dir(dir_name, parent_path, dry_run, verbose):
     return full_path
 
 
-def get_audio_files(directory_path):
+def get_audio_files(
+    directory_path: str
+):
     '''
     Returns the audio files present in the given directory.
     '''
@@ -62,7 +74,13 @@ def get_audio_files(directory_path):
     return audio_files
 
 
-def move_file(file, target_name, target_path, dry_run, verbose):
+def move_file(
+    file: str,
+    target_name: str,
+    target_path: str,
+    dry_run: bool,
+    verbose: bool
+):
     '''
     Moves the given file onto the given path
     '''
@@ -84,7 +102,11 @@ def move_file(file, target_name, target_path, dry_run, verbose):
         shutil.move(file, full_path)
 
 
-def remove_directory(dir_path, dry_run, verbose):
+def remove_directory(
+    dir_path: str,
+    dry_run: bool,
+    verbose: bool
+):
     '''
     Deletes the given directory
     '''
