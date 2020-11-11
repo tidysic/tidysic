@@ -127,33 +127,22 @@ def parse_in_directory(audio_files, with_album, guess, verbose):
 
 def move_files(artists, dir_target, with_album, dry_run=False):
     for artist, second_level in artists.items():
-        # Directory name of the file based on the target directory and the
-        # artist
-        artist_dir_name = os.path.join(dir_target, artist)
-
-        create_dir(artist_dir_name, dry_run)
+        # Directory name of the file based on the
+        # target directory and the artist
+        artist_dir = create_dir(artist, dir_target, dry_run)
 
         if with_album:
             for album, titles in second_level.items():
-                # Subdirectory for the album
-                album_dir_name = os.path.join(artist_dir_name, album)
-                create_dir(album_dir_name, dry_run)
+                # Create album folder
+                album_dir = create_dir(album, artist_dir, dry_run)
 
                 for title, file in titles.items():
-                    # Rename the file
-                    f_name = title + file_extension(file)
-                    f_target_path = os.path.join(album_dir_name, f_name)
-
                     # Moves the file to its new path
-                    move_file(file, f_target_path, dry_run)
+                    move_file(file, title, album_dir, dry_run)
         else:
             for title, file in second_level.items():
-                # Rename the file
-                f_name = title + file_extension(file)
-                f_target_path = os.path.join(artist_dir_name, f_name)
-
                 # Moves the file to its new path
-                move_file(file, f_target_path, dry_run)
+                move_file(file, title, artist_dir, dry_run)
 
 
 def clean_up(dir_src, audio_files, dry_run=False):
