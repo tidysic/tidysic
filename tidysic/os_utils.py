@@ -1,7 +1,9 @@
 import os
 import shutil
+from pathlib import Path
 
-from .logger import log
+from tidysic import logger
+from .audio_file import AudioFile
 
 
 audio_extensions = [
@@ -10,13 +12,6 @@ audio_extensions = [
     '.flac',
     '.ogg',
 ]
-
-
-def _log_dry_run(message):
-    '''
-    Shortcut to call logger with specific 'dry run' prefix
-    '''
-    log(message, prefix='dry run')
 
 
 def filename(path, with_extension=True):
@@ -39,43 +34,52 @@ def file_extension(path):
     return os.path.splitext(path)[1]
 
 
-def create_dir(dir_path, dry_run):
+def create_dir(dir_name, parent_path, dry_run):
     '''
-    Creates the given directory if it does not exist yet.
+    Creates a directory with the given name
+    in the given parent directory
     '''
+    dir_name = dir_name.replace('/', '-')
+    full_path = os.path.join(parent_path, dir_name)
     if dry_run:
-        _log_dry_run(f'Create directory {dir_path}')
-    elif not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+        logger.dry_run(f'Create directory {full_path}')
+    elif not os.path.exists(full_path):
+        os.makedirs(full_path)
+
+    return full_path
 
 
 def get_audio_files(directory_path):
     '''
     Returns the audio files present in the given directory.
     '''
-    audio_files = [os.path.join(directory_path, f) for f in os.listdir(
-        directory_path) if os.path.splitext(f)[1] in audio_extensions]
+    audio_files = [
+        AudioFile(os.path.join(directory_path, path))
+        for ext in audio_extensions
+        for path in Path(directory_path).rglob('*'+ext)
+    ]
     return audio_files
 
 
-def move_file(file, target_path, dry_run=False):
+def move_file(file, target_name, target_path, dry_run=False):
     '''
     Moves the given file onto the given path
     '''
+    target_name = target_name.replace('/', '-')
+    full_path = os.path.join(target_path, target_name)
     if dry_run:
         # We don't display the two whole paths
         # Only the source's filename and the target directory
         src = file.split('/')[-1]
-        target = '/'.join(target_path.split('/')[:-1])
 
-        _log_dry_run([
+        logger.dry_run([
             'Moving file',
             f'{src}',
             'to',
-            target
+            full_path
         ])
     else:
-        shutil.move(file, target_path)
+        shutil.move(file, full_path)
 
 
 def remove_directory(dir_path, dry_run=False):
@@ -83,7 +87,7 @@ def remove_directory(dir_path, dry_run=False):
     Deletes the given directory
     '''
     if dry_run:
-        _log_dry_run(f'Deleting directory {dir_path}')
+        logger.dry_run(f'Deleting directory {dir_path}')
     else:
         os.rmdir(dir_path)
 

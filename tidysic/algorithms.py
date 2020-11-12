@@ -1,176 +1,185 @@
-from tinytag import TinyTag
-import eyed3
 import os
+from collections import namedtuple
+from typing import List
 
-from .os_utils import (file_extension, filename,
-                       create_dir, get_audio_files, move_file)
-from .logger import log
+from .tag import Tag
+from .audio_file import AudioFile
+from .os_utils import (
+    create_dir,
+    get_audio_files,
+    move_file,
+    remove_directory
+)
+from .logger import log, warning
 
 
-def guess_file_metadata(filename):
+StructureLevel = namedtuple(
+    'StructureLevel',
+    ['ordered', 'unordered']
+)
+
+
+def create_structure(
+    audio_files: List[AudioFile],
+    ordering: List[Tag],
+    guess: bool,
+    dry_run: bool
+):
     '''
-    Guess the artist and title based on the filename
-    '''
-    try:
-        # Artist and title are often seprated by ' - '
-        separator = filename.find(' - ')
-        if separator > 0:
-            artist = filename[0:separator].lstrip()
-            title = filename[separator + 2:len(filename)].lstrip()
+    Given a list of AudioFiles and an ordering,
+    creates a StructureLevel object.
 
-            if guess_file_metadata.accept_all:
-                return (artist, title)
+    It consists of a pair whose first element is a dict whose keys
+    are the values of the tag that were found in the files,
+    and whose values are lists of AudioFiles or further StructureLevel.
+
+    The second element of the pair is a list of all the AudioFiles
+    for which the tag was not found.
+    '''
+    ordered = {}
+    unordered = []
+
+    order_tag = ordering[0]
+
+    for file in audio_files:
+
+        tag = file.tags[order_tag]
+        if tag is None:
+            if order_tag in [Tag.Artist, Tag.Title] and guess:
+                file.guess_tags(dry_run)
+
+                tag = file.tags[order_tag]
+
+                if tag is None:
+                    log(f'Discarded file: {file}')
             else:
-                # ask user what to do
-                log([
-                    f"""Guessed [blue]{artist}[/blue], \
-                        [yellow]{title}[/yellow]""",
-                    "Accept (y)",
-                    "Accept all (a)",
-                    "Discard (d)",
-                    "Rename (r)"
-                    ])
-                answer = input("(y/a/d/r) ? ")
-                while answer not in ["y", "a", "d", "r"]:
-                    log("Answer not understood")
-                    answer = input("(y/a/d/r) ? ")
-                # accept once
-                if answer == "y":
-                    return (artist, title)
-                # accept all
-                elif answer == "a":
-                    guess_file_metadata.accept_all = True
-                    return (artist, title)
-                elif answer == "d":
-                    return(None, None)
-                elif answer == "r":
-                    artist = input("Artist : ")
-                    title = input("Title : ")
-                    return(artist, title)
+                # Default behavior is letting the file in the
+                # lowest folder we can.
+                warning(f'''\
+                    File {file}
+                    could not have its {str(order_tag)} tag determined.
+                    It will stay in the parent folder.\
+                ''')
+                unordered.append(file)
+
+        if tag is not None:
+            if tag not in ordered:
+                ordered[tag] = []
+            ordered[tag].append(file)
+
+    if len(ordering) > 1:
+        for tag_value, files in ordered.items():
+            ordered[tag_value] = create_structure(
+                files,
+                ordering[1:],
+                guess,
+                dry_run
+            )
+
+    return StructureLevel(ordered, unordered)
+
+
+def move_files(
+    audio_files: StructureLevel,
+    dir_target: str,
+    format: str,
+    dry_run=False,
+):
+    '''
+    Moves the given files into a folder hierarchy following
+    the given structure.
+    '''
+    for file in audio_files.unordered:
+        move_file(
+            file.file,
+            file.build_file_name(format),
+            dir_target,
+            dry_run
+        )
+
+    for tag, content in audio_files.ordered.items():
+        sub_dir_target = create_dir(tag, dir_target, dry_run)
+
+        if isinstance(content, list):  # Leaf of the structure tree
+            for audio_file in content:
+                move_file(
+                    audio_file.file,
+                    audio_file.build_file_name(format),
+                    sub_dir_target,
+                    dry_run
+                )
+
         else:
-            # if nothing is guessed, ask user what to do
-            log([
-                "Can't guess artist and/or title. What do you want to do ?",
-                "Rename manually (r)",
-                "Discard (d)"
-                ])
-            answer = input("(r/d) ? ")
-            while answer not in ["d", "r"]:
-                log("Answer not understood")
-                answer = input("(r/d) ? ")
-            # accept once
-            if answer == "d":
-                return(None, None)
-            elif answer == "r":
-                artist = input("Artist : ")
-                title = input("Title : ")
-                return(artist, title)
-    except BaseException:
-        print_error(f'Could not parse the title: {title}')
+            move_files(
+                content,
+                sub_dir_target,
+                format,
+                dry_run
+            )
 
 
-guess_file_metadata.accept_all = False
-
-
-def print_error(message):
-    log(message, prefix='Error', color='red')
-
-
-def parse_in_directory(dir_src, with_album, guess, verbose):
+def clean_up(
+    dir_src: str,
+    audio_files: List[AudioFile],
+    dry_run: bool
+):
     '''
-    Creates a tree-like structure of dicts structured as such:
-    artists -> albums -> titles
-    where each of these is a dict, and titles point to the files themselves
+    Remove empty folders in the source directory.
     '''
-    artists = {}
+    if not os.path.isdir(dir_src):
+        return
+
+    # remove empty subfolders
+    files = os.listdir(dir_src)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(dir_src, f)
+            if os.path.isdir(fullpath):
+                clean_up(fullpath, audio_files, dry_run)
+
+    # if folder empty, delete it
+    files = os.listdir(dir_src)
+    if all([
+        file in [
+            audio_file.file
+            for audio_file in audio_files
+        ]
+        for file in files
+    ]):
+        remove_directory(dir_src, dry_run)
+
+
+def organize(
+    dir_src: str,
+    dir_target: str,
+    with_album: bool,
+    guess: bool,
+    dry_run: bool,
+    verbose: bool
+):
+    '''
+    Concisely runs the three parts of the algorithm.
+    '''
+
+    structure = [Tag.Artist]
+    if with_album:
+        structure += [Tag.Album]
+
     audio_files = get_audio_files(dir_src)
 
-    for f in audio_files:
-        tag = TinyTag.get(f)
-        artist = tag.artist
-        title = tag.title
+    root = create_structure(
+        audio_files,
+        structure,
+        guess,
+        dry_run
+    )
 
-        if guess and (not artist or not title):
-            # artist and/or title not in the id3 metadata
-            guessed_artist, guessed_title = guess_file_metadata(
-                filename(f, with_extension=False))
-            audiofile = eyed3.load(f)
-            if not artist and guessed_artist:
-                artist = guessed_artist
-                audiofile.tag.artist = artist
-            if not title and guessed_title:
-                title = guessed_title
-                audiofile.tag.title = title
+    format = '{track:02}) {title}'
+    move_files(
+        root,
+        dir_target,
+        format,
+        dry_run
+    )
 
-            # Save the id3 tags
-            audiofile.tag.save()
-
-        if artist and title:
-            # Add artist key
-            if artist not in artists:
-                artists[artist] = {}
-
-            if with_album:
-                album = tag.album
-                albums = artists[artist]
-
-                # Add album key
-                if album not in albums:
-                    albums[album] = {}
-
-                titles = albums[album]
-                titles[title] = f
-            else:
-                artists[artist][title] = f
-        else:
-            if verbose:
-                log("file discarded", prefix="warn", color="red")
-
-    return artists
-
-
-def move_files(artists, dir_target, with_album, dry_run=False):
-    for artist, second_level in artists.items():
-        # Directory name of the file based on the target directory and the
-        # artist
-        artist_dir_name = os.path.join(dir_target, artist)
-
-        create_dir(artist_dir_name, dry_run)
-
-        if with_album:
-            for album, titles in second_level.items():
-                # Subdirectory for the album
-                album_dir_name = os.path.join(artist_dir_name, album)
-                create_dir(album_dir_name, dry_run)
-
-                for title, file in titles.items():
-                    # Rename the file
-                    f_name = title + file_extension(file)
-                    f_target_path = os.path.join(album_dir_name, f_name)
-
-                    # Moves the file to its new path
-                    move_file(file, f_target_path, dry_run)
-        else:
-            for title, file in second_level.items():
-                # Rename the file
-                f_name = title + file_extension(file)
-                f_target_path = os.path.join(artist_dir_name, f_name)
-
-                # Moves the file to its new path
-                move_file(file, f_target_path, dry_run)
-
-
-def clean_up(dir_src, dry_run=False):
-    '''
-    TODO: remove empty folders in the source directory
-    if the dry_run argument wasn't given
-    '''
-    pass
-
-
-def organise(dir_src, dir_target, with_album, guess, dry_run, verbose):
-    artists = parse_in_directory(dir_src, with_album, guess, verbose)
-
-    move_files(artists, dir_target, with_album, dry_run)
-
-    clean_up(dir_src, dry_run)
+    clean_up(dir_src, audio_files, dry_run)
