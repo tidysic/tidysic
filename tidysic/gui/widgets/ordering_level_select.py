@@ -4,12 +4,12 @@ from PyQt5.QtCore import pyqtSignal
 from tidysic.tag import Tag
 
 
-class StructureLevelSelect(QComboBox):
+class OrderingLevelSelect(QComboBox):
 
     changed = pyqtSignal()
 
     def __init__(self, value: Tag, parent, *args, **kwargs):
-        super(StructureLevelSelect, self).__init__(parent, *args, **kwargs)
+        super(OrderingLevelSelect, self).__init__(parent, *args, **kwargs)
 
         self.setInsertPolicy(QComboBox.NoInsert)
 
@@ -22,7 +22,7 @@ class StructureLevelSelect(QComboBox):
                 self.setCurrentIndex(i)
 
         self.currentIndexChanged.connect(self.onCurrentIndexChanged)
-        self.changed.connect(parent.onStructureLevelsChanged)
+        self.changed.connect(parent.onOrderingLevelsChanged)
 
     def onCurrentIndexChanged(self, index):
         new_text = self.currentText()

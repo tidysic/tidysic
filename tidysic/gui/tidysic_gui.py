@@ -2,13 +2,12 @@ from PyQt5 import QtWidgets
 
 from tidysic import create_structure, move_files, clean_up
 from tidysic.os_utils import get_audio_files
-from tidysic.tag import Tag
-from tidysic.gui.dialogs import FolderSelect, StructureSelect
+from tidysic.gui.dialogs import FolderSelect, OrderingSelect
 
 
 def run():
 
-    app = QtWidgets.QApplication([])
+    _ = QtWidgets.QApplication([])
 
     in_directory_selector = FolderSelect(None, is_input_folder=True)
     while not in_directory_selector.exec():
@@ -20,10 +19,10 @@ def run():
         pass
     target_dir = out_directory_selector.selectedFiles()[0]
 
-    structure_select = StructureSelect(None)
-    while not structure_select.exec():
+    ordering_select = OrderingSelect(None)
+    while not ordering_select.exec():
         pass
-    ordering = structure_select.get_structure()
+    ordering = ordering_select.get_ordering()
 
     # TODO: Create dialog for format specification
     format = '{title}'
@@ -41,6 +40,12 @@ def run():
         root,
         target_dir,
         format,
+        dry_run=True
+    )
+
+    clean_up(
+        source_dir,
+        source_files,
         dry_run=True
     )
 

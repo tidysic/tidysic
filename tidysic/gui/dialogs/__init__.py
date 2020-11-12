@@ -1,2 +1,2 @@
 from .folder_select import FolderSelect  # noqa
-from .struture_select import StructureSelect  # noqa
+from .ordering_select import OrderingSelect  # noqa

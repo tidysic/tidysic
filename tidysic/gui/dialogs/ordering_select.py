@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout
 
-from tidysic.gui.widgets import StructureLevelSelect
+from tidysic.gui.widgets import OrderingLevelSelect
 from tidysic.tag import Tag
 
 
-class StructureSelect(QDialog):
+class OrderingSelect(QDialog):
 
     def __init__(self, *args, **kwargs):
-        super(StructureSelect, self).__init__(*args, **kwargs)
+        super(OrderingSelect, self).__init__(*args, **kwargs)
 
         self.setWindowTitle('Structure definition')
 
@@ -24,42 +24,43 @@ class StructureSelect(QDialog):
         self.layout.addLayout(self.sublayout)
         self.layout.addWidget(self.button_box)
 
-        self.structure_level_selects = [
-            StructureLevelSelect(Tag.Artist, self),
-            StructureLevelSelect(Tag.Album, self),
-            StructureLevelSelect(None, self),
+        self.ordering_level_selects = [
+            OrderingLevelSelect(Tag.Artist, self),
+            OrderingLevelSelect(Tag.Album, self),
+            OrderingLevelSelect(None, self),
         ]
 
-        self.onStructureLevelsChanged()
+        self.onOrderingLevelsChanged()
 
-    def get_structure(self):
+    def get_ordering(self):
         return list([
             level.value
-            for level in self.structure_level_selects
+            for level in self.ordering_level_selects
             if level.value is not None
         ])
 
-    def onStructureLevelsChanged(self):
+    def onOrderingLevelsChanged(self):
+
+        ordering = self.get_ordering()
 
         # Filter out the Nones
-        structure = self.get_structure()
-        structure = list([
+        ordering = list([
             tag
-            for tag in structure
+            for tag in ordering
             if tag is not None
         ])
 
         # Clear the layout
-        for level_select in self.structure_level_selects:
+        for level_select in self.ordering_level_selects:
             self.sublayout.removeWidget(level_select)
             level_select.deleteLater()
 
         # Recreate selects, with a None at the end
-        self.structure_level_selects = list([
-            StructureLevelSelect(tag, self)
-            for tag in structure + [None]
+        self.ordering_level_selects = list([
+            OrderingLevelSelect(tag, self)
+            for tag in ordering + [None]
         ])
 
         # Fill the layout
-        for level in self.structure_level_selects:
+        for level in self.ordering_level_selects:
             self.sublayout.addWidget(level)
