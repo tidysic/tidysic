@@ -39,6 +39,8 @@ def create_structure(
     ordered = {}
     unordered = []
 
+    assert(len(ordering) > 0)  # No structure without ordering
+
     order_tag = ordering[0]
 
     for file in audio_files:
