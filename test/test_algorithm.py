@@ -65,11 +65,11 @@ class AlgorithmTest(TestCase):
             files,
             [Tag.Artist],
             guess=True,
-            dry_run=True
+            dry_run=False
         )
 
         self.assertEqual(len(tree.ordered), 1)
-        for artist, artist_subtree in tree.ordered.items():
-            song = artist_subtree.ordered[0]
+        for artist, songs in tree.ordered.items():
+            song = songs[0]
             self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
             self.assertEqual(song.tags[Tag.Title], 'No Title')
