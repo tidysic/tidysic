@@ -54,7 +54,7 @@ def get_audio_files(directory_path):
     Returns the audio files present in the given directory.
     '''
     audio_files = [
-        AudioFile(os.path.join(directory_path, path))
+        AudioFile(path)
         for ext in audio_extensions
         for path in Path(directory_path).rglob('*'+ext)
     ]
@@ -70,7 +70,7 @@ def move_file(file, target_name, target_path, dry_run=False):
     if dry_run:
         # We don't display the two whole paths
         # Only the source's filename and the target directory
-        src = file.split('/')[-1]
+        src = file.name
 
         logger.dry_run([
             'Moving file',
