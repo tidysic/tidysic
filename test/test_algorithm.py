@@ -32,13 +32,13 @@ class AlgorithmTest(TestCase):
         self.assertIsInstance(tree.ordered, dict)
         self.assertEqual(len(tree.ordered.keys()), 1)
 
-        artist_name, artist_subtree = tree.ordered.items()[0]
+        for artist_name, artist_subtree in tree.ordered.items():
         self.assertEqual(artist_name, 'L\'Artiste')
         self.assertEqual(len(artist_subtree.unordered), 0)
         self.assertIsInstance(artist_subtree.ordered, dict)
         self.assertEqual(len(artist_subtree.ordered.keys()), 1)
 
-        album_name, album_subtree = artist_subtree.ordered.items()[0]
+            for album_name, album_subtree in artist_subtree.ordered.items():
         self.assertEqual(album_name, 'L\'Album')
         self.assertEqual(len(album_subtree.unordered), 0)
         self.assertIsInstance(album_subtree.ordered, list)
