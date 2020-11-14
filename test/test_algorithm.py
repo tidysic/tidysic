@@ -39,17 +39,16 @@ class AlgorithmTest(TestCase):
             self.assertIsInstance(artist_subtree.ordered, dict)
             self.assertEqual(len(artist_subtree.ordered.keys()), 1)
 
-            for album_name, album_subtree in artist_subtree.ordered.items():
+            for album_name, songs in artist_subtree.ordered.items():
                 self.assertEqual(album_name, 'L\'Album')
-                self.assertEqual(len(album_subtree.unordered), 0)
-                self.assertIsInstance(album_subtree.ordered, list)
-                self.assertEqual(len(album_subtree.ordered), 1)
+                self.assertIsInstance(songs, list)
+                self.assertEqual(len(songs), 1)
 
-                song = album_subtree.ordered[0]
+                song = songs[0]
                 self.assertListEqual(files, [song])
 
         format = '{title}'
-        self.assertEqual(song.build_file_name(format), 'Le Titre')
+        self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
 
     def test_guess(self):
 
@@ -59,15 +58,17 @@ class AlgorithmTest(TestCase):
         )
         files = get_audio_files(path)
 
-        AudioFile.accept_all_guesses = True  # Needed in order to test without user input
+        # Needed in order to test without user input
+        AudioFile.accept_all_guesses = True
 
         tree = create_structure(
             files,
-            [],
+            [Tag.Artist],
             guess=True,
             dry_run=True
         )
 
-        song = tree.ordered[0]
-        self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
-        self.assertEqual(song.tags[Tag.Title], 'No Title')
+        for artist, artist_subtree in tree.ordered.items():
+            song = artist_subtree.ordered[0]
+            self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
+            self.assertEqual(song.tags[Tag.Title], 'No Title')
