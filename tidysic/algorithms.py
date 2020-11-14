@@ -174,7 +174,7 @@ def organize(
         dry_run
     )
 
-    format = '{track:02}) {title}'
+    format = '{title}'
     move_files(
         root,
         dir_target,
