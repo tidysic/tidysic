@@ -68,6 +68,7 @@ class AlgorithmTest(TestCase):
             dry_run=True
         )
 
+        self.assertEqual(len(tree.ordered), 1)
         for artist, artist_subtree in tree.ordered.items():
             song = artist_subtree.ordered[0]
             self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
