@@ -4,7 +4,7 @@ import os
 from tidysic.os_utils import project_test_folder, get_audio_files
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
-from tidysic.algorithms import create_structure
+from tidysic.algorithms import create_structure, move_files
 
 
 class AlgorithmTest(TestCase):
@@ -15,7 +15,6 @@ class AlgorithmTest(TestCase):
     )
 
     def test_normal(self):
-
         path = os.path.join(
             AlgorithmTest.music_folder,
             'normal'
@@ -47,11 +46,10 @@ class AlgorithmTest(TestCase):
                 song = songs[0]
                 self.assertListEqual(files, [song])
 
-        format = '{title}'
-        self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
+                format = '{title}'
+                self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
 
     def test_guess(self):
-
         path = os.path.join(
             AlgorithmTest.music_folder,
             'Missing Artist - No Title'
@@ -73,3 +71,29 @@ class AlgorithmTest(TestCase):
             song = songs[0]
             self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
             self.assertEqual(song.tags[Tag.Title], 'No Title')
+
+    def test_illegal_characters(self):
+        path = os.path.join(
+            AlgorithmTest.music_folder,
+            'a bunch of illegal characters'
+        )
+        files = get_audio_files(path)
+
+        tree = create_structure(
+            files,
+            [Tag.Artist],
+            guess=True,
+            dry_run=True
+        )
+
+        for artist, artist_subtree in tree.ordered.items():
+            song = artist_subtree[0]
+            file_name = song.build_file_name('{artist} - {title}')
+            self.assertIn('/', file_name)
+
+        move_files(
+            tree,
+            path,
+            '{artist} - {title}',
+            dry_run=False
+        )
