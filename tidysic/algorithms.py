@@ -57,10 +57,10 @@ def create_structure(
             else:
                 # Default behavior is letting the file in the
                 # lowest folder we can.
-                warning(f'''\
-                    File {file}
-                    could not have its {str(order_tag)} tag determined.
-                    It will stay in the parent folder.\
+                warning(f'''
+File {file.file}
+could not have its {str(order_tag)} tag determined.
+It will stay in the parent folder.\
                 ''')
                 unordered.append(file)
 

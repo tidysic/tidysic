@@ -39,7 +39,7 @@ class AudioFile(object):
                     # Ask user what to do
                     log([
                         f'''Guessed [blue]{artist}[/blue], \
-                            [yellow]{title}[/yellow]''',
+[yellow]{title}[/yellow]''',
                         'Accept (y)',
                         'Accept all (a)',
                         'Discard (d)',
