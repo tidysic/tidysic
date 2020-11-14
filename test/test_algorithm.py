@@ -118,3 +118,20 @@ class AlgorithmTest(TestCase):
             file_name = song.build_file_name(format)
 
             self.assertEqual(file_name, "You did it.mp3")
+
+    def test_missing_order_tag(self):
+        path = os.path.join(
+            AlgorithmTest.music_folder,
+            'missing album tag'
+        )
+        files = get_audio_files(path)
+
+        tree = create_structure(
+            files,
+            [Tag.Album],
+            guess=True,
+            dry_run=True
+        )
+
+        self.assertEqual(len(tree.ordered), 0)
+        self.assertEqual(len(tree.unordered), 1)
