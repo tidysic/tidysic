@@ -63,7 +63,7 @@ class AlgorithmTest(TestCase):
             files,
             [Tag.Artist],
             guess=True,
-            dry_run=False
+            dry_run=False  # Need to actually change the file
         )
 
         self.assertEqual(len(tree.ordered), 1)
@@ -86,8 +86,8 @@ class AlgorithmTest(TestCase):
             dry_run=True
         )
 
-        for artist, artist_subtree in tree.ordered.items():
-            song = artist_subtree[0]
+        for artist, songs in tree.ordered.items():
+            song = songs[0]
             file_name = song.build_file_name('{artist} - {title}')
             self.assertIn('/', file_name)
 
@@ -97,3 +97,24 @@ class AlgorithmTest(TestCase):
             '{artist} - {title}',
             dry_run=False
         )
+
+    def test_format(self):
+        path = os.path.join(
+            AlgorithmTest.music_folder,
+            'format title-artist-album'
+        )
+        files = get_audio_files(path)
+
+        tree = create_structure(
+            files,
+            [Tag.Artist],
+            guess=True,
+            dry_run=True
+        )
+
+        for artist, songs in tree.ordered.items():
+            song = songs[0]
+            format = '{title} {artist} {album}'
+            file_name = song.build_file_name(format)
+
+            self.assertEqual(file_name, "You did it.mp3")
