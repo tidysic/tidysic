@@ -1,12 +1,6 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
 
-# TODO: change into import after merging "arg-as-structure" PR
-from collections import namedtuple
-
-StructureLevel = namedtuple(
-    'StructureLevel',
-    ['ordered', 'unordered']
-)
+from tidysic.algorithms import StructureLevel
 
 
 class FilesVisualizer(QTreeWidget):
