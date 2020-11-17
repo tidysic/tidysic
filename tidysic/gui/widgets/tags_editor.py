@@ -83,7 +83,7 @@ class TagsEditor(QWidget):
 
                 elif isinstance(field, QSpinBox):
                     if value:
-                        field.setValue(value)
+                        field.setValue(int(value))
 
                 elif isinstance(field, QComboBox):
                     if value:
