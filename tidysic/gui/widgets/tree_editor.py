@@ -17,4 +17,13 @@ class TreeEditor(QWidget):
         self.editor = TagsEditor()
         layout.addWidget(self.editor)
 
-        # TODO: Connect
+        self.visualizer.itemSelectionChanged.connect(
+            self.update_selection
+        )
+
+    def update_selection(self):
+        selection = self.visualizer.selectedItems()
+        if selection:
+            song = selection[0]
+            if hasattr(song, 'file'):
+                self.editor.feed_data(song.file)

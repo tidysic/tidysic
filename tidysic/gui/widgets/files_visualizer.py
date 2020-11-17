@@ -22,7 +22,9 @@ class FilesVisualizer(QTreeWidget):
         super(FilesVisualizer, self).__init__(*args, **kwargs)
         self.setColumnCount(1)
         self.setHeaderHidden(True)
-        self.setSelectionMode(QAbstractItemView.MultiSelection)
+
+        # TODO: Find a way to to multi-file tag editing
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
 
         self.format = format
 
@@ -31,15 +33,6 @@ class FilesVisualizer(QTreeWidget):
 
         items = root.takeChildren()
         self.addTopLevelItems(items)
-
-    def get_selected_item(self):
-        selected = self.selectedItems()
-        if selected:
-            selected = selected[0]
-            if isinstance(selected, FileTreeItem):
-                return selected
-
-        return None
 
     def create_item(self, structure: StructureLevel):
         tree_item = QTreeWidgetItem()
