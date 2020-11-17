@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import (
     QWidget,
     QFormLayout,
-    QLabel,
     QLineEdit,
     QSpinBox,
     QComboBox
@@ -17,7 +16,6 @@ class TagsEditor(QWidget):
         super(TagsEditor, self).__init__(*args, **kwargs)
         self.fields = {}
         self.create_layout()
-
 
     def create_layout(self):
         layout = QFormLayout(self)

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 
 from tidysic.algorithms import StructureLevel
 from tidysic.audio_file import AudioFile
@@ -22,6 +22,7 @@ class FilesVisualizer(QTreeWidget):
         super(FilesVisualizer, self).__init__(*args, **kwargs)
         self.setColumnCount(1)
         self.setHeaderHidden(True)
+        self.setSelectionMode(QAbstractItemView.MultiSelection)
 
         self.format = format
 
