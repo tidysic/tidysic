@@ -21,46 +21,53 @@ class TagsEditor(QWidget):
         layout = QFormLayout(self)
         self.setLayout(layout)
 
-        self.fields[Tag.Track] = QSpinBox(self)
+        track_edit = QSpinBox(self)
         layout.addRow(
             self.tr('Trac&k'),
-            self.fields[Tag.Track]
+            track_edit
         )
+        self.fields[Tag.Track] = track_edit
 
-        self.fields[Tag.Title] = QLineEdit(self)
+        title_edit = QLineEdit(self)
         layout.addRow(
             self.tr('&Title'),
-            self.fields[Tag.Title]
+            title_edit
         )
+        self.fields[Tag.Title] = title_edit
 
-        self.fields[Tag.Artist] = QLineEdit(self)
+        artist_edit = QLineEdit(self)
         layout.addRow(
             self.tr('&Artist'),
-            self.fields[Tag.Artist]
+            artist_edit
         )
+        self.fields[Tag.Artist] = artist_edit
 
-        self.fields[Tag.Album] = QLineEdit(self)
+        album_edit = QLineEdit(self)
         layout.addRow(
             self.tr('Al&bum'),
-            self.fields[Tag.Album]
+            album_edit
         )
+        self.fields[Tag.Album] = album_edit
 
-        self.fields[Tag.Year] = QSpinBox(self)
+        year_edit = QSpinBox(self)
+        year_edit.setMaximum(3000)  # No one will use this program by then
         layout.addRow(
             self.tr('&Year'),
-            self.fields[Tag.Year]
+            year_edit
         )
+        self.fields[Tag.Year] = year_edit
 
-        self.fields[Tag.Genre] = QComboBox(self)
-        self.fields[Tag.Genre].setEditable(False)
-        self.fields[Tag.Genre].addItems([
+        genre_edit = QComboBox(self)
+        genre_edit.setEditable(False)
+        genre_edit.addItems([
             'Techno',
             'Classical'
         ])  # TODO: Create items from actual genres enum
         layout.addRow(
             self.tr('&Genre'),
-            self.fields[Tag.Genre]
+            genre_edit
         )
+        self.fields[Tag.Genre] = genre_edit
 
     def feed_data(self, file: AudioFile):
         for tag in Tag:
