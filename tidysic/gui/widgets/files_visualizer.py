@@ -32,7 +32,10 @@ class FilesVisualizer(QTreeWidget):
         root: QTreeWidgetItem = self.create_item(structure)
 
         items = root.takeChildren()
-        self.addTopLevelItems(items)
+        self.addTopLevelItems(sorted(
+            items,
+            key=lambda item: item.text(0).lower()
+        ))
 
     def create_item(self, structure: StructureLevel):
         tree_item = QTreeWidgetItem()
