@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
+from PyQt5.QtCore import Qt
 
 from tidysic.algorithms import StructureLevel
 from tidysic.audio_file import AudioFile
@@ -23,8 +24,7 @@ class FilesVisualizer(QTreeWidget):
         self.setColumnCount(1)
         self.setHeaderHidden(True)
 
-        # TODO: Find a way to to multi-file tag editing
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         self.format = format
 
@@ -44,12 +44,15 @@ class FilesVisualizer(QTreeWidget):
             if isinstance(sublevel, StructureLevel):
                 tree_child_item = self.create_item(sublevel)
                 tree_child_item.setText(0, name)
+                tree_child_item.setFlags(Qt.ItemIsSelectable)
 
                 tree_item.addChild(tree_child_item)
             else:
                 # Leaf of the tree
                 tree_child_item = QTreeWidgetItem()
                 tree_child_item.setText(0, name)
+                tree_child_item.setFlags(Qt.ItemIsSelectable)
+
                 for file in sublevel:
                     tree_leaf_item = FileTreeItem(file, self.format)
                     tree_child_item.addChild(tree_leaf_item)

@@ -23,7 +23,7 @@ class TreeEditor(QWidget):
 
     def update_selection(self):
         selection = self.visualizer.selectedItems()
-        if selection:
-            song = selection[0]
-            if hasattr(song, 'file'):
-                self.editor.feed_data(song.file)
+        self.editor.feed_data([
+            item.file
+            for item in selection
+        ])

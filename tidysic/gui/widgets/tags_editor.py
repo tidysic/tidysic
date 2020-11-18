@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
     QComboBox
 )
 
+from typing import List
+
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
 
@@ -69,14 +71,24 @@ class TagsEditor(QWidget):
         )
         self.fields[Tag.Genre] = genre_edit
 
-    def feed_data(self, file: AudioFile):
-        for tag in Tag:
-            value = file.tags[tag]
-            field = self.fields[tag]
-            if value is None:
-                field.clear()
+    def feed_data(self, files: List[AudioFile]):
 
-            else:
+        for tag in Tag:
+            self.fields[tag].clear()
+
+        if len(files) > 0:
+
+            for tag in Tag:
+                # See if all values coincide
+                value = files[0].tags[tag]
+                if any([
+                    file.tags[tag] != value
+                    for file in files
+                ]):
+                    value = None
+
+                # Display the values found
+                field = self.fields[tag]
                 if isinstance(field, QLineEdit):
                     if value:
                         field.setText(value)
