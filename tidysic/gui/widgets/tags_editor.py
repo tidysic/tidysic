@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import (
     QWidget,
+    QVBoxLayout,
     QFormLayout,
     QLineEdit,
     QSpinBox,
-    QComboBox
+    QComboBox,
+    QPushButton
 )
 
 from typing import List
@@ -17,39 +19,47 @@ class TagsEditor(QWidget):
     def __init__(self, *args, **kwargs):
         super(TagsEditor, self).__init__(*args, **kwargs)
         self.fields = {}
+        self.files = []
+
         self.create_layout()
 
     def create_layout(self):
-        layout = QFormLayout(self)
+        layout = QVBoxLayout(self)
         self.setLayout(layout)
 
+        form_layout = QFormLayout(self)
+        layout.addLayout(form_layout)
+        self.create_fields(form_layout)
+
+        save_button = QPushButton(self)
+        layout.addWidget(save_button)
+        save_button.setText('Save')
+        save_button.clicked.connect(self.save)
+
+    def create_fields(self, layout):
         track_edit = QSpinBox(self)
         layout.addRow(
             self.tr('Trac&k'),
             track_edit
         )
-        self.fields[Tag.Track] = track_edit
 
         title_edit = QLineEdit(self)
         layout.addRow(
             self.tr('&Title'),
             title_edit
         )
-        self.fields[Tag.Title] = title_edit
 
         artist_edit = QLineEdit(self)
         layout.addRow(
             self.tr('&Artist'),
             artist_edit
         )
-        self.fields[Tag.Artist] = artist_edit
 
         album_edit = QLineEdit(self)
         layout.addRow(
             self.tr('Al&bum'),
             album_edit
         )
-        self.fields[Tag.Album] = album_edit
 
         year_edit = QSpinBox(self)
         year_edit.setMaximum(3000)  # No one will use this program by then
@@ -57,7 +67,6 @@ class TagsEditor(QWidget):
             self.tr('&Year'),
             year_edit
         )
-        self.fields[Tag.Year] = year_edit
 
         genre_edit = QComboBox(self)
         genre_edit.setEditable(False)
@@ -69,6 +78,12 @@ class TagsEditor(QWidget):
             self.tr('&Genre'),
             genre_edit
         )
+
+        self.fields[Tag.Track] = track_edit
+        self.fields[Tag.Title] = title_edit
+        self.fields[Tag.Artist] = artist_edit
+        self.fields[Tag.Album] = album_edit
+        self.fields[Tag.Year] = year_edit
         self.fields[Tag.Genre] = genre_edit
 
     def feed_data(self, files: List[AudioFile]):
@@ -106,3 +121,24 @@ class TagsEditor(QWidget):
                             # TODO: Check if this is a good thing to do
                             # Genre tags may actually be just an enum
                             field.addItem(value)
+
+    def save(self):
+
+        for file in self.files:
+            for tag in Tag:
+                field = self.fields[tag]
+
+                if isinstance(field, QLineEdit):
+                    new_value = field.text()
+                    if new_value != '':
+                        file.tags[tag] = new_value
+
+                elif isinstance(field, QSpinBox):
+                    new_value = field.value()
+                    if new_value:
+                        file.tags[tag] = new_value
+
+                elif isinstance(field, QComboBox):
+                    new_value = field.currentText()
+                    if new_value:
+                        file.tags[tag] = new_value
