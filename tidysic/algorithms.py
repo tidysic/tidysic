@@ -100,7 +100,7 @@ def move_files(
         )
 
     for tag, content in audio_files.ordered.items():
-        sub_dir_target = create_dir(tag, dir_target, dry_run)
+        sub_dir_target = create_dir(tag, dir_target, dry_run, False)
 
         if isinstance(content, list):  # Leaf of the structure tree
             for audio_file in content:
@@ -108,7 +108,8 @@ def move_files(
                     audio_file.file,
                     audio_file.build_file_name(format),
                     sub_dir_target,
-                    dry_run
+                    dry_run,
+                    False
                 )
 
         else:
@@ -148,7 +149,7 @@ def clean_up(
         ]
         for file in files
     ]):
-        remove_directory(dir_src, dry_run)
+        remove_directory(dir_src, dry_run, False)
 
 
 def organize(
