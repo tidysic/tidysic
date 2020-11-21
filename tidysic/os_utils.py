@@ -55,7 +55,7 @@ def create_dir(
     if dry_run or verbose:
         logger.dry_run(f'Create directory {full_path}')
     if not verbose:
-        os.makedirs(full_path)
+        os.makedirs(full_path, exist_ok=True)
 
     return full_path
 
@@ -67,7 +67,7 @@ def get_audio_files(
     Returns the audio files present in the given directory.
     '''
     audio_files = [
-        AudioFile(os.path.join(directory_path, path))
+        AudioFile(path)
         for ext in audio_extensions
         for path in Path(directory_path).rglob('*'+ext)
     ]
@@ -88,12 +88,9 @@ def move_file(
     full_path = os.path.join(target_path, target_name)
 
     if dry_run or verbose:
-        # We only display the source's filename
-        src = file.split('/')[-1]
-
         logger.dry_run([
             'Moving file',
-            f'{src}',
+            f'{file.name}',
             'to',
             full_path
         ])

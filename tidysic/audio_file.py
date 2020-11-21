@@ -39,7 +39,7 @@ class AudioFile(object):
                     # Ask user what to do
                     log([
                         f'''Guessed [blue]{artist}[/blue], \
-                            [yellow]{title}[/yellow]''',
+[yellow]{title}[/yellow]''',
                         'Accept (y)',
                         'Accept all (a)',
                         'Discard (d)',
@@ -79,7 +79,7 @@ class AudioFile(object):
                 if answer == 'r':
                     new_tags[Tag.Title] = input('Title : ')
                     new_tags[Tag.Artist] = input('Artist : ')
-                    
+
                     self.save_tags(dry_run)
 
         except BaseException:
@@ -116,11 +116,25 @@ class AudioFile(object):
         Creates the new file's name from the tags in the desired format
         '''
         from .os_utils import file_extension  # Avoid circular import
+
+        title = self.tags[Tag.Title]
+        album = self.tags[Tag.Album]
+        artist = self.tags[Tag.Artist]
+        year = self.tags[Tag.Year]
+        track = self.tags[Tag.Track]
+        genre = self.tags[Tag.Genre]
+
+        if year:
+            year = int(year)
+
+        if track:
+            track = int(track)
+
         return format.format(
-            title=self.tags[Tag.Title],
-            album=self.tags[Tag.Album],
-            artist=self.tags[Tag.Artist],
-            year=self.tags[Tag.Year],
-            track=int(self.tags[Tag.Track]),
-            genre=self.tags[Tag.Genre]
+            title=title,
+            album=album,
+            artist=artist,
+            year=year,
+            track=track,
+            genre=genre
         ) + file_extension(self.file)
