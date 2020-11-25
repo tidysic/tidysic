@@ -111,12 +111,10 @@ class AudioFile(object):
                 tags_wrapper.tag.artist = new_tags[Tag.Artist]
             tags_wrapper.tag.save()
 
-    def build_file_name(self, format: str):
+    def build_name(self, format: str):
         '''
-        Creates the new file's name from the tags in the desired format
+        Builds the file's name from the tags and the given format
         '''
-        from .os_utils import file_extension  # Avoid circular import
-
         title = self.tags[Tag.Title]
         album = self.tags[Tag.Album]
         artist = self.tags[Tag.Artist]
@@ -137,4 +135,13 @@ class AudioFile(object):
             year=year,
             track=track,
             genre=genre
-        ) + file_extension(self.file)
+        )
+
+    def build_file_name(self, format: str):
+        '''
+        Builds the file's whole name, using the given tags and format,
+        and appends the extension.
+        '''
+        from .os_utils import file_extension  # Avoid circular import
+
+        return self.build_name(format) + file_extension(self.file)
