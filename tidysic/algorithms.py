@@ -70,7 +70,7 @@ def create_structure(
         return audio_files
 
     children = {}
-    order_tag = ordering.pop(0)
+    order_tag = ordering[0]
 
     # Sort files into a dictionary
     for file in audio_files:
@@ -100,7 +100,7 @@ It will move into an 'Unknown {str(order_tag)}' directory.\
         new_node = TreeNode(tag_value, order_tag)
         new_node.children = create_structure(
             files,
-            ordering,
+            ordering[1:],
             guess,
             dry_run
         )
