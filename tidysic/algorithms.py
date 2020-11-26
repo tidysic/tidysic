@@ -27,18 +27,20 @@ class TreeNode(object):
         self._children = []
 
     @property
-    def tag(self):
+    def tag(self) -> Tag:
         '''
         Tag type of the node's ordering level
 
         For instance, if a node's tag property is Tag.Artists,
-        everyone of its children's name will be artist names
+        then everyone of its leaves will have this node's artist.
         '''
         return self._tag
 
     @property
-    def name(self):
-        # TODO: Allow for formatting as well as leaves
+    def name(self) -> str:
+        '''
+        Value of the tag with which this node was sorted.
+        '''
         if self._name:
             return self._name
         else:
@@ -46,7 +48,9 @@ class TreeNode(object):
 
     @property
     def children(self):
-        '''Children nodes, ordered by name'''
+        '''
+        Children nodes.
+        '''
         return self._children
 
     @children.setter
@@ -54,18 +58,21 @@ class TreeNode(object):
         self._children = value
 
     def get_any_leaf(self) -> AudioFile:
-        if not self.children:
-            return None
-        else:
-            for child in self.children:
-                if isinstance(child, AudioFile):
-                    return child
-                elif isinstance(child, TreeNode):
-                    leaf = child.get_any_leaf()
-                    if leaf is not None:
-                        return leaf
+        '''
+        Returns a leaf of the tree whose root is `self`.
+        '''
+        for child in self.children:
+            if isinstance(child, AudioFile):
+                return child
+            elif isinstance(child, TreeNode):
+                leaf = child.get_any_leaf()
+                if leaf is not None:
+                    return leaf
 
     def build_name(self, format_string):
+        '''
+        Builds the name of the directory that will be created.
+        '''
         file = self.get_any_leaf()
         if file:
             return file.fill_formatted_str(format_string)
