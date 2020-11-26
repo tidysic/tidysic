@@ -118,7 +118,7 @@ class AudioFile(object):
 
         A formatted string contains tag keys written in double
         curly brackets, such as `{{artist}}`.
-        
+
         The double brackets are useful if you want to insert text
         that will only be displayed if the tag is not None. For
         instance, the string
@@ -127,28 +127,39 @@ class AudioFile(object):
 
         will become
 
-        `01. Intro`
+        `1. Intro`
 
         if the `track` tag is defined. Otherwise, it will just
         be
 
         `Intro`
+
+        The `year` and `track` tags can be formatted as usual, seeing
+        as they are integer values. This way, track numbers may be
+        padded using:
+
+        `{{track:02d}. }{{title}}`
         '''
-        pattern = r'\{([^\{]*\{(\w+)\}[^\}]*)\}'
+        pattern = r'\{([^\{]*\{(\w+)(:[^\}]+)?\}[^\}]*)\}'
         matches = re.findall(pattern, format_str)
 
         substitutions = []
-        for part, key in matches:
+        for part, key, format_spec in matches:
 
             value = None
             for tag in Tag:
                 if str(tag).lower() == key:
                     value = self.tags[tag]
+                    if key in ['year', 'track']:
+                        value = int(value)
                     break
             else:
                 raise ValueError('%s is not a tag key' % key)
 
-            formattable = part.replace(f'{{{key}}}', '{}')
+            formattable = part.replace(
+                f'{{{key}{format_spec}}}',
+                f'{{{format_spec}}}'
+            )
             substitutions.append((
                 f'{{{part}}}',
                 formattable.format(value) if value else ''

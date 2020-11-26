@@ -229,7 +229,7 @@ def organize(
     formats = [
         '{{artist}}',
         '{({year}) }{{album}}',
-        '{{track}. }{{title}}'
+        '{{track:02d}. }{{title}}'
     ]
     move_files(
         root_nodes,
