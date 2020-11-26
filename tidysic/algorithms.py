@@ -155,8 +155,6 @@ def move_files(
         elif isinstance(child, TreeNode):
             # Recursive step
             assert(len(formats) > 0)
-            log(formats)
-            log(child.name)
             sub_dir_target = create_dir(
                 child.build_name(formats[0]),
                 dir_target,
@@ -229,9 +227,9 @@ def organize(
     )
 
     formats = [
-        '{artist}',
-        '({year}) {album}',
-        '{track}. {title}'
+        '{{artist}}',
+        '{({year}) }{{album}}',
+        '{{track}. }{{title}}'
     ]
     move_files(
         root_nodes,
