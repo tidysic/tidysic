@@ -53,6 +53,23 @@ class TreeNode(object):
     def children(self, value):
         self._children = value
 
+    def get_any_leaf(self) -> AudioFile:
+        if not self.children:
+            return None
+        else:
+            for child in self.children:
+                if isinstance(child, AudioFile):
+                    return child
+                elif isinstance(child, TreeNode):
+                    leaf = child.get_any_leaf()
+                    if leaf is not None:
+                        return leaf
+
+    def build_name(self, format_string):
+        file = self.get_any_leaf()
+        if file:
+            return file.fill_formatted_str(format_string)
+
 
 def create_structure(
     audio_files: List[AudioFile],
@@ -113,7 +130,7 @@ It will move into an 'Unknown {str(order_tag)}' directory.\
 def move_files(
     nodes: list,
     dir_target: str,
-    format: str,
+    formats: List[str],
     dry_run=False,
 ):
     '''
@@ -126,9 +143,10 @@ def move_files(
 
         if isinstance(child, AudioFile):
             # Leaf of the structure tree
+            assert(len(formats) == 1)
             move_file(
                 child.file,
-                child.build_file_name(format),
+                child.build_file_name(formats[0]),
                 dir_target,
                 dry_run,
                 False
@@ -136,8 +154,11 @@ def move_files(
 
         elif isinstance(child, TreeNode):
             # Recursive step
+            assert(len(formats) > 0)
+            log(formats)
+            log(child.name)
             sub_dir_target = create_dir(
-                child.name,
+                child.build_name(formats[0]),
                 dir_target,
                 dry_run,
                 False
@@ -146,7 +167,7 @@ def move_files(
             move_files(
                 child.children,
                 sub_dir_target,
-                format,
+                formats[1:],
                 dry_run
             )
 
@@ -207,11 +228,15 @@ def organize(
         dry_run
     )
 
-    format = '{title}'
+    formats = [
+        '{artist}',
+        '({year}) {album}',
+        '{track}. {title}'
+    ]
     move_files(
         root_nodes,
         dir_target,
-        format,
+        formats,
         dry_run
     )
 
