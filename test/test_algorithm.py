@@ -45,8 +45,8 @@ class AlgorithmTest(TestCase):
 
         song: AudioFile = album_node.children[0]
         self.assertIsInstance(song, AudioFile)
-        format = '{title}'
-        self.assertEqual(song.build_name(format), 'Le Titre')
+        format = '{{title}}'
+        self.assertEqual(song.fill_formatted_str(format), 'Le Titre')
         self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
 
     def test_guess(self):
@@ -86,13 +86,17 @@ class AlgorithmTest(TestCase):
         )
 
         song = root_nodes[0].children[0]
-        file_name = song.build_file_name('{artist} - {title}')
+        formats = [
+            '{{artist}}',
+            '{{artist}} - {{title}}'
+        ]
+        file_name = song.build_file_name(formats[-1])
         self.assertIn('/', file_name)
 
         move_files(
             root_nodes,
             path,
-            '{artist} - {title}',
+            formats,
             dry_run=False
         )
 
@@ -111,10 +115,10 @@ class AlgorithmTest(TestCase):
         )
 
         song = root_nodes[0].children[0]
-        format = '{title} {artist} {album}'
-        file_name = song.build_name(format)
+        format = '{{title}} {{artist}} {{album} !}{ {genre}}'
+        file_name = song.fill_formatted_str(format)
 
-        self.assertEqual(file_name, 'You did it')
+        self.assertEqual(file_name, 'You did it !')
 
     def test_missing_order_tag(self):
         path = os.path.join(
