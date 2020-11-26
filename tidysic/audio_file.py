@@ -140,7 +140,7 @@ class AudioFile(object):
 
         `{{track:02d}. }{{title}}`
         '''
-        pattern = r'\{([^\{]*\{(\w+)(:[^\}]+)?\}[^\}]*)\}'
+        pattern = r'\{(.*?\{(\w+)(:.+?)?\}.*?)\}'
         matches = re.findall(pattern, format_str)
 
         substitutions = []
