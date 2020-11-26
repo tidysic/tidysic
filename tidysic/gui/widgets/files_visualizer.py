@@ -6,11 +6,11 @@ from tidysic.audio_file import AudioFile
 
 class FileTreeItem(QTreeWidgetItem):
 
-    def __init__(self, file: AudioFile, format: str, *args, **kwargs):
+    def __init__(self, file: AudioFile, format_str: str, *args, **kwargs):
         super(FileTreeItem, self).__init__(*args, **kwargs)
         self.setText(
             0,
-            file.build_name(format)
+            file.fill_formatted_str(format_str)
         )
 
         self.file = file
@@ -40,13 +40,17 @@ class FilesVisualizer(QTreeWidget):
 
     def create_item(self, node):
         if isinstance(node, TreeNode):
+            
             tree_item = QTreeWidgetItem()
             tree_item.setText(0, node.name)
 
+            children = []
             for child in node.children:
-                tree_item.addChild(
+                children.append(
                     self.create_item(child)
                 )
+            children.sort(key=lambda node: node.text(0))
+            tree_item.addChildren(children)
             return tree_item
 
         else:

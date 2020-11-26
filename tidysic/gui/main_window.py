@@ -17,7 +17,7 @@ class TidysicWindow(QMainWindow):
 
         self.files = []
         self.tree = {}
-        self.format = '{title}'
+        self.format = '{{track:02d}. }{{title}}'
 
         self._init_layout()
 
