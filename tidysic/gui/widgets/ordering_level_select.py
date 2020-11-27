@@ -56,5 +56,5 @@ class OrderingLevelSelect(QWidget):
             self.format_edit.setText('{({year}) }{{album}}')
         else:
             self.format_edit.setText(
-                f'{{{{{str(self.value).lower()}}}}}'
+                '{{%s}}' % str(self.value).lower()
             )
