@@ -51,7 +51,7 @@ class OrderingLevelSelect(QWidget):
 
     def _update_format_field(self):
         if self.value is None:
-            self.format_edit.setText('{{track}. }{{title}}')
+            self.format_edit.setText('{{track:02d}. }{{title}}')
         elif self.value == Tag.Album:
             self.format_edit.setText('{({year}) }{{album}}')
         else:
