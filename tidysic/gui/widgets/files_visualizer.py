@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
-from PyQt5.QtCore import Qt
 
 from tidysic.algorithms import TreeNode
 from tidysic.audio_file import AudioFile
@@ -40,7 +39,7 @@ class FilesVisualizer(QTreeWidget):
 
     def create_item(self, node):
         if isinstance(node, TreeNode):
-            
+
             tree_item = QTreeWidgetItem()
             tree_item.setText(0, node.name)
 
