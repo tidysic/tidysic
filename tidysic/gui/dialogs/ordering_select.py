@@ -39,6 +39,12 @@ class OrderingSelect(QDialog):
             if level.value is not None
         ])
 
+    def get_format_strs(self):
+        return list([
+            level.format_edit.text()
+            for level in self.ordering_level_selects
+        ])
+
     def onOrderingLevelsChanged(self):
 
         ordering = self.get_ordering()
