@@ -27,7 +27,7 @@ class TagsEditor(QWidget):
         layout = QVBoxLayout(self)
         self.setLayout(layout)
 
-        form_layout = QFormLayout(self)
+        form_layout = QFormLayout(None)
         layout.addLayout(form_layout)
         self.create_fields(form_layout)
 
