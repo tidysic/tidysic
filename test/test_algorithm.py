@@ -4,7 +4,7 @@ import os
 from tidysic.os_utils import project_test_folder, get_audio_files
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
-from tidysic.algorithms import create_structure, move_files
+from tidysic.algorithms import create_structure, move_files, TreeNode
 
 
 class AlgorithmTest(TestCase):
@@ -22,32 +22,32 @@ class AlgorithmTest(TestCase):
         files = get_audio_files(path)
         self.assertEqual(len(files), 1)
 
-        tree = create_structure(
+        root_nodes = create_structure(
             files,
             [Tag.Artist, Tag.Album],
             guess=False,
             dry_run=True
         )
-        self.assertEqual(len(tree.unordered), 0)
-        self.assertIsInstance(tree.ordered, dict)
-        self.assertEqual(len(tree.ordered.keys()), 1)
+        self.assertEqual(len(root_nodes), 1)
 
-        for artist_name, artist_subtree in tree.ordered.items():
-            self.assertEqual(artist_name, 'L\'Artiste')
-            self.assertEqual(len(artist_subtree.unordered), 0)
-            self.assertIsInstance(artist_subtree.ordered, dict)
-            self.assertEqual(len(artist_subtree.ordered.keys()), 1)
+        artist_node: TreeNode = root_nodes[0]
+        self.assertIsInstance(artist_node, TreeNode)
+        self.assertEqual(artist_node.tag, Tag.Artist)
+        self.assertEqual(artist_node.name, 'L\'Artiste')
+        self.assertEqual(len(artist_node.children), 1)
 
-            for album_name, songs in artist_subtree.ordered.items():
-                self.assertEqual(album_name, 'L\'Album')
-                self.assertIsInstance(songs, list)
-                self.assertEqual(len(songs), 1)
+        album_node: TreeNode = artist_node.children[0]
+        self.assertIsInstance(album_node, TreeNode)
+        self.assertEqual(album_node.tag, Tag.Album)
+        self.assertEqual(album_node.name, 'L\'Album')
+        self.assertEqual(len(album_node.children), 1)
+        self.assertListEqual(album_node.children, files)
 
-                song = songs[0]
-                self.assertListEqual(files, [song])
-
-                format = '{title}'
-                self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
+        song: AudioFile = album_node.children[0]
+        self.assertIsInstance(song, AudioFile)
+        format = '{{title}}'
+        self.assertEqual(song.fill_formatted_str(format), 'Le Titre')
+        self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
 
     def test_guess(self):
         path = os.path.join(
@@ -59,18 +59,17 @@ class AlgorithmTest(TestCase):
         # Needed in order to test without user input
         AudioFile.accept_all_guesses = True
 
-        tree = create_structure(
+        root_nodes = create_structure(
             files,
             [Tag.Artist],
             guess=True,
             dry_run=False  # Need to actually change the file
         )
 
-        self.assertEqual(len(tree.ordered), 1)
-        for artist, songs in tree.ordered.items():
-            song = songs[0]
-            self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
-            self.assertEqual(song.tags[Tag.Title], 'No Title')
+        self.assertEqual(len(root_nodes), 1)
+        song = root_nodes[0].children[0]
+        self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
+        self.assertEqual(song.tags[Tag.Title], 'No Title')
 
     def test_illegal_characters(self):
         path = os.path.join(
@@ -79,22 +78,25 @@ class AlgorithmTest(TestCase):
         )
         files = get_audio_files(path)
 
-        tree = create_structure(
+        root_nodes = create_structure(
             files,
             [Tag.Artist],
             guess=True,
             dry_run=True
         )
 
-        for artist, songs in tree.ordered.items():
-            song = songs[0]
-            file_name = song.build_file_name('{artist} - {title}')
-            self.assertIn('/', file_name)
+        song = root_nodes[0].children[0]
+        formats = [
+            '{{artist}}',
+            '{{artist}} - {{title}}'
+        ]
+        file_name = song.build_file_name(formats[-1])
+        self.assertIn('/', file_name)
 
         move_files(
-            tree,
+            root_nodes,
             path,
-            '{artist} - {title}',
+            formats,
             dry_run=False
         )
 
@@ -105,19 +107,18 @@ class AlgorithmTest(TestCase):
         )
         files = get_audio_files(path)
 
-        tree = create_structure(
+        root_nodes = create_structure(
             files,
             [Tag.Artist],
             guess=True,
             dry_run=True
         )
 
-        for artist, songs in tree.ordered.items():
-            song = songs[0]
-            format = '{title} {artist} {album}'
-            file_name = song.build_file_name(format)
+        song = root_nodes[0].children[0]
+        format = '{{title}} {{artist}} {{album} !}{ {genre}}'
+        file_name = song.fill_formatted_str(format)
 
-            self.assertEqual(file_name, "You did it.mp3")
+        self.assertEqual(file_name, 'You did it !')
 
     def test_missing_order_tag(self):
         path = os.path.join(
@@ -126,12 +127,12 @@ class AlgorithmTest(TestCase):
         )
         files = get_audio_files(path)
 
-        tree = create_structure(
+        root_nodes = create_structure(
             files,
             [Tag.Album],
             guess=True,
             dry_run=True
         )
 
-        self.assertEqual(len(tree.ordered), 0)
-        self.assertEqual(len(tree.unordered), 1)
+        album_node: TreeNode = root_nodes[0]
+        self.assertEqual(album_node.name, 'Unknown Album')
