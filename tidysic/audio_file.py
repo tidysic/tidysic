@@ -1,4 +1,5 @@
 import eyed3
+import re
 
 from .tag import Tag, get_tags
 from .logger import log, warning, dry_run as log_dry_run
@@ -39,7 +40,7 @@ class AudioFile(object):
                     # Ask user what to do
                     log([
                         f'''Guessed [blue]{artist}[/blue], \
-                            [yellow]{title}[/yellow]''',
+[yellow]{title}[/yellow]''',
                         'Accept (y)',
                         'Accept all (a)',
                         'Discard (d)',
@@ -79,7 +80,7 @@ class AudioFile(object):
                 if answer == 'r':
                     new_tags[Tag.Title] = input('Title : ')
                     new_tags[Tag.Artist] = input('Artist : ')
-                    
+
                     self.save_tags(dry_run)
 
         except BaseException:
@@ -111,16 +112,69 @@ class AudioFile(object):
                 tags_wrapper.tag.artist = new_tags[Tag.Artist]
             tags_wrapper.tag.save()
 
-    def build_file_name(self, format: str):
+    def fill_formatted_str(self, format_str: str):
         '''
-        Creates the new file's name from the tags in the desired format
+        Fills the given formatted string with the file's tags
+
+        A formatted string contains tag keys written in double
+        curly brackets, such as `{{artist}}`.
+
+        The double brackets are useful if you want to insert text
+        that will only be displayed if the tag is not None. For
+        instance, the string
+
+        `{{track}. }{{title}}`
+
+        will become
+
+        `1. Intro`
+
+        if the `track` tag is defined. Otherwise, it will just
+        be
+
+        `Intro`
+
+        The `year` and `track` tags can be formatted as usual, seeing
+        as they are integer values. This way, track numbers may be
+        padded using:
+
+        `{{track:02d}. }{{title}}`
+        '''
+        pattern = r'\{(.*?\{(\w+)(:.+?)?\}.*?)\}'
+        matches = re.findall(pattern, format_str)
+
+        substitutions = []
+        for part, key, format_spec in matches:
+
+            value = None
+            for tag in Tag:
+                if str(tag).lower() == key:
+                    value = self.tags[tag]
+                    if key in ['year', 'track']:
+                        value = int(value)
+                    break
+            else:
+                raise ValueError('%s is not a tag key' % key)
+
+            formattable = part.replace(
+                f'{{{key}{format_spec}}}',
+                f'{{{format_spec}}}'
+            )
+            substitutions.append((
+                f'{{{part}}}',
+                formattable.format(value) if value else ''
+            ))
+
+        for old, new in substitutions:
+            format_str = format_str.replace(old, new)
+
+        return format_str
+
+    def build_file_name(self, format_str: str):
+        '''
+        Builds the file's whole name, using the given tags and format,
+        and appends the extension.
         '''
         from .os_utils import file_extension  # Avoid circular import
-        return format.format(
-            title=self.tags[Tag.Title],
-            album=self.tags[Tag.Album],
-            artist=self.tags[Tag.Artist],
-            year=self.tags[Tag.Year],
-            track=int(self.tags[Tag.Track]),
-            genre=self.tags[Tag.Genre]
-        ) + file_extension(self.file)
+
+        return self.fill_formatted_str(format_str) + file_extension(self.file)

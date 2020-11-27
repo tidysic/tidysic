@@ -1,17 +1,17 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt5.QtCore import Qt
 
-from tidysic.algorithms import StructureLevel
+from tidysic.algorithms import TreeNode
 from tidysic.audio_file import AudioFile
 
 
 class FileTreeItem(QTreeWidgetItem):
 
-    def __init__(self, file: AudioFile, format: str, *args, **kwargs):
+    def __init__(self, file: AudioFile, format_str: str, *args, **kwargs):
         super(FileTreeItem, self).__init__(*args, **kwargs)
         self.setText(
             0,
-            file.build_file_name(format)
+            file.fill_formatted_str(format_str)
         )
 
         self.file = file
@@ -28,39 +28,30 @@ class FilesVisualizer(QTreeWidget):
 
         self.format = format
 
-    def feed_data(self, structure: StructureLevel):
-        root: QTreeWidgetItem = self.create_item(structure)
-
-        items = root.takeChildren()
+    def feed_data(self, root_nodes: list):
+        items = [
+            self.create_item(node)
+            for node in root_nodes
+        ]
         self.addTopLevelItems(sorted(
             items,
             key=lambda item: item.text(0).lower()
         ))
 
-    def create_item(self, structure: StructureLevel):
-        tree_item = QTreeWidgetItem()
+    def create_item(self, node):
+        if isinstance(node, TreeNode):
+            
+            tree_item = QTreeWidgetItem()
+            tree_item.setText(0, node.name)
 
-        for name, sublevel in structure.ordered.items():
-            if isinstance(sublevel, StructureLevel):
-                tree_child_item = self.create_item(sublevel)
-                tree_child_item.setText(0, name)
-                tree_child_item.setFlags(Qt.ItemIsSelectable)
+            children = []
+            for child in node.children:
+                children.append(
+                    self.create_item(child)
+                )
+            children.sort(key=lambda node: node.text(0))
+            tree_item.addChildren(children)
+            return tree_item
 
-                tree_item.addChild(tree_child_item)
-            else:
-                # Leaf of the tree
-                tree_child_item = QTreeWidgetItem()
-                tree_child_item.setText(0, name)
-                tree_child_item.setFlags(Qt.ItemIsSelectable)
-
-                for file in sublevel:
-                    tree_leaf_item = FileTreeItem(file, self.format)
-                    tree_child_item.addChild(tree_leaf_item)
-
-                tree_item.addChild(tree_child_item)
-
-        for file in structure.unordered:
-            tree_child_item = FileTreeItem(file, self.format)
-            tree_item.addChild(tree_child_item)
-
-        return tree_item
+        else:
+            return FileTreeItem(node, self.format)
