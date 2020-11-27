@@ -150,7 +150,7 @@ class AudioFile(object):
             for tag in Tag:
                 if str(tag).lower() == key:
                     value = self.tags[tag]
-                    if key in ['year', 'track']:
+                    if key in ['year', 'track'] and value:
                         value = int(value)
                     break
             else:
