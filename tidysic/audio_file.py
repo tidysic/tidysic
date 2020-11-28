@@ -153,7 +153,7 @@ class AudioFile(object):
                     if key in ['year', 'track'] and value:
                         value = int(value)
 
-                    if key in ['title', 'artist', 'album']:
+                    if key in ['title', 'artist', 'album'] and not value:
                         value = f'Unknown {key.capitalize()}'
 
                     break
