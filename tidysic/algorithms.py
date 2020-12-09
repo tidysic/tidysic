@@ -121,13 +121,10 @@ def scan_folder(
     ]
 
     audio_files = [
-        AudioFile(file)
+        file
         for file in files
         if is_audio_file(file)
     ]
-    if guess:
-        for audio_file in audio_files:
-            audio_file.guess_tags(dry_run)
 
     clutter_files = [
         ClutterFile(file)
@@ -135,10 +132,18 @@ def scan_folder(
         if file not in child_dirs and file not in audio_files
     ]
 
+    audio_files = [
+        AudioFile(file)
+        for file in audio_files
+    ]
+    if guess:
+        for audio_file in audio_files:
+            audio_file.guess_tags(dry_run)
+
     # Condition clutter
     if len(audio_files) > 0:
         for tag in Tag:
-            candidate = audio_files[0]
+            candidate = audio_files[0].tags[tag]
             if all([
                 audio_file.tags[tag] == candidate
                 for audio_file in audio_files[1:]
@@ -260,6 +265,7 @@ def associate_clutter(
         clutter_file (ClutterFile): File that must be sorted into the given
             nodes
     '''
+
     order_tag = ordering[0]
 
     try:
@@ -269,15 +275,19 @@ def associate_clutter(
 
     for node in nodes:
         if node.name == tag_value:
-            if node.children:
+            if (
+                not node.children
+                or
+                len(ordering) == 1
+            ):
+                # Terminal node
+                node.clutter_files.append(clutter_file)
+            else:
                 associate_clutter(
                     node.children,
                     ordering[1:],
                     clutter_file
                     )
-            else:
-                # Terminal node
-                node.clutter_files.append(clutter_file)
 
 
 def move_files(
@@ -294,41 +304,41 @@ def move_files(
 
     Assumes the given TreeNode's children are also TreeNodes
     '''
-    for child in nodes:
+    for node in nodes:
 
-        if isinstance(child, AudioFile):
+        if isinstance(node, AudioFile):
             # Leaf of the structure tree
             assert(len(formats) == 1)
             move_file(
-                child.file,
-                child.build_file_name(formats[0]),
+                node.file,
+                node.build_file_name(formats[0]),
                 dir_target,
                 dry_run,
                 verbose
             )
 
-        elif isinstance(child, TreeNode):
-
-            for clutter_file in child.clutter_files:
-                move_file(
-                    clutter_file.file,
-                    clutter_file.name,
-                    dir_target,
-                    dry_run,
-                    verbose
-                )
+        elif isinstance(node, TreeNode):
 
             # Recursive step
             assert(len(formats) > 0)
             sub_dir_target = create_dir(
-                child.build_name(formats[0]),
+                node.build_name(formats[0]),
                 dir_target,
                 dry_run,
                 verbose
             )
 
+            for clutter_file in node.clutter_files:
+                move_file(
+                    clutter_file.file,
+                    clutter_file.name,
+                    sub_dir_target,
+                    dry_run,
+                    verbose
+                )
+
             move_files(
-                child.children,
+                node.children,
                 sub_dir_target,
                 formats[1:],
                 with_clutter,
