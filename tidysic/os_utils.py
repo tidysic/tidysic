@@ -110,7 +110,7 @@ def move_file(
     if dry_run or verbose:
         logger.dry_run([
             'Moving file',
-            f'{file.name}',
+            f'{filename(file)}',
             'to',
             full_path
         ])
