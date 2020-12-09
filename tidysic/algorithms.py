@@ -158,7 +158,7 @@ def scan_folder(
         if len(child_audio_files) == 0:
             # No audio files in this child folder,
             # it is then considered as clutter
-            clutter_files.append(child_dir)
+            clutter_files.append(ClutterFile(child_dir))
         else:
             audio_files += child_audio_files
             clutter_files += child_clutter_files
