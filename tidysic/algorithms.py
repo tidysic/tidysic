@@ -109,8 +109,10 @@ def scan_folder(
     Returns:
         Tuple[List[AudioFile], List[ClutterFile]]: [description]
     '''
-    files = os.listdir(input_dir)
-    audio_files = []
+    files = [
+        os.path.join(input_dir, file)
+        for file in os.listdir(input_dir)
+    ]
 
     child_dirs = [
         file
