@@ -26,6 +26,7 @@ class TreeNode(object):
         self._tag = tag
         self._name = name
         self._children = []
+        self._clutter_files = []
 
     @property
     def tag(self) -> Tag:
@@ -57,6 +58,17 @@ class TreeNode(object):
     @children.setter
     def children(self, value):
         self._children = value
+
+    @property
+    def clutter_files(self):
+        '''
+        Non audio files (can also be directories) that should be placed in the
+        same directory as self's children.
+
+        All the files that were found in the same subdirectory of the input
+        directory as all of self's leaves.
+        '''
+        return self._clutter_files
 
     def get_any_leaf(self) -> AudioFile:
         '''
@@ -209,6 +221,64 @@ It will move into an 'Unknown {str(order_tag)}' directory.\
     return child_nodes
 
 
+def organize_clutter(
+    nodes: List[TreeNode],
+    ordering: List[Tag],
+    clutter_files: List[ClutterFile]
+):
+    '''
+    Given the tree-structured audio files, and the list of clutter files,
+    assigns each clutter file to its associated node.
+
+    Args:
+        nodes (List[TreeNode]): List of nodes of the tree
+        ordering (List[Tag]): List of tags along which the tree is ordered
+        clutter_files (List[ClutterFile]): Files that must be sorted into the
+            given nodes
+    '''
+    for clutter_file in clutter_files:
+        associate_clutter(
+            nodes,
+            ordering,
+            clutter_file
+        )
+
+
+def associate_clutter(
+    nodes: List[TreeNode],
+    ordering: List[Tag],
+    clutter_file: ClutterFile
+):
+    '''
+    Given the tree-structured audio files, and a clutter file, assigns each
+    clutter file to its associated node.
+
+    Args:
+        nodes (List[TreeNode]): List of nodes of the tree
+        ordering (List[Tag]): List of tags along which the tree is ordered
+        clutter_file (ClutterFile): File that must be sorted into the given
+            nodes
+    '''
+    order_tag = ordering[0]
+
+    try:
+        tag_value = clutter_file.tags[order_tag]
+    except KeyError:
+        tag_value = f'Unknown {str(order_tag)}'
+
+    for node in nodes:
+        if node.name == tag_value:
+            if node.children:
+                associate_clutter(
+                    node.children,
+                    ordering[1:],
+                    clutter_file
+                    )
+            else:
+                # Terminal node
+                node.clutter_files.append(clutter_file)
+
+
 def move_files(
     nodes: list,
     dir_target: str,
@@ -295,9 +365,9 @@ def organize(
     Concisely runs the three parts of the algorithm.
     '''
 
-    structure = [Tag.Artist]
+    ordering = [Tag.Artist]
     if with_album:
-        structure += [Tag.Album]
+        ordering += [Tag.Album]
 
     audio_files, clutter_files = scan_folder(
         dir_src,
@@ -307,9 +377,15 @@ def organize(
 
     root_nodes = create_structure(
         audio_files,
-        structure,
+        ordering,
         guess,
         dry_run
+    )
+
+    organize_clutter(
+        root_nodes,
+        ordering,
+        clutter_files
     )
 
     formats = [
