@@ -1,9 +1,10 @@
 import os
-from typing import List
+from typing import List, Tuple
 
 from .tag import Tag
-from .audio_file import AudioFile
+from .audio_file import AudioFile, ClutterFile
 from .os_utils import (
+    is_audio_file,
     create_dir,
     get_audio_files,
     move_file,
@@ -76,6 +77,80 @@ class TreeNode(object):
         file = self.get_any_leaf()
         if file:
             return file.fill_formatted_str(format_string)
+
+
+def scan_folder(
+    input_dir: str,
+    guess: bool,
+    dry_run: bool
+) -> Tuple[List[AudioFile], List[ClutterFile]]:
+    '''
+    Parse the input folder, returning a flat list of AudioFiles.
+
+    Returns an array of all the audio files found in the given directory and
+    its children. This is were all tags guessing will happen.
+
+    Args:
+        input_dir (str): Whole path of the directory to scan
+        guess (bool): Whether to apply guessing to untagged audio files
+        dry_run (bool): Whether to apply eventual tag changes to files
+
+    Returns:
+        Tuple[List[AudioFile], List[ClutterFile]]: [description]
+    '''
+    files = os.listdir(input_dir)
+    audio_files = []
+
+    child_dirs = [
+        file
+        for file in files
+        if os.path.isdir(file)
+    ]
+
+    audio_files = [
+        AudioFile(file)
+        for file in files
+        if is_audio_file(file)
+    ]
+    if guess:
+        for audio_file in audio_files:
+            audio_file.guess_tags(dry_run)
+
+    clutter_files = [
+        ClutterFile(file)
+        for file in files
+        if file not in child_dirs and file not in audio_files
+    ]
+
+    # Condition clutter
+    if len(audio_files) > 0:
+        for tag in Tag:
+            candidate = audio_files[0]
+            if all([
+                audio_file.tags[tag] == candidate
+                for audio_file in audio_files[1:]
+            ]):
+                for clutter_file in clutter_files:
+                    clutter_file.tags[tag] = candidate
+
+    # Recursive step
+    for child_dir in child_dirs:
+
+        child_audio_files, child_clutter_files = scan_folder(
+            child_dir,
+            guess,
+            dry_run
+        )
+
+        if len(child_audio_files) == 0:
+            # No audio files in this child folder,
+            # it is then considered as clutter
+            clutter_files.append(child_dir)
+        else:
+            audio_files += child_audio_files
+            clutter_files += child_clutter_files
+
+    return (audio_files, clutter_files)
 
 
 def create_structure(
@@ -224,7 +299,11 @@ def organize(
     if with_album:
         structure += [Tag.Album]
 
-    audio_files = get_audio_files(dir_src)
+    audio_files, clutter_files = scan_folder(
+        dir_src,
+        guess,
+        dry_run
+    )
 
     root_nodes = create_structure(
         audio_files,
