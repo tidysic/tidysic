@@ -2,7 +2,6 @@ import eyed3
 import re
 
 from .tag import Tag, get_tags
-from .os_utils import filename
 from .logger import log, warning, dry_run as log_dry_run
 
 
@@ -14,8 +13,10 @@ class ClutterFile(object):
 
     def __init__(self, file):
         self.file = file
-        self.name = filename(file)
         self.tags = {}
+        # Avoid circular imports
+        from .os_utils import filename
+        self.name = filename(file)
 
 
 class AudioFile(object):
