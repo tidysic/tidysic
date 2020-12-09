@@ -39,6 +39,24 @@ def file_extension(
     return os.path.splitext(path)[1]
 
 
+def is_audio_file(
+    path: str
+) -> bool:
+    '''
+    Returns whether the given file is an audio file
+
+    Args:
+        path (str): File to test
+
+    Returns:
+        bool: True if the given file is an audio file
+    '''
+    return (
+        os.path.isfile(path) and
+        f'.{file_extension(path)}' in audio_extensions
+    )
+
+
 def create_dir(
     dir_name: str,
     parent_path: str,
