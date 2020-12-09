@@ -78,6 +78,7 @@ def create_dir(
     return full_path
 
 
+# TODO: This method should not be used anymore anywhere in the project
 def get_audio_files(
     directory_path: str
 ):

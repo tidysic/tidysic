@@ -6,7 +6,6 @@ from .audio_file import AudioFile, ClutterFile
 from .os_utils import (
     is_audio_file,
     create_dir,
-    get_audio_files,
     move_file,
     remove_directory
 )
