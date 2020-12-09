@@ -283,7 +283,9 @@ def move_files(
     nodes: list,
     dir_target: str,
     formats: List[str],
-    dry_run=False,
+    with_clutter: bool,
+    dry_run: bool,
+    verbose: bool
 ):
     '''
     Moves the given files into a folder hierarchy following
@@ -301,17 +303,27 @@ def move_files(
                 child.build_file_name(formats[0]),
                 dir_target,
                 dry_run,
-                False
+                verbose
             )
 
         elif isinstance(child, TreeNode):
+
+            for clutter_file in child.clutter_files:
+                move_file(
+                    clutter_file.file,
+                    clutter_file.name,
+                    dir_target,
+                    dry_run,
+                    verbose
+                )
+
             # Recursive step
             assert(len(formats) > 0)
             sub_dir_target = create_dir(
                 child.build_name(formats[0]),
                 dir_target,
                 dry_run,
-                False
+                verbose
             )
 
             move_files(
@@ -357,6 +369,7 @@ def organize(
     dir_src: str,
     dir_target: str,
     with_album: bool,
+    with_clutter: bool,
     guess: bool,
     dry_run: bool,
     verbose: bool
@@ -397,7 +410,9 @@ def organize(
         root_nodes,
         dir_target,
         formats,
-        dry_run
+        with_clutter,
+        dry_run,
+        verbose
     )
 
     clean_up(dir_src, audio_files, dry_run)
