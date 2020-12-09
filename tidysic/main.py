@@ -24,6 +24,7 @@ def run():
             args.source,
             args.target,
             args.with_album,
+            args.with_clutter,
             args.guess,
             args.dry_run,
             args.verbose
