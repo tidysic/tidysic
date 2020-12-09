@@ -129,6 +129,12 @@ def add_subcommand_organize(subparsers):
     )
 
     subparser.add_argument(
+        '--with-clutter',
+        help='''moves non-audio files along with their audio neighbor files''',
+        action='store_true',
+    )
+
+    subparser.add_argument(
         '-g',
         '--guess',
         help='''\
