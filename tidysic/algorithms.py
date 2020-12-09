@@ -331,7 +331,9 @@ def move_files(
                 child.children,
                 sub_dir_target,
                 formats[1:],
-                dry_run
+                with_clutter,
+                dry_run,
+                verbose
             )
 
 
