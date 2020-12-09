@@ -52,8 +52,9 @@ def is_audio_file(
         bool: True if the given file is an audio file
     '''
     return (
-        os.path.isfile(path) and
-        f'.{file_extension(path)}' in audio_extensions
+        os.path.isfile(path)
+        and
+        file_extension(path) in audio_extensions
     )
 
 
