@@ -79,21 +79,6 @@ def create_dir(
     return full_path
 
 
-# TODO: This method should not be used anymore anywhere in the project
-def get_audio_files(
-    directory_path: str
-):
-    '''
-    Returns the audio files present in the given directory.
-    '''
-    audio_files = [
-        AudioFile(path)
-        for ext in audio_extensions
-        for path in Path(directory_path).rglob('*'+ext)
-    ]
-    return audio_files
-
-
 def move_file(
     file: str,
     target_name: str,
