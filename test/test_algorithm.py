@@ -1,10 +1,15 @@
 from unittest import TestCase
 import os
 
-from tidysic.os_utils import project_test_folder, get_audio_files
+from tidysic.os_utils import project_test_folder
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
-from tidysic.algorithms import create_structure, move_files, TreeNode
+from tidysic.algorithms import (
+    scan_folder,
+    create_structure,
+    move_files,
+    TreeNode,
+)
 
 
 class AlgorithmTest(TestCase):
@@ -19,7 +24,7 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.music_folder,
             'normal'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
         self.assertEqual(len(files), 1)
 
         root_nodes = create_structure(
@@ -54,10 +59,10 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.music_folder,
             'Missing Artist - No Title'
         )
-        files = get_audio_files(path)
-
         # Needed in order to test without user input
         AudioFile.accept_all_guesses = True
+
+        files, _ = scan_folder(path, True, False)
 
         root_nodes = create_structure(
             files,
@@ -76,7 +81,7 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.music_folder,
             'a bunch of illegal characters'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
 
         root_nodes = create_structure(
             files,
@@ -97,7 +102,9 @@ class AlgorithmTest(TestCase):
             root_nodes,
             path,
             formats,
-            dry_run=False
+            with_clutter=False,
+            dry_run=False,
+            verbose=False
         )
 
     def test_format(self):
@@ -105,7 +112,7 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.music_folder,
             'format title-artist-album'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
 
         root_nodes = create_structure(
             files,
@@ -125,7 +132,7 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.music_folder,
             'missing album tag'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
 
         root_nodes = create_structure(
             files,
