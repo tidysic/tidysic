@@ -60,6 +60,10 @@ class FilesVisualizer(QTreeWidget):
                 children.append(
                     self.create_item(child)
                 )
+            for child in node.clutter_files:
+                children.append(
+                    ClutterTreeItem(child)
+                )
             children.sort(key=lambda node: node.text(0))
             tree_item.addChildren(children)
             return tree_item
