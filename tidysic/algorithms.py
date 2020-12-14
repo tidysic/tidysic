@@ -328,14 +328,15 @@ def move_files(
                 verbose
             )
 
-            for clutter_file in node.clutter_files:
-                move_file(
-                    clutter_file.file,
-                    clutter_file.name,
-                    sub_dir_target,
-                    dry_run,
-                    verbose
-                )
+            if with_clutter:
+                for clutter_file in node.clutter_files:
+                    move_file(
+                        clutter_file.file,
+                        clutter_file.name,
+                        sub_dir_target,
+                        dry_run,
+                        verbose
+                    )
 
             move_files(
                 node.children,
