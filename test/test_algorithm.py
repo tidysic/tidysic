@@ -8,6 +8,7 @@ from tidysic.algorithms import (
     scan_folder,
     create_structure,
     move_files,
+    organize,
     TreeNode,
 )
 
@@ -143,3 +144,34 @@ class AlgorithmTest(TestCase):
 
         album_node: TreeNode = root_nodes[0]
         self.assertEqual(album_node.name, 'Unknown Album')
+
+    def test_clutter(self):
+        path = os.path.join(
+            AlgorithmTest.music_folder,
+            'clutter test'
+        )
+
+        organize(
+            path,
+            path,
+            with_album=True,
+            with_clutter=True,
+            guess=False,
+            dry_run=False,
+            verbose=True
+        )
+
+        artist_folder = os.path.join(path, 'Artist Name')
+        self.assertTrue(os.path.isdir(artist_folder))
+
+        artist_clutter = os.path.join(artist_folder, 'artist_clutter')
+        self.assertTrue(os.path.isfile(artist_clutter))
+
+        album_folder = os.path.join(artist_folder, 'Album Name')
+        self.assertTrue(os.path.isdir(album_folder))
+
+        album_clutter_dir = os.path.join(artist_folder, 'album_clutter')
+        self.assertTrue(os.path.isdir(album_clutter_dir))
+
+        album_clutter = os.path.join(album_clutter_dir, 'album_clutter')
+        self.assertTrue(os.path.isfile(album_clutter))
