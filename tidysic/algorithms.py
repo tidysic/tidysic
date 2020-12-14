@@ -141,15 +141,22 @@ def scan_folder(
             audio_file.guess_tags(dry_run)
 
     # Condition clutter
+    common_tags = {}
     if len(audio_files) > 0:
         for tag in Tag:
-            candidate = audio_files[0].tags[tag]
-            if all([
-                audio_file.tags[tag] == candidate
+            tag_value = audio_files[0].tags[tag]
+            if (
+                tag_value is not None
+                and
+                all([
+                    audio_file.tags[tag] == tag_value
                 for audio_file in audio_files[1:]
-            ]):
+                ])
+            ):
+                common_tags[tag] = tag_value
+
                 for clutter_file in clutter_files:
-                    clutter_file.tags[tag] = candidate
+        clutter_file.tags = common_tags
 
     # Recursive step
     for child_dir in child_dirs:
@@ -163,7 +170,9 @@ def scan_folder(
         if len(child_audio_files) == 0:
             # No audio files in this child folder,
             # it is then considered as clutter
-            clutter_files.append(ClutterFile(child_dir))
+            clutter_dir = ClutterFile(child_dir)
+            clutter_dir.tags = common_tags
+            clutter_files.append(clutter_dir)
         else:
             audio_files += child_audio_files
             clutter_files += child_clutter_files
