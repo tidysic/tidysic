@@ -264,6 +264,9 @@ def associate_clutter(
         ordering (List[Tag]): List of tags along which the tree is ordered
         clutter_file (ClutterFile): File that must be sorted into the given
             nodes
+
+    Returns:
+        bool: True if the clutter was successfully associated
     '''
 
     order_tag = ordering[0]
@@ -273,21 +276,30 @@ def associate_clutter(
     except KeyError:
         tag_value = f'Unknown {str(order_tag)}'
 
+    if order_tag in clutter_file.tags:
+        tag_value = clutter_file.tags[order_tag]
     for node in nodes:
-        if node.name == tag_value:
+            if (
+                tag_value is not None
+                and
+                node.name == tag_value
+            ):
             if (
                 not node.children
                 or
                 len(ordering) == 1
-            ):
-                # Terminal node
-                node.clutter_files.append(clutter_file)
-            else:
-                associate_clutter(
+                    or
+                    not associate_clutter(
                     node.children,
                     ordering[1:],
                     clutter_file
                     )
+                ):
+                    # Terminal node
+                    node.clutter_files.append(clutter_file)
+                    return True
+
+    return False
 
 
 def move_files(
