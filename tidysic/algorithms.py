@@ -142,18 +142,21 @@ def scan_folder(
 
     # Condition clutter
     common_tags = {}
-    if len(audio_files) > 0:
-        for tag in Tag:
-            tag_value = audio_files[0].tags[tag]
+    for tag in Tag:
+        tag_value = None
+        if len(audio_files) > 0:
+            candidate = audio_files[0].tags[tag]
             if (
-                tag_value is not None
+                candidate is not None
                 and
                 all([
-                    audio_file.tags[tag] == tag_value
+                    audio_file.tags[tag] == candidate
                     for audio_file in audio_files[1:]
                 ])
             ):
-                common_tags[tag] = tag_value
+                tag_value = candidate
+
+        common_tags[tag] = tag_value
 
     for clutter_file in clutter_files:
         clutter_file.tags = common_tags

@@ -14,6 +14,8 @@ class ClutterFile(object):
     def __init__(self, file):
         self.file = file
         self.tags = {}
+        for tag in Tag:
+            self.tags[tag] = None
         # Avoid circular imports
         from .os_utils import filename
         self.name = filename(file)
