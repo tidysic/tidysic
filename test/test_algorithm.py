@@ -170,8 +170,11 @@ class AlgorithmTest(TestCase):
         album_folder = os.path.join(artist_folder, 'Album Name')
         self.assertTrue(os.path.isdir(album_folder))
 
-        album_clutter_dir = os.path.join(artist_folder, 'album_clutter')
+        album_clutter_dir = os.path.join(album_folder, 'album_clutter')
+        print(album_clutter_dir)
         self.assertTrue(os.path.isdir(album_clutter_dir))
 
-        album_clutter = os.path.join(album_clutter_dir, 'album_clutter')
-        self.assertTrue(os.path.isfile(album_clutter))
+        album_clutter1 = os.path.join(album_clutter_dir, 'clutter1')
+        album_clutter2 = os.path.join(album_clutter_dir, 'clutter2')
+        self.assertTrue(os.path.isfile(album_clutter1))
+        self.assertTrue(os.path.isfile(album_clutter2))
