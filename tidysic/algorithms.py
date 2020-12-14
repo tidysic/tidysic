@@ -150,12 +150,12 @@ def scan_folder(
                 and
                 all([
                     audio_file.tags[tag] == tag_value
-                for audio_file in audio_files[1:]
+                    for audio_file in audio_files[1:]
                 ])
             ):
                 common_tags[tag] = tag_value
 
-                for clutter_file in clutter_files:
+    for clutter_file in clutter_files:
         clutter_file.tags = common_tags
 
     # Recursive step
@@ -263,7 +263,7 @@ def associate_clutter(
     nodes: List[TreeNode],
     ordering: List[Tag],
     clutter_file: ClutterFile
-):
+) -> bool:
     '''
     Given the tree-structured audio files, and a clutter file, assigns each
     clutter file to its associated node.
@@ -280,28 +280,23 @@ def associate_clutter(
 
     order_tag = ordering[0]
 
-    try:
-        tag_value = clutter_file.tags[order_tag]
-    except KeyError:
-        tag_value = f'Unknown {str(order_tag)}'
-
     if order_tag in clutter_file.tags:
         tag_value = clutter_file.tags[order_tag]
-    for node in nodes:
+        for node in nodes:
             if (
                 tag_value is not None
                 and
                 node.name == tag_value
             ):
-            if (
-                not node.children
-                or
-                len(ordering) == 1
+                if (
+                    not node.children
                     or
-                    not associate_clutter(
-                    node.children,
-                    ordering[1:],
-                    clutter_file
+                    len(ordering) == 1
+                        or
+                        not associate_clutter(
+                        node.children,
+                        ordering[1:],
+                        clutter_file
                     )
                 ):
                     # Terminal node

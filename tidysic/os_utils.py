@@ -1,9 +1,7 @@
 import os
 import shutil
-from pathlib import Path
 
 from tidysic import logger
-from .audio_file import AudioFile
 
 
 audio_extensions = [
