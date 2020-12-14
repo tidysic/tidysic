@@ -73,7 +73,7 @@ def create_dir(
 
     if dry_run or verbose:
         logger.dry_run(f'Create directory {full_path}')
-    if not verbose:
+    if not dry_run:
         os.makedirs(full_path, exist_ok=True)
 
     return full_path
