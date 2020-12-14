@@ -1,16 +1,28 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 
 from tidysic.algorithms import TreeNode
-from tidysic.audio_file import AudioFile
+from tidysic.audio_file import AudioFile, ClutterFile
 
 
-class FileTreeItem(QTreeWidgetItem):
+class AudioTreeItem(QTreeWidgetItem):
 
     def __init__(self, file: AudioFile, format_str: str, *args, **kwargs):
-        super(FileTreeItem, self).__init__(*args, **kwargs)
+        super(AudioTreeItem, self).__init__(*args, **kwargs)
         self.setText(
             0,
             file.fill_formatted_str(format_str)
+        )
+
+        self.file = file
+
+
+class ClutterTreeItem(QTreeWidgetItem):
+
+    def __init__(self, file: ClutterFile):
+        super(ClutterTreeItem, self).__init__()
+        self.setText(
+            0,
+            file.name
         )
 
         self.file = file
@@ -23,7 +35,6 @@ class FilesVisualizer(QTreeWidget):
         self.setColumnCount(1)
         self.setHeaderHidden(True)
 
-        # TODO: Find a way to to multi-file tag editing
         self.setSelectionMode(QAbstractItemView.SingleSelection)
 
         self.format = format
@@ -40,7 +51,7 @@ class FilesVisualizer(QTreeWidget):
 
     def create_item(self, node):
         if isinstance(node, TreeNode):
-            
+
             tree_item = QTreeWidgetItem()
             tree_item.setText(0, node.name)
 
@@ -54,4 +65,7 @@ class FilesVisualizer(QTreeWidget):
             return tree_item
 
         else:
-            return FileTreeItem(node, self.format)
+            if isinstance(node, AudioFile):
+                return AudioTreeItem(node, self.format)
+            elif isinstance(node, ClutterFile):
+                return ClutterTreeItem(node)
