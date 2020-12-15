@@ -1,5 +1,6 @@
 from unittest import TestCase
 import os
+from shutil import copytree, rmtree
 
 from tidysic.os_utils import project_test_folder
 from tidysic.tag import Tag
@@ -15,14 +16,30 @@ from tidysic.algorithms import (
 
 class AlgorithmTest(TestCase):
 
-    music_folder = os.path.join(
+    original_music_root = os.path.join(
         project_test_folder(),
         'music'
     )
 
+    test_root = os.path.join(
+        project_test_folder(),
+        'music_copy'
+    )
+
+    def setUp(self):
+        copytree(
+            AlgorithmTest.original_music_root,
+            AlgorithmTest.test_root
+        )
+    
+    def tearDown(self):
+        rmtree(
+            AlgorithmTest.test_root
+        )
+
     def test_normal(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'normal'
         )
         files, _ = scan_folder(path, False, False)
@@ -57,7 +74,7 @@ class AlgorithmTest(TestCase):
 
     def test_guess(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'Missing Artist - No Title'
         )
         # Needed in order to test without user input
@@ -79,7 +96,7 @@ class AlgorithmTest(TestCase):
 
     def test_illegal_characters(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'a bunch of illegal characters'
         )
         files, _ = scan_folder(path, False, False)
@@ -110,7 +127,7 @@ class AlgorithmTest(TestCase):
 
     def test_format(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'format title-artist-album'
         )
         files, _ = scan_folder(path, False, False)
@@ -130,7 +147,7 @@ class AlgorithmTest(TestCase):
 
     def test_missing_order_tag(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'missing album tag'
         )
         files, _ = scan_folder(path, False, False)
@@ -147,7 +164,7 @@ class AlgorithmTest(TestCase):
 
     def test_clutter(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'clutter test'
         )
 
