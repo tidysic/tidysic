@@ -255,11 +255,12 @@ def organize_clutter(
             given nodes
     '''
     for clutter_file in clutter_files:
-        associate_clutter(
+        if not associate_clutter(
             nodes,
             ordering,
             clutter_file
-        )
+        ):
+            clutter_files.remove(clutter_file)
 
 
 def associate_clutter(
@@ -291,12 +292,13 @@ def associate_clutter(
                 and
                 node.name == tag_value
             ):
+                #  The clutter is down the right path
                 if (
                     not node.children
                     or
                     len(ordering) == 1
-                        or
-                        not associate_clutter(
+                    or
+                    not associate_clutter(
                         node.children,
                         ordering[1:],
                         clutter_file
@@ -304,7 +306,7 @@ def associate_clutter(
                 ):
                     # Terminal node
                     node.clutter_files.append(clutter_file)
-                    return True
+                return True
 
     return False
 
@@ -370,32 +372,52 @@ def move_files(
 def clean_up(
     dir_src: str,
     audio_files: List[AudioFile],
-    dry_run: bool
+    clutter_files: List[ClutterFile],
+    dry_run: bool,
+    verbose: bool
 ):
     '''
-    Remove empty folders in the source directory.
+    Remove empty folders in the given directory.
+
+    This method may seem needlessly convoluted, but it serves the purpose of
+    actually notifying of directory removal even when `dry_run` is True.
+
+    Returns true if the given folder was deleted.
     '''
     if not os.path.isdir(dir_src):
-        return
+        return False
 
-    # remove empty subfolders
-    files = os.listdir(dir_src)
-    if len(files):
-        for f in files:
-            fullpath = os.path.join(dir_src, f)
-            if os.path.isdir(fullpath):
-                clean_up(fullpath, audio_files, dry_run)
+    # Recursive step
+    files = [
+        os.path.join(dir_src, filename)
+        for filename in os.listdir(dir_src)
+    ]
 
-    # if folder empty, delete it
-    files = os.listdir(dir_src)
+    for file in files:
+        if clean_up(
+            file,
+            audio_files,
+            clutter_files,
+            dry_run,
+            verbose
+        ):
+            files.remove(file)
+
+    # We kept track of which files were moved for this reason:
+    deleted_files = [
+        file.file
+        for file in audio_files + clutter_files
+    ]
+    # Vacuously true if dry_run wasn't specified
     if all([
-        file in [
-            audio_file.file
-            for audio_file in audio_files
-        ]
+        file in deleted_files
         for file in files
     ]):
-        remove_directory(dir_src, dry_run, False)
+        remove_directory(dir_src, dry_run, verbose)
+        return True
+
+    else:
+        return False
 
 
 def organize(
@@ -448,4 +470,10 @@ def organize(
         verbose
     )
 
-    clean_up(dir_src, audio_files, dry_run)
+    clean_up(
+        dir_src,
+        audio_files,
+        clutter_files,
+        dry_run,
+        verbose
+    )
