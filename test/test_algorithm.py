@@ -31,7 +31,7 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.original_music_root,
             AlgorithmTest.test_root
         )
-    
+
     def tearDown(self):
         rmtree(
             AlgorithmTest.test_root
