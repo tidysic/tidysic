@@ -1,5 +1,4 @@
 from enum import Enum
-from mutagen import File as MutagenFile
 
 
 class Tag(Enum):
@@ -19,14 +18,3 @@ class Tag(Enum):
 
     def __str__(self):
         return self.name
-
-
-def get_tags(file):
-    '''
-    Returns the tags of the given file as a dict
-    '''
-    tags = MutagenFile(file).tags
-    return {
-        tag: tags[tag.value][0] if tag.value in tags else None
-        for tag in Tag
-    }

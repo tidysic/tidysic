@@ -1,7 +1,9 @@
 from mutagen import File as MutagenFile
+from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3NoHeaderError
 import re
 
-from .tag import Tag, get_tags
+from .tag import Tag
 from .logger import log, warning, dry_run as log_dry_run
 
 
@@ -14,8 +16,7 @@ class AudioFile(object):
 
     def __init__(self, file):
         self.file = file
-        self.tags = get_tags(file)
-        self.guessed_tags = None
+        self.tags = self.read_tags()
 
     def guess_tags(self, dry_run):
         '''
@@ -86,6 +87,21 @@ class AudioFile(object):
         except BaseException:
             warning(f'Could not parse the title: {title}')
 
+    def read_tags(self):
+        '''
+        Reads the tags from the file's metadata
+        '''
+        tags = None
+        try:
+            tags = EasyID3(self.file)
+        except ID3NoHeaderError:
+            tags = MutagenFile(self.file)
+
+        return {
+            tag: tags[tag.value][0] if tag.value in tags else None
+            for tag in Tag
+        }
+
     def save_tags(self, new_tags, dry_run):
         '''
         Applies the given collection of tags to itself and
@@ -106,11 +122,15 @@ class AudioFile(object):
             for tag, value in new_tags.items():
                 self.tags[tag] = value
 
-            tags = MutagenFile(self.file)
-            if tags:
-                for tag, value in new_tags.items():
-                    tags[tag.value] = value
-                tags.save()
+            tags = None
+            try:
+                tags = EasyID3(self.file)
+            except ID3NoHeaderError:
+                tags = MutagenFile(self.file)
+
+            for tag, value in new_tags.items():
+                tags[tag.value] = value
+            tags.save()
 
     def fill_formatted_str(self, format_str: str):
         '''
