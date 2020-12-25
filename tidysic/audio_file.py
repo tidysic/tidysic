@@ -1,4 +1,4 @@
-import eyed3
+from mutagen import File as MutagenFile
 import re
 
 from .tag import Tag, get_tags
@@ -103,14 +103,11 @@ class AudioFile(object):
             for tag, value in new_tags.items():
                 self.tags[tag] = value
 
-            tags_wrapper = eyed3.load(self.file)
-            # TODO: Make this more generic if other tags
-            # than artist and title can be guessed later on
-            if Tag.Title in new_tags:
-                tags_wrapper.tag.title = new_tags[Tag.Title]
-            if Tag.Artist in new_tags:
-                tags_wrapper.tag.artist = new_tags[Tag.Artist]
-            tags_wrapper.tag.save()
+            tags = MutagenFile(self.file)
+            if tags:
+                for tag, value in new_tags.items():
+                    tags[tag.value] = value
+                tags.save()
 
     def fill_formatted_str(self, format_str: str):
         '''
