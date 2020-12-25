@@ -62,7 +62,7 @@ class AudioFile(object):
                         new_tags[Tag.Title] = input('Title : ')
                         new_tags[Tag.Artist] = input('Artist : ')
 
-                    self.save_tags(dry_run)
+                    self.save_tags(new_tags, dry_run)
 
             else:
                 # If nothing is guessed, ask user what to do
@@ -91,6 +91,9 @@ class AudioFile(object):
         Applies the given collection of tags to itself and
         saves them to the file (if `dry_run == True`)
         '''
+        for tag, value in new_tags.items():
+            self.tags[tag] = value
+
         if dry_run:
             message = ['Saving tags into file:']
             message += [
