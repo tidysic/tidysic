@@ -211,7 +211,7 @@ def create_structure(
                 tag_value = file.tags[order_tag]
 
                 if tag_value is None:
-                    log(f'Discarded file: {file}')
+                    log(f'Discarded file: {file.file}')
             else:
                 warning(f'''
 File {file.file}
