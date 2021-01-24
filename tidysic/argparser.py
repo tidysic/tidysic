@@ -124,6 +124,12 @@ def create_parser():
     )
 
     parser.add_argument(
+        '--with-clutter',
+        help='''moves non-audio files along with their audio neighbor files''',
+        action='store_true',
+    )
+
+    parser.add_argument(
         '-g',
         '--guess',
         help='''\
