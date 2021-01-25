@@ -1,25 +1,48 @@
 from unittest import TestCase
 import os
+from shutil import copytree, rmtree
 
-from tidysic.os_utils import project_test_folder, get_audio_files
+from tidysic.os_utils import project_test_folder
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
-from tidysic.algorithms import create_structure, move_files, TreeNode
+from tidysic.algorithms import (
+    scan_folder,
+    create_structure,
+    move_files,
+    organize,
+    TreeNode,
+)
 
 
 class AlgorithmTest(TestCase):
 
-    music_folder = os.path.join(
+    original_music_root = os.path.join(
         project_test_folder(),
         'music'
     )
 
+    test_root = os.path.join(
+        project_test_folder(),
+        'music_copy'
+    )
+
+    def setUp(self):
+        copytree(
+            AlgorithmTest.original_music_root,
+            AlgorithmTest.test_root
+        )
+
+    def tearDown(self):
+        rmtree(
+            AlgorithmTest.test_root
+        )
+
     def test_normal(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'normal'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
         self.assertEqual(len(files), 1)
 
         root_nodes = create_structure(
@@ -51,13 +74,13 @@ class AlgorithmTest(TestCase):
 
     def test_guess(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'Missing Artist - No Title'
         )
-        files = get_audio_files(path)
-
         # Needed in order to test without user input
         AudioFile.accept_all_guesses = True
+
+        files, _ = scan_folder(path, True, False)
 
         root_nodes = create_structure(
             files,
@@ -73,10 +96,10 @@ class AlgorithmTest(TestCase):
 
     def test_illegal_characters(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'a bunch of illegal characters'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
 
         root_nodes = create_structure(
             files,
@@ -97,15 +120,17 @@ class AlgorithmTest(TestCase):
             root_nodes,
             path,
             formats,
-            dry_run=False
+            with_clutter=False,
+            dry_run=False,
+            verbose=False
         )
 
     def test_format(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'format title-artist-album'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
 
         root_nodes = create_structure(
             files,
@@ -122,10 +147,10 @@ class AlgorithmTest(TestCase):
 
     def test_missing_order_tag(self):
         path = os.path.join(
-            AlgorithmTest.music_folder,
+            AlgorithmTest.test_root,
             'missing album tag'
         )
-        files = get_audio_files(path)
+        files, _ = scan_folder(path, False, False)
 
         root_nodes = create_structure(
             files,
@@ -136,3 +161,37 @@ class AlgorithmTest(TestCase):
 
         album_node: TreeNode = root_nodes[0]
         self.assertEqual(album_node.name, 'Unknown Album')
+
+    def test_clutter(self):
+        path = os.path.join(
+            AlgorithmTest.test_root,
+            'clutter test'
+        )
+
+        organize(
+            path,
+            path,
+            with_album=True,
+            with_clutter=True,
+            guess=False,
+            dry_run=False,
+            verbose=True
+        )
+
+        artist_folder = os.path.join(path, 'Artist Name')
+        self.assertTrue(os.path.isdir(artist_folder))
+
+        artist_clutter = os.path.join(artist_folder, 'artist_clutter')
+        self.assertTrue(os.path.isfile(artist_clutter))
+
+        album_folder = os.path.join(artist_folder, 'Album Name')
+        self.assertTrue(os.path.isdir(album_folder))
+
+        album_clutter_dir = os.path.join(album_folder, 'album_clutter')
+        print(album_clutter_dir)
+        self.assertTrue(os.path.isdir(album_clutter_dir))
+
+        album_clutter1 = os.path.join(album_clutter_dir, 'clutter1')
+        album_clutter2 = os.path.join(album_clutter_dir, 'clutter2')
+        self.assertTrue(os.path.isfile(album_clutter1))
+        self.assertTrue(os.path.isfile(album_clutter2))

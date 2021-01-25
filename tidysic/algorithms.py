@@ -1,11 +1,11 @@
 import os
-from typing import List
+from typing import List, Tuple
 
 from .tag import Tag
-from .audio_file import AudioFile
+from .audio_file import AudioFile, ClutterFile
 from .os_utils import (
+    is_audio_file,
     create_dir,
-    get_audio_files,
     move_file,
     remove_directory
 )
@@ -25,6 +25,7 @@ class TreeNode(object):
         self._tag = tag
         self._name = name
         self._children = []
+        self._clutter_files = []
 
     @property
     def tag(self) -> Tag:
@@ -57,6 +58,17 @@ class TreeNode(object):
     def children(self, value):
         self._children = value
 
+    @property
+    def clutter_files(self):
+        '''
+        Non audio files (can also be directories) that should be placed in the
+        same directory as self's children.
+
+        All the files that were found in the same subdirectory of the input
+        directory as all of self's leaves.
+        '''
+        return self._clutter_files
+
     def get_any_leaf(self) -> AudioFile:
         '''
         Returns a leaf of the tree whose root is `self`.
@@ -76,6 +88,99 @@ class TreeNode(object):
         file = self.get_any_leaf()
         if file:
             return file.fill_formatted_str(format_string)
+
+
+def scan_folder(
+    input_dir: str,
+    guess: bool,
+    dry_run: bool
+) -> Tuple[List[AudioFile], List[ClutterFile]]:
+    '''
+    Parse the input folder, returning a flat list of AudioFiles.
+
+    Returns an array of all the audio files found in the given directory and
+    its children. This is were all tags guessing will happen.
+
+    Args:
+        input_dir (str): Whole path of the directory to scan
+        guess (bool): Whether to apply guessing to untagged audio files
+        dry_run (bool): Whether to apply eventual tag changes to files
+
+    Returns:
+        Tuple[List[AudioFile], List[ClutterFile]]: [description]
+    '''
+    files = [
+        os.path.join(input_dir, file)
+        for file in os.listdir(input_dir)
+    ]
+
+    child_dirs = [
+        file
+        for file in files
+        if os.path.isdir(file)
+    ]
+
+    audio_files = [
+        file
+        for file in files
+        if is_audio_file(file)
+    ]
+
+    clutter_files = [
+        ClutterFile(file)
+        for file in files
+        if file not in child_dirs and file not in audio_files
+    ]
+
+    audio_files = [
+        AudioFile(file)
+        for file in audio_files
+    ]
+    if guess:
+        for audio_file in audio_files:
+            audio_file.guess_tags(dry_run)
+
+    # Condition clutter
+    common_tags = {}
+    for tag in Tag:
+        tag_value = None
+        if len(audio_files) > 0:
+            candidate = audio_files[0].tags[tag]
+            if (
+                candidate is not None
+                and
+                all([
+                    audio_file.tags[tag] == candidate
+                    for audio_file in audio_files[1:]
+                ])
+            ):
+                tag_value = candidate
+
+        common_tags[tag] = tag_value
+
+    for clutter_file in clutter_files:
+        clutter_file.tags = common_tags
+
+    # Recursive step
+    for child_dir in child_dirs:
+
+        child_audio_files, child_clutter_files = scan_folder(
+            child_dir,
+            guess,
+            dry_run
+        )
+
+        if len(child_audio_files) == 0:
+            # No audio files in this child folder,
+            # it is then considered as clutter
+            clutter_dir = ClutterFile(child_dir)
+            clutter_dir.tags = common_tags
+            clutter_files.append(clutter_dir)
+        else:
+            audio_files += child_audio_files
+            clutter_files += child_clutter_files
+
+    return (audio_files, clutter_files)
 
 
 def create_structure(
@@ -134,11 +239,85 @@ It will move into an 'Unknown {str(order_tag)}' directory.\
     return child_nodes
 
 
+def organize_clutter(
+    nodes: List[TreeNode],
+    ordering: List[Tag],
+    clutter_files: List[ClutterFile]
+):
+    '''
+    Given the tree-structured audio files, and the list of clutter files,
+    assigns each clutter file to its associated node.
+
+    Args:
+        nodes (List[TreeNode]): List of nodes of the tree
+        ordering (List[Tag]): List of tags along which the tree is ordered
+        clutter_files (List[ClutterFile]): Files that must be sorted into the
+            given nodes
+    '''
+    for clutter_file in clutter_files:
+        if not associate_clutter(
+            nodes,
+            ordering,
+            clutter_file
+        ):
+            clutter_files.remove(clutter_file)
+
+
+def associate_clutter(
+    nodes: List[TreeNode],
+    ordering: List[Tag],
+    clutter_file: ClutterFile
+) -> bool:
+    '''
+    Given the tree-structured audio files, and a clutter file, assigns each
+    clutter file to its associated node.
+
+    Args:
+        nodes (List[TreeNode]): List of nodes of the tree
+        ordering (List[Tag]): List of tags along which the tree is ordered
+        clutter_file (ClutterFile): File that must be sorted into the given
+            nodes
+
+    Returns:
+        bool: True if the clutter was successfully associated
+    '''
+
+    order_tag = ordering[0]
+
+    if order_tag in clutter_file.tags:
+        tag_value = clutter_file.tags[order_tag]
+        for node in nodes:
+            if (
+                tag_value is not None
+                and
+                node.name == tag_value
+            ):
+                #  The clutter is down the right path
+                if (
+                    not node.children
+                    or
+                    len(ordering) == 1
+                    or
+                    not associate_clutter(
+                        node.children,
+                        ordering[1:],
+                        clutter_file
+                    )
+                ):
+                    # Terminal node
+                    node.clutter_files.append(clutter_file)
+                return True
+
+    return False
+
+
 def move_files(
     nodes: list,
     dir_target: str,
     formats: List[str],
-    dry_run=False,
+    with_clutter: bool,
+    dry_run: bool,
+    verbose: bool
 ):
     '''
     Moves the given files into a folder hierarchy following
@@ -146,72 +325,106 @@ def move_files(
 
     Assumes the given TreeNode's children are also TreeNodes
     '''
-    for child in nodes:
+    for node in nodes:
 
-        if isinstance(child, AudioFile):
+        if isinstance(node, AudioFile):
             # Leaf of the structure tree
             assert(len(formats) == 1)
             move_file(
-                child.file,
-                child.build_file_name(formats[0]),
+                node.file,
+                node.build_file_name(formats[0]),
                 dir_target,
                 dry_run,
-                False
+                verbose
             )
 
-        elif isinstance(child, TreeNode):
+        elif isinstance(node, TreeNode):
+
             # Recursive step
             assert(len(formats) > 0)
             sub_dir_target = create_dir(
-                child.build_name(formats[0]),
+                node.build_name(formats[0]),
                 dir_target,
                 dry_run,
-                False
+                verbose
             )
 
+            if with_clutter:
+                for clutter_file in node.clutter_files:
+                    move_file(
+                        clutter_file.file,
+                        clutter_file.name,
+                        sub_dir_target,
+                        dry_run,
+                        verbose
+                    )
+
             move_files(
-                child.children,
+                node.children,
                 sub_dir_target,
                 formats[1:],
-                dry_run
+                with_clutter,
+                dry_run,
+                verbose
             )
 
 
 def clean_up(
     dir_src: str,
     audio_files: List[AudioFile],
-    dry_run: bool
+    clutter_files: List[ClutterFile],
+    dry_run: bool,
+    verbose: bool
 ):
     '''
-    Remove empty folders in the source directory.
+    Remove empty folders in the given directory.
+
+    This method may seem needlessly convoluted, but it serves the purpose of
+    actually notifying of directory removal even when `dry_run` is True.
+
+    Returns true if the given folder was deleted.
     '''
     if not os.path.isdir(dir_src):
-        return
+        return False
 
-    # remove empty subfolders
-    files = os.listdir(dir_src)
-    if len(files):
-        for f in files:
-            fullpath = os.path.join(dir_src, f)
-            if os.path.isdir(fullpath):
-                clean_up(fullpath, audio_files, dry_run)
+    # Recursive step
+    files = [
+        os.path.join(dir_src, filename)
+        for filename in os.listdir(dir_src)
+    ]
 
-    # if folder empty, delete it
-    files = os.listdir(dir_src)
+    for file in files:
+        if clean_up(
+            file,
+            audio_files,
+            clutter_files,
+            dry_run,
+            verbose
+        ):
+            files.remove(file)
+
+    # We kept track of which files were moved for this reason:
+    deleted_files = [
+        file.file
+        for file in audio_files + clutter_files
+    ]
+    # Vacuously true if dry_run wasn't specified
     if all([
-        file in [
-            audio_file.file
-            for audio_file in audio_files
-        ]
+        file in deleted_files
         for file in files
     ]):
-        remove_directory(dir_src, dry_run, False)
+        remove_directory(dir_src, dry_run, verbose)
+        return True
+
+    else:
+        return False
 
 
 def organize(
     dir_src: str,
     dir_target: str,
     with_album: bool,
+    with_clutter: bool,
     guess: bool,
     dry_run: bool,
     verbose: bool
@@ -220,17 +433,27 @@ def organize(
     Concisely runs the three parts of the algorithm.
     '''
 
-    structure = [Tag.Artist]
+    ordering = [Tag.Artist]
     if with_album:
-        structure += [Tag.Album]
+        ordering += [Tag.Album]
 
-    audio_files = get_audio_files(dir_src)
+    audio_files, clutter_files = scan_folder(
+        dir_src,
+        guess,
+        dry_run
+    )
 
     root_nodes = create_structure(
         audio_files,
-        structure,
+        ordering,
         guess,
         dry_run
+    )
+
+    organize_clutter(
+        root_nodes,
+        ordering,
+        clutter_files
     )
 
     formats = [
@@ -242,7 +465,15 @@ def organize(
         root_nodes,
         dir_target,
         formats,
-        dry_run
+        with_clutter,
+        dry_run,
+        verbose
     )
 
-    clean_up(dir_src, audio_files, dry_run)
+    clean_up(
+        dir_src,
+        audio_files,
+        clutter_files,
+        dry_run,
+        verbose
+    )

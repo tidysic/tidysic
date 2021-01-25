@@ -1,7 +1,10 @@
 from PyQt5.QtWidgets import QMainWindow
 
-from tidysic.os_utils import get_audio_files
-from tidysic.algorithms import create_structure
+from tidysic.algorithms import (
+    scan_folder,
+    create_structure,
+    organize_clutter
+)
 
 from tidysic.gui.widgets import TreeEditor
 from tidysic.gui.dialogs import (
@@ -28,7 +31,11 @@ class TidysicWindow(QMainWindow):
             pass
         source_dir = source_selector.selectedFiles()[0]
 
-        source = get_audio_files(source_dir)
+        audio_files, clutter_files = scan_folder(
+            source_dir,
+            guess=False,
+            dry_run=True
+        )
 
         ordering_selector = OrderingSelect()
         while not ordering_selector.exec():
@@ -36,10 +43,16 @@ class TidysicWindow(QMainWindow):
         ordering = ordering_selector.get_ordering()
 
         root = create_structure(
-            source,
+            audio_files,
             ordering,
             guess=False,
             dry_run=True
+        )
+
+        organize_clutter(
+            root,
+            ordering,
+            clutter_files
         )
 
         self.tree_editor.visualizer.feed_data(root)

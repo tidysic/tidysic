@@ -7,6 +7,22 @@ from .tag import Tag
 from .logger import log, warning, dry_run as log_dry_run
 
 
+class ClutterFile(object):
+    '''
+    Class describing a non-audio file, that also contains all the tags that
+    other audio files in the same folder share.
+    '''
+
+    def __init__(self, file):
+        self.file = file
+        self.tags = {}
+        for tag in Tag:
+            self.tags[tag] = None
+        # Avoid circular imports
+        from .os_utils import filename
+        self.name = filename(file)
+
+
 class AudioFile(object):
     '''
     Class describing a file, and its associated tags
