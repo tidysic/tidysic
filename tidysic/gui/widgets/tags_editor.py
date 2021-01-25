@@ -70,7 +70,7 @@ class TagsEditor(QWidget):
         self.fields[Tag.Genre] = genre_edit
 
     def feed_data(self, file: AudioFile):  # ClutterFiles should work too here
-        from tidysic import logger
+        from tidysic.logger import logger
         logger.warning(str(file.tags))
         for tag in Tag:
             value = file.tags[tag]
