@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from tidysic import logger
+from tidysic.logger import logger
 
 
 audio_extensions = [
