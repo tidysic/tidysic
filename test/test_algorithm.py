@@ -5,7 +5,7 @@ from shutil import copytree, rmtree
 from tidysic.os_utils import project_test_folder
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
-from tidysic.algorithms import (
+from tidysic.tidysic import (
     scan_folder,
     create_structure,
     move_files,

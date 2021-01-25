@@ -1,15 +1,15 @@
 import os
 from typing import List, Tuple
 
-from .tag import Tag
-from .audio_file import AudioFile, ClutterFile
-from .os_utils import (
+from tidysic.tag import Tag
+from tidysic.audio_file import AudioFile, ClutterFile
+from tidysic.os_utils import (
     is_audio_file,
     create_dir,
     move_file,
     remove_directory
 )
-from .logger import log, warning
+from tidysic.logger import log, warning
 
 
 class TreeNode(object):

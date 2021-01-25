@@ -3,8 +3,8 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
 import re
 
-from .tag import Tag
-from .logger import log, warning, dry_run as log_dry_run
+from tidysic.tag import Tag
+from tidysic.logger import log, warning, dry_run as log_dry_run
 
 
 class ClutterFile(object):

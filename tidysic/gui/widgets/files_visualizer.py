@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAbstractItemView
 
-from tidysic.algorithms import TreeNode
+from tidysic.tidysic import TreeNode
 from tidysic.audio_file import AudioFile, ClutterFile
 
 

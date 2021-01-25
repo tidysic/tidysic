@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow
 
-from tidysic.algorithms import (
+from tidysic.tidysic import (
     scan_folder,
     create_structure,
     organize_clutter
