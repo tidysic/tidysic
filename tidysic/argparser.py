@@ -91,94 +91,23 @@ class PathType(object):
         return string
 
 
-def add_subcommand_organize(subparsers):
-    '''
-    Defines the arguments of the `organize` subcommand
-    '''
-    subparser = subparsers.add_parser(
-        'organize',
-        help='''move every audio file in the given source directory\
-            into the target directory, sorted neatly into folders''',
-    )
-
-    subparser.add_argument(
-        'source',
-        type=PathType(
-            exists=True,
-            type='dir',
-            dash_ok=False
-        ),
-        help='directory whose content will be organized',
-    )
-
-    subparser.add_argument(
-        'target',
-        type=PathType(
-            exists=None,
-            type='dir',
-            dash_ok=False
-        ),
-        help='''directory (will be created if needed) in which the \
-            files will be organized''',
-    )
-
-    subparser.add_argument(
-        '--with-album',
-        help='''create an album directory inside the artist directory''',
-        action='store_true',
-    )
-
-    subparser.add_argument(
-        '-g',
-        '--guess',
-        help='''\
-            guess the audio file title and artist when there is no IDE tags''',
-        action='store_true',
-    )
-
-    subparser.add_argument(
-        '-d',
-        '--dry-run',
-        help='''do nothing on the files themselves, but print out the \
-            actions that would happen''',
-        action='store_true',
-        dest='dry_run',
-    )
-
-
-def add_subcommand_lint(subparsers):
-    '''
-    Defines the arguments of the `lint` subcommand
-    '''
-    subparsers.add_parser(
-        'lint',
-        help='analyze the project code style',
-    )
-
-
-def add_subcommand_lintfix(subparsers):
-    '''
-    Defines the arguments of the `lintfix` subcommand
-    '''
-    subparsers.add_parser(
-        'lintfix',
-        help='try to fix the code',
-    )
-
-
 def create_parser():
     '''
     Creates the argument parser for the whole program
     '''
     parser = argparse.ArgumentParser(
-        epilog='''use '%(prog)s <command> --help' for more info
-            about each command''', )
+        description='''
+            organize your music files into folders
+        ''',
+        prog="tidysic"
+    )
 
     parser.add_argument(
         '-V',
         '--version',
         help='show version',
-        action='store_true',
+        action='version',
+        version='%(prog)s v0.1'
     )
 
     parser.add_argument(
@@ -188,15 +117,54 @@ def create_parser():
         action='store_true',
     )
 
-    subparsers = parser.add_subparsers(
-        title='commands',
-        dest='command',
+    parser.add_argument(
+        '--with-album',
+        help='''create an album directory inside the artist directory''',
+        action='store_true',
     )
 
-    add_subcommand_organize(subparsers)
+    parser.add_argument(
+        '--with-clutter',
+        help='''moves non-audio files along with their audio neighbor files''',
+        action='store_true',
+    )
 
-    add_subcommand_lint(subparsers)
+    parser.add_argument(
+        '-g',
+        '--guess',
+        help='''\
+            guess the audio file title and artist when there is no IDE tags''',
+        action='store_true',
+    )
 
-    add_subcommand_lintfix(subparsers)
+    parser.add_argument(
+        '-d',
+        '--dry-run',
+        help='''do nothing on the files themselves, but print out the \
+            actions that would happen''',
+        action='store_true',
+        dest='dry_run',
+    )
+
+    parser.add_argument(
+        'source',
+        type=PathType(
+            exists=True,
+            type='dir',
+            dash_ok=False
+        ),
+        help='directory whose content will be organized',
+    )
+
+    parser.add_argument(
+        'target',
+        type=PathType(
+            exists=None,
+            type='dir',
+            dash_ok=False
+        ),
+        help='''directory (will be created if needed) in which the \
+            files will be organized''',
+    )
 
     return parser

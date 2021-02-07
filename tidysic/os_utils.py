@@ -1,9 +1,7 @@
 import os
 import shutil
-from pathlib import Path
 
 from tidysic import logger
-from .audio_file import AudioFile
 
 
 audio_extensions = [
@@ -39,6 +37,25 @@ def file_extension(
     return os.path.splitext(path)[1]
 
 
+def is_audio_file(
+    path: str
+) -> bool:
+    '''
+    Returns whether the given file is an audio file
+
+    Args:
+        path (str): File to test
+
+    Returns:
+        bool: True if the given file is an audio file
+    '''
+    return (
+        os.path.isfile(path)
+        and
+        file_extension(path) in audio_extensions
+    )
+
+
 def create_dir(
     dir_name: str,
     parent_path: str,
@@ -54,24 +71,10 @@ def create_dir(
 
     if dry_run or verbose:
         logger.dry_run(f'Create directory {full_path}')
-    if not verbose:
+    if not dry_run:
         os.makedirs(full_path, exist_ok=True)
 
     return full_path
-
-
-def get_audio_files(
-    directory_path: str
-):
-    '''
-    Returns the audio files present in the given directory.
-    '''
-    audio_files = [
-        AudioFile(path)
-        for ext in audio_extensions
-        for path in Path(directory_path).rglob('*'+ext)
-    ]
-    return audio_files
 
 
 def move_file(
@@ -90,7 +93,7 @@ def move_file(
     if dry_run or verbose:
         logger.dry_run([
             'Moving file',
-            f'{file.name}',
+            f'{filename(file)}',
             'to',
             full_path
         ])
