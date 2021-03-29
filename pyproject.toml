@@ -5,7 +5,7 @@ description = "Keep your music tidy"
 authors = ["g-wizzy <pierre.burki@protonmail.com>", "Loic Jurasz <loic.jurasz@he-arc.ch>", "qtipee <quent.vallat@gmail.com>", "xiorcale <quentin.vaucher@protonmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 mutagen = "^1.45.1"
 rich = "^10.0.0"
 

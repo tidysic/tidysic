@@ -20,19 +20,20 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
+    - name: Set up Poetry
+      uses: abatilo/actions-poetry@v2.1.0
+      with:
+        poetry-version: 1.1.5
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install python3-pyqt5 pyqt5-dev-tools qttools5-dev-tools
-        pip install --upgrade pip
-        pip install pyqt5
-        pip install -r requirements.txt
+        poetry install
     - name: Lint with flake8
       run: |
         # Stop the build if there are one of the following error codes
-        flake8 ./tidysic/ ./test/ --count --select=E9,F63,F7,F81,F82,F83,F84,F401 --show-source --statistics
+        poetry run flake8 ./tidysic/ ./test/ --count --select=E9,F63,F7,F81,F82,F83,F84,F401 --show-source --statistics
         # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 ./tidysic/ ./test/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        poetry run flake8 ./tidysic/ ./test/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unittest
       run: |
-        python -m unittest discover
+        poetry run python -m unittest discover

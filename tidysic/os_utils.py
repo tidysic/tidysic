@@ -3,36 +3,30 @@ import shutil
 
 from tidysic import logger
 
-
-audio_extensions = [
+audio_extensions = {
     '.mp3',
     '.wav',
     '.flac',
     '.ogg',
-]
+}
 
 
 def filename(
     path: str,
     with_extension: bool = True
-):
+) -> str:
     '''
-    Returns the name of the file from the given path
-    with or without the extension.
+    Returns the name of the file from `path` with or without the extension.
     '''
     name = os.path.basename(path)
-
-    if not with_extension:
-        name = os.path.splitext(name)[0]
-
-    return name
+    return name if with_extension else os.path.splitext(name)[0]
 
 
 def file_extension(
     path: str
-):
+) -> str:
     '''
-    Returns the file extension from the given path.
+    Returns the file extension from `path`.
     '''
     return os.path.splitext(path)[1]
 
@@ -41,7 +35,7 @@ def is_audio_file(
     path: str
 ) -> bool:
     '''
-    Returns whether the given file is an audio file
+    Returns whether the given file is an audio file.
 
     Args:
         path (str): File to test
@@ -61,10 +55,9 @@ def create_dir(
     parent_path: str,
     dry_run: bool,
     verbose: bool
-):
+) -> str:
     '''
-    Creates a directory with the given name
-    in the given parent directory
+    Creates the directroy `dir_name` in `parent_path`.
     '''
     dir_name = dir_name.replace('/', '-')
     full_path = os.path.join(parent_path, dir_name)
@@ -85,7 +78,7 @@ def move_file(
     verbose: bool
 ):
     '''
-    Moves the given file onto the given path
+    Moves `file` to `target_path`, eventually renaming it `target_name`.
     '''
     target_name = target_name.replace('/', '-')
     full_path = os.path.join(target_path, target_name)
@@ -108,7 +101,7 @@ def remove_directory(
     verbose: bool
 ):
     '''
-    Deletes the given directory
+    Deletes `dir_path`.
     '''
     if dry_run or verbose:
         logger.dry_run(f'Deleting directory {dir_path}')
