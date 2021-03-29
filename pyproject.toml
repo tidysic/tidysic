@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "tidysic"
+version = "0.1.0"
+description = "Keep your music tidy"
+authors = ["g-wizzy <pierre.burki@protonmail.com>", "Loic Jurasz <loic.jurasz@he-arc.ch>", "qtipee <quent.vallat@gmail.com>", "xiorcale <quentin.vaucher@protonmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+mutagen = "^1.45.1"
+rich = "^10.0.0"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.5.6"
+flake8 = "^3.9.0"
+mypy = "^0.812"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
