@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Union
 
 from tidysic import logger
 
@@ -62,8 +63,7 @@ def create_dir(
     dir_name = dir_name.replace('/', '-')
     full_path = os.path.join(parent_path, dir_name)
 
-    if dry_run or verbose:
-        logger.dry_run(f'Create directory {full_path}')
+    _message(f'Create directory {full_path}', dry_run, verbose)
     if not dry_run:
         os.makedirs(full_path, exist_ok=True)
 
@@ -83,13 +83,16 @@ def move_file(
     target_name = target_name.replace('/', '-')
     full_path = os.path.join(target_path, target_name)
 
-    if dry_run or verbose:
-        logger.dry_run([
+    _message(
+        [
             'Moving file',
             f'{filename(file)}',
             'to',
             full_path
-        ])
+        ],
+        dry_run,
+        verbose
+    )
 
     if not dry_run:
         shutil.move(file, full_path)
@@ -103,11 +106,24 @@ def remove_directory(
     '''
     Deletes `dir_path`.
     '''
-    if dry_run or verbose:
-        logger.dry_run(f'Deleting directory {dir_path}')
+    _message(f'Deleting directory {dir_path}', dry_run, verbose)
 
     if not dry_run:
         os.rmdir(dir_path)
+
+
+def _message(
+    message: Union[str, list[str]],
+    dry_run: bool,
+    verbose: bool
+):
+    '''
+    Shortcut for calling the logger using the correct method.
+    '''
+    if dry_run:
+        logger.dry_run(message)
+    elif verbose:
+        logger.info(message)
 
 
 def project_root_folder():
