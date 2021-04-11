@@ -4,22 +4,24 @@ from rich import print
 def log(message, prefix='', color='blue'):
     '''
     Log messages in the terminal.
-    The message can either be a string, or a list of strings,
-    which will be printed on multiple lines.
-    Prefix adds a short text before the message.
-    Color changes the color of the prefix. Must be compatible with `rich`
-    '''
-    if len(prefix) > 0:
-        prefix = f'[{color}]\[tidysic] [italic]{prefix}[/italic][/{color}]: '
-    else:
-        prefix = f'[{color}]\[tidysic][/{color}]: '
 
-    if isinstance(message, str):
-        print(prefix + message)
-    else:
-        print(prefix)
-        for line in message:
-            print('\t' + line)
+    Args:
+        message: String or list of strings which is printed on multiple lines.
+        prefix (str): adds a short text before the message.
+        color (str): changes the color of the prefix. Must be compatible with `rich`.
+    '''
+
+    if len(prefix) > 0:
+        prefix = f' [italic]{prefix}[/italic]'
+
+    prefix = ''.join([f'[{color}]', '\[tidydic]', prefix, f'[/{color}]: '])
+
+    # create a multi-line message if we received a list
+    if isinstance(message, list):
+        message = '\n' + '\n'.join([f'\t{line}' for line in message])
+
+    print(prefix + message)
+
 
 
 def error(message):
@@ -32,6 +34,6 @@ def warning(message):
 
 def dry_run(message):
     '''
-    Shortcut to call logger with specific 'dry run' prefix
+    Shortcut to call logger with specific 'dry run' prefix.
     '''
     log(message, prefix='dry run')
