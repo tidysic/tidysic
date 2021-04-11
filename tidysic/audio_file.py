@@ -95,10 +95,11 @@ class AudioFile(object):
                     answer = input('(r/d) ? ')
 
                 if answer == 'r':
+                    new_tags = {}
                     new_tags[Tag.Title] = input('Title : ')
                     new_tags[Tag.Artist] = input('Artist : ')
 
-                    self.save_tags(dry_run)
+                    self.save_tags(new_tags, dry_run)
 
         except BaseException:
             warning(f'Could not parse the title: {title}')
