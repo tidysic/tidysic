@@ -1,14 +1,20 @@
 from rich import print
+from typing import Union
 
 
-def log(message, prefix='', color='blue'):
+def log(
+    message: Union[str, list[str]],
+    prefix: str = '',
+    color: str = 'blue'
+):
     '''
     Log messages in the terminal.
 
     Args:
         message: String or list of strings which is printed on multiple lines.
         prefix (str): adds a short text before the message.
-        color (str): changes the color of the prefix. Must be compatible with `rich`.
+        color (str): changes the color of the prefix. Must be compatible with
+            `rich`.
     '''
 
     if len(prefix) > 0:
@@ -23,16 +29,19 @@ def log(message, prefix='', color='blue'):
     print(prefix + message)
 
 
-
-def error(message):
+def error(message: Union[str, list[str]]):
     log(message, prefix='Error', color='red')
 
 
-def warning(message):
+def warning(message: Union[str, list[str]]):
     log(message, prefix='Warning', color='orange1')
 
 
-def dry_run(message):
+def info(message: Union[str, list[str]]):
+    log(message, prefix='Info')
+
+
+def dry_run(message: Union[str, list[str]]):
     '''
     Shortcut to call logger with specific 'dry run' prefix.
     '''
