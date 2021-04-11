@@ -1,5 +1,5 @@
-from .argparser import create_parser
-from .algorithms import organize
+from tidysic.argparser import create_parser
+from tidysic.tidysic import organize
 
 
 def run():
