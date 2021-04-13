@@ -379,45 +379,35 @@ def clean_up(
     '''
     Remove empty folders in the given directory.
 
-    This method may seem needlessly convoluted, but it serves the purpose of
-    actually notifying of directory removal even when `dry_run` is True.
+    When doing a dry run, it is impossible for this algorithm to know whether
+    a folder is deleted without keeping track of all deletions. 
 
     Returns true if the given folder was deleted.
     '''
-    if not os.path.isdir(dir_src):
-        return False
-
-    # Recursive step
-    files = [
-        os.path.join(dir_src, filename)
-        for filename in os.listdir(dir_src)
-    ]
-
-    for file in files:
-        if clean_up(
-            file,
-            audio_files,
-            clutter_files,
-            dry_run,
-            verbose
-        ):
-            files.remove(file)
-
-    # We kept track of which files were moved for this reason:
-    deleted_files = [
-        file.file
-        for file in audio_files + clutter_files
-    ]
-    # Vacuously true if dry_run wasn't specified
-    if all([
-        file in deleted_files
-        for file in files
-    ]):
-        remove_directory(dir_src, dry_run, verbose)
-        return True
-
+    if dry_run:
+        logger.dry_run(f"Cleaning up {dir_src} and its subfolders")
+    
     else:
-        return False
+        if not os.path.isdir(dir_src):
+            if (
+                dir_src in audio_files
+                or
+                dir_src in clutter_files
+            ):
+                remove_file(dir_src, dry_run, verbose)
+
+        else:
+            for filename in os.listdir(dir_src):
+                file = os.path.join(dir_src, filename)
+                clean_up(
+                    file,
+                    audio_files,
+                    clutter_files,
+                    dry_run,
+                    verbose
+                )
+
+            remove_directory(dir_src, verbose)
 
 
 def organize(
