@@ -6,8 +6,8 @@ from .tidysic import (
 )
 
 __all__ = [
-    create_structure,
-    move_files,
-    clean_up,
-    organize
+    'create_structure',
+    'move_files',
+    'clean_up',
+    'organize'
 ]

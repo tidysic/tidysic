@@ -98,18 +98,33 @@ def move_file(
         shutil.move(file, full_path)
 
 
+def remove_file(
+    file_path: str,
+    dry_run: bool,
+    verbose: bool
+):
+    '''
+    Deletes `file_path`
+    '''
+    _message(f"Deleting file {file_path}", dry_run, verbose)
+
+    if not dry_run:
+        os.remove(file_path)
+
+
 def remove_directory(
     dir_path: str,
-    dry_run: bool,
     verbose: bool
 ):
     '''
     Deletes `dir_path`.
     '''
-    _message(f'Deleting directory {dir_path}', dry_run, verbose)
-
-    if not dry_run:
+    try:
         os.rmdir(dir_path)
+        if verbose:
+            logger.info(f'Deleting directory {dir_path}')
+    except OSError:
+        pass
 
 
 def _message(
