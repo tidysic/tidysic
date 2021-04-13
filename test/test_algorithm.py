@@ -26,13 +26,15 @@ class AlgorithmTest(TestCase):
         'music_copy'
     )
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         copytree(
             AlgorithmTest.original_music_root,
             AlgorithmTest.test_root
         )
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         rmtree(
             AlgorithmTest.test_root
         )
@@ -188,7 +190,6 @@ class AlgorithmTest(TestCase):
         self.assertTrue(os.path.isdir(album_folder))
 
         album_clutter_dir = os.path.join(album_folder, 'album_clutter')
-        print(album_clutter_dir)
         self.assertTrue(os.path.isdir(album_clutter_dir))
 
         album_clutter1 = os.path.join(album_clutter_dir, 'clutter1')
