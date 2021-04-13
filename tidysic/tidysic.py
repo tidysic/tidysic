@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple
+from typing import Union
 
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile, ClutterFile
@@ -7,9 +7,10 @@ from tidysic.os_utils import (
     is_audio_file,
     create_dir,
     move_file,
+    remove_file,
     remove_directory
 )
-from tidysic.logger import log, warning
+from tidysic import logger
 
 
 class TreeNode(object):
@@ -24,8 +25,8 @@ class TreeNode(object):
     def __init__(self, name: str, tag: Tag):
         self._tag = tag
         self._name = name
-        self._children = []
-        self._clutter_files = []
+        self._children: list[Union['TreeNode', AudioFile]] = []
+        self._clutter_files: list[ClutterFile] = []
 
     @property
     def tag(self) -> Tag:
@@ -81,6 +82,8 @@ class TreeNode(object):
                 if leaf is not None:
                     return leaf
 
+        assert False, "TreeNode has no child"
+
     def build_name(self, format_string):
         '''
         Builds the name of the directory that will be created.
@@ -94,7 +97,7 @@ def scan_folder(
     input_dir: str,
     guess: bool,
     dry_run: bool
-) -> Tuple[List[AudioFile], List[ClutterFile]]:
+) -> tuple[list[AudioFile], list[ClutterFile]]:
     '''
     Parse the input folder, returning a flat list of AudioFiles.
 
@@ -107,7 +110,7 @@ def scan_folder(
         dry_run (bool): Whether to apply eventual tag changes to files
 
     Returns:
-        Tuple[List[AudioFile], List[ClutterFile]]: [description]
+        tuple[list[AudioFile], list[ClutterFile]]: [description]
     '''
     files = [
         os.path.join(input_dir, file)
@@ -121,7 +124,7 @@ def scan_folder(
     ]
 
     audio_files = [
-        file
+        AudioFile(file)
         for file in files
         if is_audio_file(file)
     ]
@@ -129,13 +132,9 @@ def scan_folder(
     clutter_files = [
         ClutterFile(file)
         for file in files
-        if file not in child_dirs and file not in audio_files
+        if file not in child_dirs and not is_audio_file(file)
     ]
 
-    audio_files = [
-        AudioFile(file)
-        for file in audio_files
-    ]
     if guess:
         for audio_file in audio_files:
             audio_file.guess_tags(dry_run)
@@ -184,8 +183,8 @@ def scan_folder(
 
 
 def create_structure(
-    audio_files: List[AudioFile],
-    ordering: List[Tag],
+    audio_files: list[AudioFile],
+    ordering: list[Tag],
     guess: bool,
     dry_run: bool
 ) -> list:
@@ -198,7 +197,7 @@ def create_structure(
         # No tags for ordering given, we cannot sort the files
         return audio_files
 
-    children = {}
+    children: dict[Tag, list[AudioFile]] = {}
     order_tag = ordering[0]
 
     # Sort files into a dictionary
@@ -211,9 +210,9 @@ def create_structure(
                 tag_value = file.tags[order_tag]
 
                 if tag_value is None:
-                    log(f'Discarded file: {file.file}')
+                    logger.log(f'Discarded file: {file.file}')
             else:
-                warning(f'''
+                logger.warning(f'''
 File {file.file}
 could not have its {str(order_tag)} tag determined.
 It will move into an 'Unknown {str(order_tag)}' directory.\
@@ -240,18 +239,18 @@ It will move into an 'Unknown {str(order_tag)}' directory.\
 
 
 def organize_clutter(
-    nodes: List[TreeNode],
-    ordering: List[Tag],
-    clutter_files: List[ClutterFile]
+    nodes: list[TreeNode],
+    ordering: list[Tag],
+    clutter_files: list[ClutterFile]
 ):
     '''
     Given the tree-structured audio files, and the list of clutter files,
     assigns each clutter file to its associated node.
 
     Args:
-        nodes (List[TreeNode]): List of nodes of the tree
-        ordering (List[Tag]): List of tags along which the tree is ordered
-        clutter_files (List[ClutterFile]): Files that must be sorted into the
+        nodes (list[TreeNode]): List of nodes of the tree
+        ordering (list[Tag]): List of tags along which the tree is ordered
+        clutter_files (list[ClutterFile]): Files that must be sorted into the
             given nodes
     '''
     for clutter_file in clutter_files:
@@ -264,8 +263,8 @@ def organize_clutter(
 
 
 def associate_clutter(
-    nodes: List[TreeNode],
-    ordering: List[Tag],
+    nodes: list[TreeNode],
+    ordering: list[Tag],
     clutter_file: ClutterFile
 ) -> bool:
     '''
@@ -273,8 +272,8 @@ def associate_clutter(
     clutter file to its associated node.
 
     Args:
-        nodes (List[TreeNode]): List of nodes of the tree
-        ordering (List[Tag]): List of tags along which the tree is ordered
+        nodes (list[TreeNode]): List of nodes of the tree
+        ordering (list[Tag]): List of tags along which the tree is ordered
         clutter_file (ClutterFile): File that must be sorted into the given
             nodes
 
@@ -314,7 +313,7 @@ def associate_clutter(
 def move_files(
     nodes: list,
     dir_target: str,
-    formats: List[str],
+    formats: list[str],
     with_clutter: bool,
     dry_run: bool,
     verbose: bool
@@ -371,8 +370,8 @@ def move_files(
 
 def clean_up(
     dir_src: str,
-    audio_files: List[AudioFile],
-    clutter_files: List[ClutterFile],
+    audio_files: list[AudioFile],
+    clutter_files: list[ClutterFile],
     dry_run: bool,
     verbose: bool
 ):
