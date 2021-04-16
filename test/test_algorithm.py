@@ -5,13 +5,11 @@ from shutil import copytree, rmtree
 from tidysic.os_utils import project_test_folder
 from tidysic.tag import Tag
 from tidysic.audio_file import AudioFile
-from tidysic.tidysic import (
-    scan_folder,
-    create_structure,
-    move_files,
-    organize,
-    TreeNode,
-)
+from tidysic.tidysic import TreeNode
+from tidysic.formatted_string import FormattedString
+from tidysic.ordering import OrderingStep, Ordering
+
+from tidysic import Tidysic
 
 
 class AlgorithmTest(TestCase):
@@ -44,18 +42,14 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.test_root,
             'normal'
         )
-        files, _ = scan_folder(path, False, False)
-        self.assertEqual(len(files), 1)
+        tidysic = Tidysic(input_dir=path, output_dir=path)
+        tidysic.scan_folder()
+        self.assertEqual(len(tidysic.audio_files), 1)
 
-        root_nodes = create_structure(
-            files,
-            [Tag.Artist, Tag.Album],
-            guess=False,
-            dry_run=True
-        )
-        self.assertEqual(len(root_nodes), 1)
+        tidysic.create_structure()
+        self.assertEqual(len(tidysic.root_nodes), 1)
 
-        artist_node: TreeNode = root_nodes[0]
+        artist_node: TreeNode = tidysic.root_nodes[0]
         self.assertIsInstance(artist_node, TreeNode)
         self.assertEqual(artist_node.tag, Tag.Artist)
         self.assertEqual(artist_node.name, 'L\'Artiste')
@@ -66,13 +60,16 @@ class AlgorithmTest(TestCase):
         self.assertEqual(album_node.tag, Tag.Album)
         self.assertEqual(album_node.name, 'L\'Album')
         self.assertEqual(len(album_node.children), 1)
-        self.assertListEqual(album_node.children, files)
+        self.assertListEqual(album_node.children, tidysic.audio_files)
 
         song: AudioFile = album_node.children[0]
         self.assertIsInstance(song, AudioFile)
-        format = '{{title}}'
-        self.assertEqual(song.fill_formatted_str(format), 'Le Titre')
-        self.assertEqual(song.build_file_name(format), 'Le Titre.mp3')
+        formatted_string = FormattedString('{{title}}')
+        self.assertEqual(formatted_string.build(song.tags), 'Le Titre')
+        self.assertEqual(
+            song.build_file_name(formatted_string),
+            'Le Titre.mp3'
+        )
 
     def test_guess(self):
         path = os.path.join(
@@ -82,17 +79,17 @@ class AlgorithmTest(TestCase):
         # Needed in order to test without user input
         AudioFile.accept_all_guesses = True
 
-        files, _ = scan_folder(path, True, False)
+        tidysic = Tidysic(input_dir=path, output_dir=path, guess=True)
+        tidysic.ordering = Ordering([
+            OrderingStep(Tag.Artist, FormattedString("{{artist}}")),
+            OrderingStep(Tag.Title, FormattedString("{{title}}"))
+        ])
 
-        root_nodes = create_structure(
-            files,
-            [Tag.Artist],
-            guess=True,
-            dry_run=False  # Need to actually change the file
-        )
+        tidysic.scan_folder()
+        tidysic.create_structure()
 
-        self.assertEqual(len(root_nodes), 1)
-        song = root_nodes[0].children[0]
+        self.assertEqual(len(tidysic.root_nodes), 1)
+        song = tidysic.root_nodes[0].children[0]
         self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
         self.assertEqual(song.tags[Tag.Title], 'No Title')
 
@@ -101,67 +98,54 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.test_root,
             'a bunch of illegal characters'
         )
-        files, _ = scan_folder(path, False, False)
 
-        root_nodes = create_structure(
-            files,
-            [Tag.Artist],
-            guess=True,
-            dry_run=True
-        )
+        tidysic = Tidysic(input_dir=path, output_dir=path, guess=True)
+        tidysic.ordering = Ordering([
+            OrderingStep(Tag.Artist, FormattedString('{{artist}}')),
+            OrderingStep(Tag.Title, FormattedString('{{artist}} - {{title}}'))
+        ])
+        tidysic.scan_folder()
+        tidysic.create_structure()
 
-        song = root_nodes[0].children[0]
-        formats = [
-            '{{artist}}',
-            '{{artist}} - {{title}}'
-        ]
-        file_name = song.build_file_name(formats[-1])
+        song = tidysic.root_nodes[0].children[0]
+        formatted_string = tidysic.ordering.steps[1].format
+        file_name = song.build_file_name(formatted_string)
         self.assertIn('/', file_name)
 
-        move_files(
-            root_nodes,
-            path,
-            formats,
-            with_clutter=False,
-            dry_run=False,
-            verbose=False
-        )
+        tidysic.move_files()
 
     def test_format(self):
         path = os.path.join(
             AlgorithmTest.test_root,
             'format title-artist-album'
         )
-        files, _ = scan_folder(path, False, False)
+        tidysic = Tidysic(input_dir=path, output_dir=path)
+        tidysic.ordering = Ordering([
+            OrderingStep(Tag.Artist, FormattedString("{{artist}}"))
+        ])
+        tidysic.scan_folder()
+        song = tidysic.audio_files[0]
 
-        root_nodes = create_structure(
-            files,
-            [Tag.Artist],
-            guess=True,
-            dry_run=True
+        formatted_string = FormattedString(
+            '{{title}} {{artist}} {{album} !}{ {genre}}'
         )
-
-        song = root_nodes[0].children[0]
-        format = '{{title}} {{artist}} {{album} !}{ {genre}}'
-        file_name = song.fill_formatted_str(format)
-
-        self.assertEqual(file_name, 'You did it !')
+        song_name = formatted_string.build(song.tags)
+        self.assertEqual(song_name, 'You did it !')
 
     def test_missing_order_tag(self):
         path = os.path.join(
             AlgorithmTest.test_root,
             'missing album tag'
         )
-        files, _ = scan_folder(path, False, False)
+        tidysic = Tidysic(input_dir=path, output_dir=path)
+        tidysic.ordering = Ordering([
+            OrderingStep(Tag.Album, FormattedString("{{album}}")),
+            OrderingStep(Tag.Title, FormattedString("{{title}}"))
+        ])
+        tidysic.scan_folder()
+        tidysic.create_structure()
 
-        root_nodes = create_structure(
-            files,
-            [Tag.Album],
-            guess=True,
-            dry_run=True
-        )
-
-        album_node: TreeNode = root_nodes[0]
+        album_node: TreeNode = tidysic.root_nodes[0]
         self.assertEqual(album_node.name, 'Unknown Album')
 
     def test_clutter(self):
@@ -169,16 +153,12 @@ class AlgorithmTest(TestCase):
             AlgorithmTest.test_root,
             'clutter test'
         )
-
-        organize(
-            path,
-            path,
-            with_album=True,
-            with_clutter=True,
-            guess=False,
-            dry_run=False,
-            verbose=True
+        tidysic = Tidysic(
+            input_dir=path,
+            output_dir=path,
+            with_clutter=True
         )
+        tidysic.organize()
 
         artist_folder = os.path.join(path, 'Artist Name')
         self.assertTrue(os.path.isdir(artist_folder))
