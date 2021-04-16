@@ -1,10 +1,10 @@
 from mutagen import File as MutagenFile
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
-import re
 
 from tidysic.tag import Tag
-from tidysic.logger import log, warning, dry_run as log_dry_run
+from tidysic.formatted_string import FormattedString
+from tidysic import logger
 
 
 class ClutterFile(object):
@@ -55,7 +55,7 @@ class AudioFile(object):
                     self.save_tags(new_tags, dry_run)
                 else:
                     # Ask user what to do
-                    log([
+                    logger.log([
                         f'''Guessed [blue]{artist}[/blue], \
 [yellow]{title}[/yellow]''',
                         'Accept (y)',
@@ -66,7 +66,7 @@ class AudioFile(object):
 
                     answer = input('(y/a/d/r) ? ')
                     while answer not in ['y', 'a', 'd', 'r']:
-                        log('Answer not understood')
+                        logger.log('Answer not understood')
                         answer = input('(y/a/d/r) ? ')
 
                     if answer == 'd':  # Discard
@@ -83,7 +83,7 @@ class AudioFile(object):
 
             else:
                 # If nothing is guessed, ask user what to do
-                log([
+                logger.log([
                     f'Cannot guess artist and/or title for {self.file}',
                     'Rename manually (r)',
                     'Discard (d)'
@@ -91,7 +91,7 @@ class AudioFile(object):
 
                 answer = input('(r/d) ? ')
                 while answer not in ['d', 'r']:
-                    log('Answer not understood')
+                    logger.log('Answer not understood')
                     answer = input('(r/d) ? ')
 
                 if answer == 'r':
@@ -102,7 +102,7 @@ class AudioFile(object):
                     self.save_tags(new_tags, dry_run)
 
         except BaseException:
-            warning(f'Could not parse the title: {title}')
+            logger.warning(f'Could not parse the title: {title}')
 
     def read_tags(self):
         '''
@@ -133,7 +133,7 @@ class AudioFile(object):
                 f'{str(tag)} : {value}'
                 for tag, value in new_tags.items()
             ]
-            log_dry_run(message)
+            logger.dry_run(message)
 
         else:
             for tag, value in new_tags.items():
@@ -149,73 +149,10 @@ class AudioFile(object):
                 tags[tag.value] = value
             tags.save()
 
-    def fill_formatted_str(self, format_str: str):
+    def build_file_name(self, formatted_string: FormattedString):
         '''
-        Fills the given formatted string with the file's tags
-
-        A formatted string contains tag keys written in double
-        curly brackets, such as `{{artist}}`.
-
-        The double brackets are useful if you want to insert text
-        that will only be displayed if the tag is not None. For
-        instance, the string
-
-        `{{track}. }{{title}}`
-
-        will become
-
-        `1. Intro`
-
-        if the `track` tag is defined. Otherwise, it will just
-        be
-
-        `Intro`
-
-        The `year` and `track` tags can be formatted as usual, seeing
-        as they are integer values. This way, track numbers may be
-        padded using:
-
-        `{{track:02d}. }{{title}}`
-        '''
-        pattern = r'\{(.*?\{(\w+)(:.+?)?\}.*?)\}'
-        matches = re.findall(pattern, format_str)
-
-        substitutions = []
-        for part, key, format_spec in matches:
-
-            value = None
-            for tag in Tag:
-                if str(tag).lower() == key:
-                    value = self.tags[tag]
-                    if key in ['year', 'track'] and value:
-                        value = int(value)
-
-                    if key in ['title', 'artist', 'album'] and not value:
-                        value = f'Unknown {key.capitalize()}'
-
-                    break
-            else:
-                raise ValueError('%s is not a tag key' % key)
-
-            formattable = part.replace(
-                f'{{{key}{format_spec}}}',
-                f'{{{format_spec}}}'
-            )
-            substitutions.append((
-                f'{{{part}}}',
-                formattable.format(value) if value else ''
-            ))
-
-        for old, new in substitutions:
-            format_str = format_str.replace(old, new)
-
-        return format_str
-
-    def build_file_name(self, format_str: str):
-        '''
-        Builds the file's whole name, using the given tags and format,
+        Builds the file's whole name, using the given format,
         and appends the extension.
         '''
         from .os_utils import file_extension  # Avoid circular import
-
-        return self.fill_formatted_str(format_str) + file_extension(self.file)
+        return formatted_string.build(self.tags) + file_extension(self.file)
