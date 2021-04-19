@@ -72,9 +72,17 @@ class FormattedString:
             return_string = return_string.replace(old, new)
 
         return return_string
-    
-    @classmethod
-    def assert_well_written(cls, string):
+
+    @staticmethod
+    def assert_well_written(string: str):
+        '''
+        Runs a series of assert statements that will pass only if the provided
+        string has a correct format. Refer to the class' documentation for more
+        info on the format.
+
+        Args:
+            string (str): String whose format to test.
+        '''
         bracket_depth = 0
         current_tag_name = ""
 

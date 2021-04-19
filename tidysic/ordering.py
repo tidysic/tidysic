@@ -1,24 +1,39 @@
+from typing import NamedTuple
+
 from tidysic.tag import Tag
 from tidysic.formatted_string import FormattedString
 
 
-class OrderingStep:
+class OrderingStep(NamedTuple):
 
-    def __init__(self, tag: Tag, formatted_string: FormattedString):
-        self.tag = tag
-        self.format = formatted_string
+    tag: Tag
+    format: FormattedString
 
 
 class Ordering:
 
     def __init__(self, steps: list[OrderingStep] = []):
         self.steps = steps
-    
-    @property
-    def is_terminal(self):
+
+    def is_terminal(self) -> bool:
+        '''
+        Convenience method used for knowing if we reached the last step of the
+        ordering.
+
+        Returns:
+            bool: True if the ordering consists of a single step.
+        '''
         return len(self.steps) == 1
 
-    @property
     def sub_ordering(self):
-        assert not self.is_terminal, "Ordering reached its end"
+        '''
+        Convenience method used to get the ordering consisting of all the steps
+        below the first one.
+
+        Returns:
+            Ordering: Ordering consisting of all of self's steps except for the
+                first one.
+        '''
+        if self.is_terminal():
+            raise Exception("Ordering reached its end")
         return Ordering(self.steps[1:])

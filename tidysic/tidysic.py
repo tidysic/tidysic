@@ -313,7 +313,7 @@ class Tidysic:
             new_node = TreeNode(tag_value, order_tag)
             new_node.children = self._create_structure(
                 files,
-                ordering.sub_ordering
+                ordering.sub_ordering()
             )
 
             child_nodes.append(new_node)
@@ -351,11 +351,11 @@ class Tidysic:
                     if (
                         not node.children
                         or
-                        ordering.is_terminal
+                        ordering.is_terminal()
                         or
                         not self._associate_clutter(
                             node.children,
-                            ordering.sub_ordering,
+                            ordering.sub_ordering(),
                             clutter_file
                         )
                     ):
@@ -378,7 +378,7 @@ class Tidysic:
         for node in nodes:
             if isinstance(node, AudioFile):
                 # Leaf of the structure tree
-                assert ordering.is_terminal
+                assert ordering.is_terminal()
                 formatted_string = ordering.steps[0].format
                 move_file(
                     node.file,
@@ -390,7 +390,7 @@ class Tidysic:
 
             elif isinstance(node, TreeNode):
                 # Recursive step
-                assert not ordering.is_terminal
+                assert not ordering.is_terminal()
                 formatted_string = ordering.steps[0].format
                 sub_dir_target = create_dir(
                     node.build_name(formatted_string),
@@ -412,7 +412,7 @@ class Tidysic:
                 self._move_files(
                     node.children,
                     sub_dir_target,
-                    ordering.sub_ordering
+                    ordering.sub_ordering()
                 )
 
     def _clean_up(
