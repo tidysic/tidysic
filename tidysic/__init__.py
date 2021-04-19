@@ -1,13 +1,5 @@
-from .tidysic import (
-    create_structure,
-    move_files,
-    clean_up,
-    organize
-)
+from .tidysic import Tidysic
 
 __all__ = [
-    'create_structure',
-    'move_files',
-    'clean_up',
-    'organize'
+    'Tidysic'
 ]
