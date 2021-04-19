@@ -97,20 +97,22 @@ class TreeNode(object):
 
 class Tidysic:
 
-    def __init__(self, **kwargs):
-        self.verbose = kwargs.get("verbose", False)
-        self.dry_run = kwargs.get("dry_run", False)
-        self.guess = kwargs.get("guess", False)
+    def __init__(
+        self,
+        input_dir,
+        output_dir,
+        dry_run=False,
+        guess=False,
+        verbose=False,
+        with_clutter=False
+    ):
+        self.input_dir = input_dir
+        self.output_dir = output_dir
 
-        self.with_clutter = kwargs.get("with_clutter", False)
-        if "input_dir" in kwargs:
-            self.input_dir = kwargs["input_dir"]
-        else:
-            raise ValueError("input_dir must be specified")
-        if "output_dir" in kwargs:
-            self.output_dir = kwargs["output_dir"]
-        else:
-            raise ValueError("output_dir must be specified")
+        self.dry_run = dry_run
+        self.guess = guess
+        self.verbose = verbose
+        self.with_clutter = with_clutter
 
         self.ordering = Ordering([
             OrderingStep(Tag.Artist, FormattedString("{{artist}}")),
