@@ -8,6 +8,7 @@ authors = ["g-wizzy <pierre.burki@protonmail.com>", "Loic Jurasz <loic.jurasz@he
 python = "^3.9"
 mutagen = "^1.45.1"
 rich = "^10.0.0"
+click = "^7.1.2"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.6"
