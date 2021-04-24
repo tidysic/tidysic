@@ -153,16 +153,29 @@ class Tidysic:
         )
 
         if self.with_clutter:
-            for clutter_file in self.clutter_files[:]:
-                if not self._associate_clutter(
+            
+            associated_clutter = [
+                clutter_file
+                for clutter_file in self.clutter_files
+                if self._associate_clutter(
                     self.root_nodes,
                     self.ordering,
                     clutter_file
-                ):
-                    self.clutter_files.remove(clutter_file)
-                    logger.warning(
-                        f"Discarded file {clutter_file.name}"
-                    )
+                )
+            ]
+
+            discarded_clutter = set(self.clutter_files) - set(associated_clutter)
+            if discarded_clutter:
+                logger.warning(
+                    ["Discarded the following non-audio files :"]
+                    +
+                    [
+                        clutter.file
+                        for clutter in discarded_clutter
+                    ]
+                )
+            
+            self.clutter_files = associated_clutter
 
     def move_files(self):
         '''
