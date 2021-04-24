@@ -71,28 +71,6 @@ class AlgorithmTest(TestCase):
             'Le Titre.mp3'
         )
 
-    def test_guess(self):
-        path = os.path.join(
-            AlgorithmTest.test_root,
-            'Missing Artist - No Title'
-        )
-        # Needed in order to test without user input
-        AudioFile.accept_all_guesses = True
-
-        tidysic = Tidysic(input_dir=path, output_dir=path, guess=True)
-        tidysic.ordering = Ordering([
-            OrderingStep(Tag.Artist, FormattedString("{{artist}}")),
-            OrderingStep(Tag.Title, FormattedString("{{title}}"))
-        ])
-
-        tidysic.scan_folder()
-        tidysic.create_structure()
-
-        self.assertEqual(len(tidysic.root_nodes), 1)
-        song = tidysic.root_nodes[0].children[0]
-        self.assertEqual(song.tags[Tag.Artist], 'Missing Artist')
-        self.assertEqual(song.tags[Tag.Title], 'No Title')
-
     def test_illegal_characters(self):
         path = os.path.join(
             AlgorithmTest.test_root,
