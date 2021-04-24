@@ -86,35 +86,47 @@ class AudioFile(object):
             for tag in Tag
         }
 
-    def save_tags(self, new_tags, dry_run):
+    def save_tags(
+        self,
+        verbose: bool = False,
+        dry_run: bool = False
+    ):
         '''
-        Applies the given collection of tags to itself and
-        saves them to the file (if `dry_run == True`)
-        '''
-        for tag, value in new_tags.items():
-            self.tags[tag] = value
+        Saves the current tag values to the file.
 
+        Args:
+            verbose (bool): If True, each tag saving will be displayed.
+            dry_run (bool): If True, the tags won't actually be saved, but the
+                would-be modifications are displayed.
+        '''
+
+        old_tags = self.read_tags()
+
+        try:
+            file_tags = EasyID3(self.file)
+        except ID3NoHeaderError:
+            file_tags = MutagenFile(self.file)
+
+        for tag in Tag:
+            old = old_tags[tag]
+            new = self.tags[tag]
+
+            if old != new:
+                message = [
+                    f'File [blue]{self.file}[/blue]:',
+                    f'Overriding old {tag.name} tag value '
+                    f'[red]{old}[/red]',
+                    f'with [green]{new}[/green]'
+                ]
         if dry_run:
-            message = ['Saving tags into file:']
-            message += [
-                f'{str(tag)} : {value}'
-                for tag, value in new_tags.items()
-            ]
             logger.dry_run(message)
+                elif verbose:
+                    logger.info(message)
 
-        else:
-            for tag, value in new_tags.items():
-                self.tags[tag] = value
+                file_tags[tag.value] = new
 
-            tags = None
-            try:
-                tags = EasyID3(self.file)
-            except ID3NoHeaderError:
-                tags = MutagenFile(self.file)
-
-            for tag, value in new_tags.items():
-                tags[tag.value] = value
-            tags.save()
+        if not dry_run:
+            file_tags.save()
 
     def build_file_name(self, formatted_string: FormattedString):
         '''

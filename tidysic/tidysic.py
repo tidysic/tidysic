@@ -381,6 +381,8 @@ class Tidysic:
             if isinstance(node, AudioFile):
                 # Leaf of the structure tree
                 assert ordering.is_terminal()
+
+                node.save_tags(verbose=self.verbose, dry_run=self.dry_run)
                 formatted_string = ordering.steps[0].format
                 move_file(
                     node.file,
