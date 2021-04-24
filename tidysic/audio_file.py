@@ -28,81 +28,48 @@ class AudioFile(object):
     Class describing a file, and its associated tags
     '''
 
-    accept_all_guesses = False
-
     def __init__(self, file):
         self.file = file
         self.tags = self.read_tags()
 
-    def guess_tags(self, dry_run):
+    def ask_and_set_tag(self, tag: Tag):     
         '''
-        Guess the artist and title based on the filename
+        Ask the user to provide one of the file's tags, and set it.
+
+        Args:
+            tag (Tag): Tag the user will be asked to provide
+
+        Returns:
+            Union[str, int]: Value entered by the user
         '''
-        from .os_utils import filename  # Avoid circular import
-        name = filename(self.file, with_extension=False)
-        try:
-            # Artist and title are often seprated by ' - '
-            separator = name.find(' - ')
-            if separator > 0:
-                artist = name[0:separator].lstrip()
-                title = name[separator + 2:len(name)].lstrip()
-                new_tags = {
-                    Tag.Artist: name[0:separator].lstrip(),
-                    Tag.Title: name[separator + 2:len(name)].lstrip()
-                }
 
-                if AudioFile.accept_all_guesses:
-                    self.save_tags(new_tags, dry_run)
-                else:
-                    # Ask user what to do
-                    logger.log([
-                        f'''Guessed [blue]{artist}[/blue], \
-[yellow]{title}[/yellow]''',
-                        'Accept (y)',
-                        'Accept all (a)',
-                        'Discard (d)',
-                        'Rename (r)'
-                    ])
+        logger.log(
+            f'File [blue]{self.file}[/blue] '
+            f'is missing its [green]{tag.name} tag[/green].'
+        )
+        logger.log(
+            'Please provide it now. If left blank, the file will be '
+            f'placed in a [green]Unknown {tag.name}[/green] folder'
+        )
 
-                    answer = input('(y/a/d/r) ? ')
-                    while answer not in ['y', 'a', 'd', 'r']:
-                        logger.log('Answer not understood')
-                        answer = input('(y/a/d/r) ? ')
+        done = False
+        while not done:
+            value = input(f'{tag.name}: ')
+            value.strip()
 
-                    if answer == 'd':  # Discard
-                        return
-
-                    if answer == 'a':  # Accept all
-                        AudioFile.accept_all_guesses = True
-
-                    elif answer == 'r':  # Manual naming
-                        new_tags[Tag.Title] = input('Title : ')
-                        new_tags[Tag.Artist] = input('Artist : ')
-
-                    self.save_tags(new_tags, dry_run)
+            if value:
+                if tag in Tag.numeric_tags():
+                    try:
+                        self.tags[tag] = int(value)
+                        done = True
+                    except ValueError:
+                        pass
 
             else:
-                # If nothing is guessed, ask user what to do
-                logger.log([
-                    f'Cannot guess artist and/or title for {self.file}',
-                    'Rename manually (r)',
-                    'Discard (d)'
-                ])
+                    self.tags[tag] = value
+                    done = True
 
-                answer = input('(r/d) ? ')
-                while answer not in ['d', 'r']:
-                    logger.log('Answer not understood')
-                    answer = input('(r/d) ? ')
-
-                if answer == 'r':
-                    new_tags = {}
-                    new_tags[Tag.Title] = input('Title : ')
-                    new_tags[Tag.Artist] = input('Artist : ')
-
-                    self.save_tags(new_tags, dry_run)
-
-        except BaseException:
-            logger.warning(f'Could not parse the title: {title}')
+        return self.tags[tag]
 
     def read_tags(self):
         '''

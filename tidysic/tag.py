@@ -18,3 +18,13 @@ class Tag(Enum):
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def numeric_tags() -> set['Tag']:
+        """
+        Returns the set of all tags whose values are integer.
+        """
+        return {
+            Tag.Track,
+            Tag.Year
+        }
