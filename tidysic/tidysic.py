@@ -102,7 +102,7 @@ class Tidysic:
         input_dir,
         output_dir,
         dry_run=False,
-        guess=False,
+        interactive=False,
         verbose=False,
         with_clutter=False
     ):
@@ -110,7 +110,7 @@ class Tidysic:
         self.output_dir = output_dir
 
         self.dry_run = dry_run
-        self.guess = guess
+        self.interactive = interactive
         self.verbose = verbose
         self.with_clutter = with_clutter
 
@@ -290,19 +290,19 @@ class Tidysic:
                         for ordering_step in ordering.steps
                     }
                     and
-                    self.guess
+                    self.interactive
                 ):
-                    file.guess_tags(self.dry_run)
-
-                    tag_value = file.tags[order_tag]
-                    if tag_value is None:
+                    tag_value = file.ask_and_set_tag(order_tag)
+                    if tag_value is None and self.verbose:
                         logger.log(f'Discarded file: {file.file}')
+
                 elif self.verbose:
                     logger.warning(
                         f'File {file.file}\n'
-                        f'could not have its {str(order_tag)} \
-                            tag determined.\n'
-                        f'It will move into "Unknown {str(order_tag)}".'
+                        f'could not have its {str(order_tag)} tag '
+                        'determined.\n'
+                        f'It will move into [blue]Unknown {str(order_tag)}'
+                        'directory.'
                     )
 
             if tag_value not in children:

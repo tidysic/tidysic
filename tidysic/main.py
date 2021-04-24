@@ -26,10 +26,10 @@ from tidysic.tidysic import Tidysic
     help='Move non-audio files along with their audio neighbor files.'
 )
 @click.option(
-    '-g',
-    '--guess',
+    '-i',
+    '--interactive',
     is_flag=True,
-    help='Guess the audio file title and artist when there is no IDE tags.'
+    help='Will prompt user input for missing tags.'
 )
 @click.option(
     '-d',
@@ -46,7 +46,15 @@ from tidysic.tidysic import Tidysic
     'target',
     type=click.Path(exists=False, file_okay=False),
 )
-def run(verbose, with_album, with_clutter, guess, dry_run, source, target):
+def run(
+    verbose: bool,
+    with_album: bool,
+    with_clutter: bool,
+    interactive: bool,
+    dry_run: bool,
+    source: str,
+    target: str
+):
     '''
     Organize music contents of the SOURCE folder inside the TARGET folder (will
     be created if needed).
@@ -55,7 +63,7 @@ def run(verbose, with_album, with_clutter, guess, dry_run, source, target):
         input_dir=source,
         output_dir=target,
         dry_run=dry_run,
-        guess=guess,
+        interactive=interactive,
         with_clutter=with_clutter
     )
 
