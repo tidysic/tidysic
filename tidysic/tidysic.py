@@ -153,13 +153,16 @@ class Tidysic:
         )
 
         if self.with_clutter:
-            for clutter_file in self.clutter_files:
+            for clutter_file in self.clutter_files[:]:
                 if not self._associate_clutter(
                     self.root_nodes,
                     self.ordering,
                     clutter_file
                 ):
                     self.clutter_files.remove(clutter_file)
+                    logger.warning(
+                        f"Discarded file {clutter_file.name}"
+                    )
 
     def move_files(self):
         '''
@@ -353,7 +356,7 @@ class Tidysic:
                     if (
                         not node.children
                         or
-                        ordering.is_terminal()
+                        len(ordering.steps) <= 2
                         or
                         not self._associate_clutter(
                             node.children,
