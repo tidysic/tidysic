@@ -29,7 +29,7 @@ from tidysic.tidysic import Tidysic
     '-i',
     '--interactive',
     is_flag=True,
-    help='Will prompt user input for missing tags.'
+    help='Prompt user input for missing tags.'
 )
 @click.option(
     '-d',

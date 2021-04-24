@@ -1,3 +1,5 @@
+from typing import Union, Optional
+
 from mutagen import File as MutagenFile
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
@@ -25,14 +27,14 @@ class ClutterFile(object):
 
 class AudioFile(object):
     '''
-    Class describing a file, and its associated tags
+    Class describing a music file, and its associated tags
     '''
 
     def __init__(self, file):
         self.file = file
-        self.tags = self.read_tags()
+        self.set_tags_from_file()
 
-    def ask_and_set_tag(self, tag: Tag):     
+    def ask_and_set_tag(self, tag: Tag) -> Union[str, int]:
         '''
         Ask the user to provide one of the file's tags, and set it.
 
@@ -43,46 +45,60 @@ class AudioFile(object):
             Union[str, int]: Value entered by the user
         '''
 
+        self._explain_set_tag(tag)
+        self.tags[tag] = self._ask_tag(tag)
+
+        return self.tags[tag]
+
+    def _explain_set_tag(self, tag: Tag) -> None:
         logger.log(
             f'File [blue]{self.file}[/blue] '
             f'is missing its [green]{tag.name} tag[/green].'
         )
         logger.log(
-            'Please provide it now. If left blank, the file will be '
-            f'placed in a [green]Unknown {tag.name}[/green] folder'
+            'Please provide it now. If no value is given, the file will be '
+            f'placed in an [green]Unknown {tag.name}[/green] folder'
         )
 
+    def _ask_tag(self, tag: Tag) -> Optional[Union[str, int]]:
         done = False
+        validated = None
         while not done:
             value = input(f'{tag.name}: ')
             value.strip()
 
             if value:
-                if tag in Tag.numeric_tags():
-                    try:
-                        self.tags[tag] = int(value)
-                        done = True
-                    except ValueError:
-                        pass
-
-                else:
-                    self.tags[tag] = value
+                try:
+                    validated = Tag.validate_input(tag, value)
                     done = True
+                except ValueError as e:
+                    logger.error(str(e))
 
-        return self.tags[tag]
+            else:
+                # User chose not to provide a value
+                done = True
 
-    def read_tags(self):
+        return validated
+
+    def set_tags_from_file(self):
         '''
-        Reads the tags from the file's metadata
+        Set the tags from the file's metadata.
         '''
-        tags = None
+        tags = self._get_mutagen_tags()
+        self.tags = self._parse_mutagen_tags(tags)
+
+    def _get_mutagen_tags(self):
         try:
-            tags = EasyID3(self.file)
+            return EasyID3(self.file)
         except ID3NoHeaderError:
-            tags = MutagenFile(self.file)
+            return MutagenFile(self.file)
 
+    def _parse_mutagen_tags(self, mutagen_tags):
         return {
-            tag: tags[tag.value][0] if tag.value in tags else None
+            tag: (
+                mutagen_tags[tag.value][0] if tag.value in mutagen_tags
+                else None
+            )
             for tag in Tag
         }
 
@@ -100,12 +116,8 @@ class AudioFile(object):
                 would-be modifications are displayed.
         '''
 
-        old_tags = self.read_tags()
-
-        try:
-            file_tags = EasyID3(self.file)
-        except ID3NoHeaderError:
-            file_tags = MutagenFile(self.file)
+        mutagen_tags = self._get_mutagen_tags()
+        old_tags = self._parse_mutagen_tags(mutagen_tags)
 
         for tag in Tag:
             old = old_tags[tag]
@@ -123,10 +135,10 @@ class AudioFile(object):
                 elif verbose:
                     logger.info(message)
 
-                file_tags[tag.value] = new
+                mutagen_tags[tag.value] = new
 
         if not dry_run:
-            file_tags.save()
+            mutagen_tags.save()
 
     def build_file_name(self, formatted_string: FormattedString) -> str:
         '''
