@@ -84,7 +84,7 @@ class TreeNode(object):
                 if leaf is not None:
                     return leaf
 
-        assert False, "TreeNode has no child"
+        assert False, 'TreeNode has no child'
 
     def build_name(self, formatted_string: FormattedString):
         '''
@@ -115,9 +115,9 @@ class Tidysic:
         self.with_clutter = with_clutter
 
         self.ordering = Ordering([
-            OrderingStep(Tag.Artist, FormattedString("{{artist}}")),
-            OrderingStep(Tag.Album, FormattedString("{({year}) }{{album}}")),
-            OrderingStep(Tag.Title, FormattedString("{{track}. }{{title}}"))
+            OrderingStep(Tag.Artist, FormattedString('{{artist}}')),
+            OrderingStep(Tag.Album, FormattedString('{({year}) }{{album}}')),
+            OrderingStep(Tag.Title, FormattedString('{{track}. }{{title}}'))
         ])
 
         self.audio_files: list[AudioFile] = []
@@ -273,7 +273,7 @@ class Tidysic:
         Returns:
             Sequence[Union[TreeNode, AudioFile]]: Children of depth one.
         '''
-        assert ordering.steps, "No ordering given"
+        assert ordering.steps, 'No ordering given'
         order_tag = ordering.steps[0].tag
 
         if order_tag == Tag.Title:
@@ -431,7 +431,7 @@ class Tidysic:
         Returns true if the given folder was deleted.
         '''
         if self.dry_run:
-            logger.dry_run(f"Cleaning up {dir_src} and its subfolders")
+            logger.dry_run(f'Cleaning up {dir_src} and its subfolders')
 
         else:
             if not os.path.isdir(dir_src):

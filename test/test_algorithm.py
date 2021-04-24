@@ -77,7 +77,7 @@ class AlgorithmTest(TestCase):
             'a bunch of illegal characters'
         )
 
-        tidysic = Tidysic(input_dir=path, output_dir=path, guess=True)
+        tidysic = Tidysic(input_dir=path, output_dir=path)
         tidysic.ordering = Ordering([
             OrderingStep(Tag.Artist, FormattedString('{{artist}}')),
             OrderingStep(Tag.Title, FormattedString('{{artist}} - {{title}}'))
@@ -99,7 +99,7 @@ class AlgorithmTest(TestCase):
         )
         tidysic = Tidysic(input_dir=path, output_dir=path)
         tidysic.ordering = Ordering([
-            OrderingStep(Tag.Artist, FormattedString("{{artist}}"))
+            OrderingStep(Tag.Artist, FormattedString('{{artist}}'))
         ])
         tidysic.scan_folder()
         song = tidysic.audio_files[0]
@@ -117,8 +117,8 @@ class AlgorithmTest(TestCase):
         )
         tidysic = Tidysic(input_dir=path, output_dir=path)
         tidysic.ordering = Ordering([
-            OrderingStep(Tag.Album, FormattedString("{{album}}")),
-            OrderingStep(Tag.Title, FormattedString("{{title}}"))
+            OrderingStep(Tag.Album, FormattedString('{{album}}')),
+            OrderingStep(Tag.Title, FormattedString('{{title}}'))
         ])
         tidysic.scan_folder()
         tidysic.create_structure()

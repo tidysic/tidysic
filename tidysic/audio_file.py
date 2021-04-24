@@ -38,7 +38,7 @@ class AudioFile(object):
 
         Args:
             tag (Tag): Tag the user will be asked to provide
-
+        
         Returns:
             Union[str, int]: Value entered by the user
         '''
@@ -65,7 +65,7 @@ class AudioFile(object):
                     except ValueError:
                         pass
 
-            else:
+                else:
                     self.tags[tag] = value
                     done = True
 
@@ -118,8 +118,8 @@ class AudioFile(object):
                     f'[red]{old}[/red]',
                     f'with [green]{new}[/green]'
                 ]
-        if dry_run:
-            logger.dry_run(message)
+                if dry_run:
+                    logger.dry_run(message)
                 elif verbose:
                     logger.info(message)
 
@@ -128,7 +128,7 @@ class AudioFile(object):
         if not dry_run:
             file_tags.save()
 
-    def build_file_name(self, formatted_string: FormattedString):
+    def build_file_name(self, formatted_string: FormattedString) -> str:
         '''
         Builds the file's whole name, using the given format,
         and appends the extension.

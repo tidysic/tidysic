@@ -64,13 +64,14 @@ def run(
         output_dir=target,
         dry_run=dry_run,
         interactive=interactive,
-        with_clutter=with_clutter
+        with_clutter=with_clutter,
+        verbose=verbose
     )
 
     if not with_album:
         tidysic.ordering = Ordering([
-            OrderingStep(Tag.Artist, FormattedString("{{artist}}")),
-            OrderingStep(Tag.Title, FormattedString("{{track}. }{{title}}"))
+            OrderingStep(Tag.Artist, FormattedString('{{artist}}')),
+            OrderingStep(Tag.Title, FormattedString('{{track}. }{{title}}'))
         ])
 
     tidysic.organize()
