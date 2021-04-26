@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
-from tidysic.tag import Tag
 from tidysic.formatted_string import FormattedString
+from tidysic.tag import Tag
 
 
 class OrderingStep(NamedTuple):
