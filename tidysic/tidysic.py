@@ -84,7 +84,7 @@ class TreeNode(object):
                 if leaf is not None:
                     return leaf
 
-        assert False, "TreeNode has no child"
+        assert False, 'TreeNode has no child'
 
     def build_name(self, formatted_string: FormattedString):
         '''
@@ -102,7 +102,7 @@ class Tidysic:
         input_dir,
         output_dir,
         dry_run=False,
-        guess=False,
+        interactive=False,
         verbose=False,
         with_clutter=False
     ):
@@ -110,14 +110,14 @@ class Tidysic:
         self.output_dir = output_dir
 
         self.dry_run = dry_run
-        self.guess = guess
+        self.interactive = interactive
         self.verbose = verbose
         self.with_clutter = with_clutter
 
         self.ordering = Ordering([
-            OrderingStep(Tag.Artist, FormattedString("{{artist}}")),
-            OrderingStep(Tag.Album, FormattedString("{({year}) }{{album}}")),
-            OrderingStep(Tag.Title, FormattedString("{{track}. }{{title}}"))
+            OrderingStep(Tag.Artist, FormattedString('{{artist}}')),
+            OrderingStep(Tag.Album, FormattedString('{({year}) }{{album}}')),
+            OrderingStep(Tag.Title, FormattedString('{{track}. }{{title}}'))
         ])
 
         self.audio_files: list[AudioFile] = []
@@ -289,7 +289,7 @@ class Tidysic:
         Returns:
             Sequence[Union[TreeNode, AudioFile]]: Children of depth one.
         '''
-        assert ordering.steps, "No ordering given"
+        assert ordering.steps, 'No ordering given'
         order_tag = ordering.steps[0].tag
 
         if order_tag == Tag.Title:
@@ -306,19 +306,19 @@ class Tidysic:
                         for ordering_step in ordering.steps
                     }
                     and
-                    self.guess
+                    self.interactive
                 ):
-                    file.guess_tags(self.dry_run)
-
-                    tag_value = file.tags[order_tag]
-                    if tag_value is None:
+                    tag_value = file.ask_and_set_tag(order_tag)
+                    if tag_value is None and self.verbose:
                         logger.log(f'Discarded file: {file.file}')
+
                 elif self.verbose:
                     logger.warning(
                         f'File {file.file}\n'
-                        f'could not have its {str(order_tag)} \
-                            tag determined.\n'
-                        f'It will move into "Unknown {str(order_tag)}".'
+                        f'could not have its {str(order_tag)} tag '
+                        'determined.\n'
+                        f'It will move into [blue]Unknown {str(order_tag)}'
+                        'directory.'
                     )
 
             if tag_value not in children:
@@ -397,6 +397,8 @@ class Tidysic:
             if isinstance(node, AudioFile):
                 # Leaf of the structure tree
                 assert ordering.is_terminal()
+
+                node.save_tags(verbose=self.verbose, dry_run=self.dry_run)
                 formatted_string = ordering.steps[0].format
                 move_file(
                     node.file,
@@ -445,7 +447,7 @@ class Tidysic:
         Returns true if the given folder was deleted.
         '''
         if self.dry_run:
-            logger.dry_run(f"Cleaning up {dir_src} and its subfolders")
+            logger.dry_run(f'Cleaning up {dir_src} and its subfolders')
 
         else:
             if not os.path.isdir(dir_src):

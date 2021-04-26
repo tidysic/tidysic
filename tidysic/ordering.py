@@ -35,5 +35,5 @@ class Ordering:
                 first one.
         '''
         if self.is_terminal():
-            raise Exception("Ordering reached its end")
+            raise Exception('Ordering reached its end')
         return Ordering(self.steps[1:])

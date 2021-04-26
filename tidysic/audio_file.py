@@ -1,3 +1,5 @@
+from typing import Union, Optional
+
 from mutagen import File as MutagenFile
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
@@ -25,131 +27,120 @@ class ClutterFile(object):
 
 class AudioFile(object):
     '''
-    Class describing a file, and its associated tags
+    Class describing a music file, and its associated tags
     '''
-
-    accept_all_guesses = False
 
     def __init__(self, file):
         self.file = file
-        self.tags = self.read_tags()
+        self.set_tags_from_file()
 
-    def guess_tags(self, dry_run):
+    def ask_and_set_tag(self, tag: Tag) -> Union[str, int]:
         '''
-        Guess the artist and title based on the filename
+        Ask the user to provide one of the file's tags, and set it.
+
+        Args:
+            tag (Tag): Tag the user will be asked to provide
+        
+        Returns:
+            Union[str, int]: Value entered by the user
         '''
-        from .os_utils import filename  # Avoid circular import
-        name = filename(self.file, with_extension=False)
-        try:
-            # Artist and title are often seprated by ' - '
-            separator = name.find(' - ')
-            if separator > 0:
-                artist = name[0:separator].lstrip()
-                title = name[separator + 2:len(name)].lstrip()
-                new_tags = {
-                    Tag.Artist: name[0:separator].lstrip(),
-                    Tag.Title: name[separator + 2:len(name)].lstrip()
-                }
 
-                if AudioFile.accept_all_guesses:
-                    self.save_tags(new_tags, dry_run)
-                else:
-                    # Ask user what to do
-                    logger.log([
-                        f'''Guessed [blue]{artist}[/blue], \
-[yellow]{title}[/yellow]''',
-                        'Accept (y)',
-                        'Accept all (a)',
-                        'Discard (d)',
-                        'Rename (r)'
-                    ])
+        self._explain_set_tag(tag)
+        self.tags[tag] = self._ask_tag(tag)
 
-                    answer = input('(y/a/d/r) ? ')
-                    while answer not in ['y', 'a', 'd', 'r']:
-                        logger.log('Answer not understood')
-                        answer = input('(y/a/d/r) ? ')
+        return self.tags[tag]
 
-                    if answer == 'd':  # Discard
-                        return
+    def _explain_set_tag(self, tag: Tag) -> None:
+        logger.log(
+            f'File [blue]{self.file}[/blue] '
+            f'is missing its [green]{tag.name} tag[/green].'
+        )
+        logger.log(
+            'Please provide it now. If no value is given, the file will be '
+            f'placed in an [green]Unknown {tag.name}[/green] folder'
+        )
 
-                    if answer == 'a':  # Accept all
-                        AudioFile.accept_all_guesses = True
+    def _ask_tag(self, tag: Tag) -> Optional[Union[str, int]]:
+        done = False
+        validated = None
+        while not done:
+            value = input(f'{tag.name}: ')
+            value.strip()
 
-                    elif answer == 'r':  # Manual naming
-                        new_tags[Tag.Title] = input('Title : ')
-                        new_tags[Tag.Artist] = input('Artist : ')
-
-                    self.save_tags(new_tags, dry_run)
+            if value:
+                try:
+                    validated = Tag.validate_input(tag, value)
+                    done = True
+                except ValueError as e:
+                    logger.error(str(e))
 
             else:
-                # If nothing is guessed, ask user what to do
-                logger.log([
-                    f'Cannot guess artist and/or title for {self.file}',
-                    'Rename manually (r)',
-                    'Discard (d)'
-                ])
+                # User chose not to provide a value
+                done = True
 
-                answer = input('(r/d) ? ')
-                while answer not in ['d', 'r']:
-                    logger.log('Answer not understood')
-                    answer = input('(r/d) ? ')
+        return validated
 
-                if answer == 'r':
-                    new_tags = {}
-                    new_tags[Tag.Title] = input('Title : ')
-                    new_tags[Tag.Artist] = input('Artist : ')
-
-                    self.save_tags(new_tags, dry_run)
-
-        except BaseException:
-            logger.warning(f'Could not parse the title: {title}')
-
-    def read_tags(self):
+    def set_tags_from_file(self):
         '''
-        Reads the tags from the file's metadata
+        Set the tags from the file's metadata.
         '''
-        tags = None
+        tags = self._get_mutagen_tags()
+        self.tags = self._parse_mutagen_tags(tags)
+
+    def _get_mutagen_tags(self):
         try:
-            tags = EasyID3(self.file)
+            return EasyID3(self.file)
         except ID3NoHeaderError:
-            tags = MutagenFile(self.file)
+            return MutagenFile(self.file)
 
+    def _parse_mutagen_tags(self, mutagen_tags):
         return {
-            tag: tags[tag.value][0] if tag.value in tags else None
+            tag: (
+                mutagen_tags[tag.value][0] if tag.value in mutagen_tags
+                else None
+            )
             for tag in Tag
         }
 
-    def save_tags(self, new_tags, dry_run):
+    def save_tags(
+        self,
+        verbose: bool = False,
+        dry_run: bool = False
+    ):
         '''
-        Applies the given collection of tags to itself and
-        saves them to the file (if `dry_run == True`)
+        Saves the current tag values to the file.
+
+        Args:
+            verbose (bool): If True, each tag saving will be displayed.
+            dry_run (bool): If True, the tags won't actually be saved, but the
+                would-be modifications are displayed.
         '''
-        for tag, value in new_tags.items():
-            self.tags[tag] = value
 
-        if dry_run:
-            message = ['Saving tags into file:']
-            message += [
-                f'{str(tag)} : {value}'
-                for tag, value in new_tags.items()
-            ]
-            logger.dry_run(message)
+        mutagen_tags = self._get_mutagen_tags()
+        old_tags = self._parse_mutagen_tags(mutagen_tags)
 
-        else:
-            for tag, value in new_tags.items():
-                self.tags[tag] = value
+        for tag in Tag:
+            old = old_tags[tag]
+            new = self.tags[tag]
 
-            tags = None
-            try:
-                tags = EasyID3(self.file)
-            except ID3NoHeaderError:
-                tags = MutagenFile(self.file)
+            if old != new:
+                message = [
+                    f'File [blue]{self.file}[/blue]:',
+                    f'Overriding old {tag.name} tag value '
+                    f'[red]{old}[/red]',
+                    f'with [green]{new}[/green]'
+                ]
+                if dry_run:
+                    logger.dry_run(message)
+                elif verbose:
+                    logger.info(message)
 
-            for tag, value in new_tags.items():
-                tags[tag.value] = value
-            tags.save()
+                mutagen_tags[tag.value] = new
 
-    def build_file_name(self, formatted_string: FormattedString):
+        if not dry_run:
+            mutagen_tags.save()
+
+    def build_file_name(self, formatted_string: FormattedString) -> str:
         '''
         Builds the file's whole name, using the given format,
         and appends the extension.

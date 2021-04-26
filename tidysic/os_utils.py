@@ -106,7 +106,7 @@ def remove_file(
     '''
     Deletes `file_path`
     '''
-    _message(f"Deleting file {file_path}", dry_run, verbose)
+    _message(f'Deleting file {file_path}', dry_run, verbose)
 
     if not dry_run:
         os.remove(file_path)

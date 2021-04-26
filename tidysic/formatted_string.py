@@ -36,12 +36,12 @@ class FormattedString:
             FormattedString.assert_well_written(string)
         except AssertionError as e:
             raise ValueError(
-                f"Could not create FormattedString from {string}: {e}"
+                f'Could not create FormattedString from {string}: {e}'
             )
 
         self._str = string
 
-    def build(self, tags: dict[Tag, Any]):
+    def build(self, tags: dict[Tag, Any]) -> str:
         pattern = r'\{(.*?\{(\w+)(:.+?)?\}.*?)\}'
         matches = re.findall(pattern, self._str)
 
@@ -84,19 +84,19 @@ class FormattedString:
             string (str): String whose format to test.
         '''
         bracket_depth = 0
-        current_tag_name = ""
+        current_tag_name = ''
 
         for i, char in enumerate(string):
             if char == '{':
                 bracket_depth += 1
                 assert bracket_depth <= 2, (
-                    f"Too many opening brackets (col {i})"
+                    f'Too many opening brackets (col {i})'
                 )
 
             elif char == '}':
                 bracket_depth -= 1
                 assert bracket_depth >= 0, (
-                    f"Too many closing brackets (col {i})"
+                    f'Too many closing brackets (col {i})'
                 )
 
                 if bracket_depth == 0:
@@ -104,9 +104,9 @@ class FormattedString:
                         tag.name.lower()
                         for tag in Tag
                     }, (
-                        f"Invalid tag name {current_tag_name}"
+                        f'Invalid tag name {current_tag_name}'
                     )
-                    current_tag_name = ""
+                    current_tag_name = ''
             
             elif bracket_depth == 2:
                 current_tag_name += char
