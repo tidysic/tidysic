@@ -1,18 +1,13 @@
 import os
-from typing import Union, Sequence
+from typing import Sequence, Union
 
-from tidysic.tag import Tag
+from tidysic import logger
 from tidysic.audio_file import AudioFile, ClutterFile
 from tidysic.formatted_string import FormattedString
 from tidysic.ordering import Ordering, OrderingStep
-from tidysic.os_utils import (
-    is_audio_file,
-    create_dir,
-    move_file,
-    remove_file,
-    remove_directory
-)
-from tidysic import logger
+from tidysic.os_utils import (create_dir, is_audio_file, move_file,
+                              remove_directory, remove_file)
+from tidysic.tag import Tag
 
 
 class TreeNode(object):

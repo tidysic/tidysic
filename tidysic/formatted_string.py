@@ -1,5 +1,5 @@
-from typing import Any
 import re
+from typing import Any
 
 from tidysic.tag import Tag
 
@@ -107,6 +107,6 @@ class FormattedString:
                         f'Invalid tag name {current_tag_name}'
                     )
                     current_tag_name = ''
-            
+
             elif bracket_depth == 2:
                 current_tag_name += char

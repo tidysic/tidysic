@@ -1,5 +1,6 @@
-from rich import print
 from typing import Union
+
+from rich import print
 
 
 def log(

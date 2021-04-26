@@ -1,12 +1,13 @@
-from typing import Union, Optional
+from typing import Optional, Union
 
 from mutagen import File as MutagenFile
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
 
-from tidysic.tag import Tag
-from tidysic.formatted_string import FormattedString
 from tidysic import logger
+from tidysic.formatted_string import FormattedString
+from tidysic.os_utils import file_extension, filename
+from tidysic.tag import Tag
 
 
 class ClutterFile(object):
@@ -20,8 +21,6 @@ class ClutterFile(object):
         self.tags = {}
         for tag in Tag:
             self.tags[tag] = None
-        # Avoid circular imports
-        from .os_utils import filename
         self.name = filename(file)
 
 
@@ -40,7 +39,7 @@ class AudioFile(object):
 
         Args:
             tag (Tag): Tag the user will be asked to provide
-        
+
         Returns:
             Union[str, int]: Value entered by the user
         '''
@@ -145,5 +144,4 @@ class AudioFile(object):
         Builds the file's whole name, using the given format,
         and appends the extension.
         '''
-        from .os_utils import file_extension  # Avoid circular import
         return formatted_string.build(self.tags) + file_extension(self.file)
