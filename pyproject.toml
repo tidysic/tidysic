@@ -1,18 +1,17 @@
 [tool.poetry]
 name = "tidysic"
 version = "0.1.0"
-description = "Keep your music tidy"
-authors = ["g-wizzy <pierre.burki@protonmail.com>", "Loic Jurasz <loic.jurasz@he-arc.ch>", "qtipee <quent.vallat@gmail.com>", "xiorcale <quentin.vaucher@protonmail.com>"]
+description = "Keep your music tidy."
+authors = ["xiorcale <quentin.vaucher@protonmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 mutagen = "^1.45.1"
-rich = "^10.0.0"
-click = "^7.1.2"
 
 [tool.poetry.dev-dependencies]
+pytest = "^5.2"
 autopep8 = "^1.5.6"
-flake8 = "^3.9.0"
+flake8 = "^3.9.1"
 mypy = "^0.812"
 
 [tool.poetry.scripts]
