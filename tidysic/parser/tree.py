@@ -14,7 +14,7 @@ class Tree:
 
         self.children: set['Tree'] = set()
         self.audio_files: set[AudioFile] = set()
-        self.clutter_files: set[str] = set()
+        self.clutter_files: set[Path] = set()
 
         self._parse()
 
@@ -30,23 +30,4 @@ class Tree:
             elif AudioFile.is_audio_file(path):
                 self.audio_files.add(AudioFile(path))
             else:
-                self.clutter_files.add(path.name)
-
-    def sort(self, sorted_tree=defaultdict(lambda: defaultdict(set))):
-        """
-        Sort the tree by generating a structure: 
-
-            Artist->Album->Title
-        
-        Return this structure as a dictionary, i.e., you can access the
-        structure with:
-
-            sorted_tree[artist][album] = set(titles)
-        """
-        for audio_file in self.audio_files:
-            sorted_tree[audio_file.artist][audio_file.album].add(audio_file)
-        
-        for child in self.children:
-            child.sort(sorted_tree=sorted_tree)
-
-        return sorted_tree
+                self.clutter_files.add(path)
