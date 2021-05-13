@@ -6,11 +6,10 @@ from tidysic.organizer import Organizer
 
 class Tidysic:
 
-    def __init__(self, source_path: str, dest_path: str) -> None:
-        self._dest_path = Path(dest_path)
-        self._tree = Tree(Path(source_path))
-        self._organizer = Organizer(['artist', 'album']) # sort by artist->album->title
-        # self._organizer = Organizer(['genre'])  # sort by genre->title
+    def __init__(self, source: str, target: str, pattern: list[str]) -> None:
+        self._tree = Tree(Path(source))
+        self._target = Path(target)
+        self._organizer = Organizer(pattern)
 
-    def run(self):
-        self._organizer.organize(self._tree, self._dest_path)
+    def run(self) -> None:
+        self._organizer.organize(self._tree, self._target)
