@@ -30,12 +30,12 @@ jobs:
     - name: Lint with flake8
       run: |
         # Stop the build if there are one of the following error codes
-        poetry run flake8 ./tidysic/ ./test/ --count --select=E9,F63,F7,F81,F82,F83,F84,F401 --show-source --statistics
+        poetry run flake8 ./tidysic/ ./tests/ --count --select=E9,F63,F7,F81,F82,F83,F84,F401 --show-source --statistics
         # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        poetry run flake8 ./tidysic/ ./test/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        poetry run flake8 ./tidysic/ ./tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Typing with mypy
       run: |
         poetry run mypy -p tidysic --ignore-missing-imports
-    - name: Test with unittest
+    - name: Test with pytest
       run: |
-        poetry run python -m unittest discover
+        poetry run python -m pytest tests/

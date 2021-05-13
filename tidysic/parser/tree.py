@@ -1,4 +1,3 @@
-from collections import defaultdict
 from pathlib import Path
 
 from tidysic.parser.audio_file import AudioFile

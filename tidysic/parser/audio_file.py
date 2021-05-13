@@ -37,7 +37,7 @@ class AudioFile:
             return dict(EasyID3(self.path.resolve()))
         except ID3NoHeaderError:
             return dict()
-    
+
     def get_title_with_extension(self) -> str:
         return self.title + self.extension
 

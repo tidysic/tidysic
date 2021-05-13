@@ -1,12 +1,13 @@
 
 from pathlib import Path
 
-from tidysic.parser.tree import Tree
 from tidysic.organizer import Organizer
+from tidysic.parser.tree import Tree
+
 
 class Tidysic:
 
-    def __init__(self, source: str, target: str, pattern: list[str]) -> None:
+    def __init__(self, source: str, target: str, pattern: str) -> None:
         self._tree = Tree(Path(source))
         self._target = Path(target)
         self._organizer = Organizer(pattern)

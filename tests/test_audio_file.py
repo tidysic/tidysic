@@ -1,6 +1,6 @@
 from pathlib import Path
-from tidysic.parser.audio_file import AudioFile
 
+from tidysic.parser.audio_file import AudioFile
 
 path = Path('tests/music/normal/normal.mp3')
 audio_file = AudioFile(path)

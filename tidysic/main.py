@@ -28,5 +28,6 @@ def run(verbose: bool, source: str, target: str, pattern: str) -> None:
     tidysic = Tidysic(source, target, pattern)
     tidysic.run()
 
+
 if __name__ == '__main__':
     run()
