@@ -30,13 +30,18 @@ class Tree:
         """
         for path in self._root.iterdir():
             if path.is_dir():
-                self.children.add(Tree(path))
+                child = Tree(path)
+                if child._contains_tags():
+                    self.children.add(child)
+                else:
+                    self.clutter_files.add(TaggedFile(path))
             elif AudioFile.is_audio_file(path):
                 self.audio_files.add(AudioFile(path))
             else:
                 self.clutter_files.add(TaggedFile(path))
 
-        self._tag_clutter()
+        if self._contains_tags():
+            self._tag_clutter()
 
     def _contains_tags(self) -> bool:
         """
@@ -45,33 +50,19 @@ class Tree:
         return (
             len(self.audio_files) > 0
             or
-            any([
+            any(
                 child._contains_tags()
                 for child in self.children
-            ])
+            )
         )
-
-    def _apply_tags_to_clutter(self, tags: Taggable):
-        """
-        Tags clutter in this node with the given tags.
-
-        Affects its children if they do not contain audio files.
-        """
-        for clutter_file in self.clutter_files:
-            clutter_file.copy_tags_from(tags)
-
-        for child in self.children:
-            if not child._contains_tags():
-                child._apply_tags_to_clutter(tags)
 
     def _tag_clutter(self):
         """
         Tags non-audio files with the tags common to all audio files in the same
         directory and subdirectories.
         """
-        if self._contains_tags():
-            common_tags = self._find_common_tags()
-            self._apply_tags_to_clutter(common_tags)
+        common_tags = self._find_common_tags()
+        self._apply_tags_to_clutter(common_tags)
 
     def _find_common_tags(self) -> Taggable:
         """
@@ -84,3 +75,12 @@ class Tree:
         ]
         all_tags = chain(self.audio_files, children_tags)
         return reduce(Taggable.intersection, all_tags)
+
+    def _apply_tags_to_clutter(self, tags: Taggable):
+        """
+        Tags clutter in this node with the given tags.
+
+        Affects its children if they do not contain audio files.
+        """
+        for clutter_file in self.clutter_files:
+            clutter_file.copy_tags_from(tags)
