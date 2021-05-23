@@ -22,7 +22,10 @@ class Organizer:
     def _build_path(self, audio_file: AudioFile) -> Path:
         path = Path()
         for attribute in self._attributes:
-            path = path / getattr(audio_file, attribute)
+            folder_name = getattr(audio_file, attribute)
+            if folder_name is None:
+                folder_name = f"Unknown {attribute}"
+            path = path / folder_name
         return path
 
     @staticmethod
