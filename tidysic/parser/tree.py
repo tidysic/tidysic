@@ -56,7 +56,7 @@ class Tree:
         def all_tagged() -> Iterator[Taggable]:
             for audio_file in self.audio_files:
                 yield audio_file
-            
+
             for child in self.children:
                 yield child._tag_clutter_and_return_common_tags()
 
@@ -68,7 +68,7 @@ class Tree:
         print()
         for clutter_file in self.clutter_files:
             clutter_file.copy_tags_from(common_tags)
-        
+
         return common_tags
 
     @staticmethod
@@ -90,4 +90,3 @@ class Tree:
                 setattr(common_tags, tag_name, tag_value)
 
         return common_tags
-

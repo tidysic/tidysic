@@ -2,6 +2,7 @@ from dataclasses import dataclass, asdict, fields
 
 from typing import Optional
 
+
 @dataclass
 class Taggable:
 
