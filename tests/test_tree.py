@@ -34,10 +34,13 @@ def test_clutter():
 
     assert len(tree.children) == 1
     album_node = tree.children.pop()
-    assert len(album_node.clutter_files) == 1
-    album_clutter = album_node.clutter_files.pop()
+    assert len(album_node.clutter_files) == 0
 
-    assert album_clutter.path.is_dir()
-    assert album_clutter.artist == "Artist Name"
-    assert album_clutter.album == "Album Name"
-    assert album_clutter.title is None
+    assert len(album_node.children) == 1
+    album_clutter_node = album_node.children.pop()
+    assert len(album_clutter_node.clutter_files) == 2
+
+    for album_clutter in album_clutter_node.clutter_files:
+        assert album_clutter.artist == "Artist Name"
+        assert album_clutter.album == "Album Name"
+        assert album_clutter.title is None
