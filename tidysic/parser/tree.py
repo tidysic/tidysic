@@ -1,9 +1,10 @@
+from collections import defaultdict
 from pathlib import Path
+from tidysic.file.clutter_file import ClutterFile
 
 from tidysic.file.audio_file import AudioFile
-from tidysic.file.clutter_file import ClutterFile
 from tidysic.file.taggable import Taggable
-
+from functools import reduce
 
 class Tree:
     """
@@ -18,7 +19,6 @@ class Tree:
         self.clutter_files: set[ClutterFile] = set()
 
         self._parse()
-        self._parse_non_audio()
 
     def _parse(self) -> None:
         """
@@ -33,49 +33,37 @@ class Tree:
                 self.audio_files.add(AudioFile(path))
             else:
                 self.clutter_files.add(ClutterFile(path))
-
-    def _parse_non_audio(self) -> None:
-        """
-        Tags non-audio files with the tags common to all audio files in the same
-        directory and subdirectories.
-        """
-        _ = self._tag_clutter_and_return_common_tags()
-
-    def _tag_clutter_and_return_common_tags(self) -> Taggable:
-        """
-        Tags non-audio files with the tags common to all audio files in the same
-        directory and subdirectories, and returns the set of tags.
-        """
-        all_tagged = (
-            list(self.audio_files)
-            +
-            [
-                child._tag_clutter_and_return_common_tags()
-                for child in self.children
-            ]
-        )
-        common_tags = self._find_common_tags(all_tagged)
-        for clutter_file in self.clutter_files:
-            clutter_file.copy_tags_from(common_tags)
         
-        return common_tags
+        self._parse_clutter_files()
 
-    @staticmethod
-    def _find_common_tags(
-        tagged_list: list[Taggable]
-    ) -> Taggable:
+    
+    def _parse_clutter_files(self):
         """
-        Finds the common tags shared by the given tagged objects.
+        Parse the `ClutterFile` of the `Tree` by assigning them tags shared by
+        all the `AudioFile` of the `Tree`.
         """
-        common_tags = Taggable()
-        if tagged_list:
-            candidate = tagged_list.pop()
-            for key in common_tags.get_tags():
-                tag_value = getattr(candidate, key)
-                if all([
-                    getattr(tagged, key) == tag_value
-                    for tagged in tagged_list
-                ]):
-                    setattr(common_tags, key, tag_value)
-        return common_tags
+        tags = self._find_tags_intersection()
+        for clutter_file in self.clutter_files:
+            clutter_file.copy_tags_from(tags)
 
+
+    def _find_tags_intersection(self) -> Taggable:
+        """
+        Return a `Taggable` representing the interesection of all the
+        `AudioFile` contianed in the `Tree`.
+        """
+        audio_files = self.all_audio_files()
+        
+        if len(audio_files) > 0:
+            taggable_intersection = reduce(Taggable.intersection, audio_files)
+            return taggable_intersection
+        
+        return Taggable()
+    
+
+    def all_audio_files(self) -> set[AudioFile]:
+        """Return the set of all the `AudioFile` contained in the `Tree`."""
+        audio_files = self.audio_files
+        for child in self.children:
+            audio_files.update(child.all_audio_files())
+        return audio_files
