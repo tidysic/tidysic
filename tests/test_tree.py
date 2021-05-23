@@ -26,4 +26,18 @@ def test_tree():
 def test_clutter():
     tree = Tree(Path('tests/music/clutter test'))
 
+    assert len(tree.clutter_files) == 1
+    artist_clutter = tree.clutter_files.pop() 
 
+    assert artist_clutter.artist == "Artist Name"
+    assert artist_clutter.album == None
+
+    assert len(tree.children) == 1
+    album_node = tree.children.pop()
+    assert len(album_node.clutter_files) == 1
+    album_clutter = album_node.clutter_files.pop()
+
+    assert album_clutter.path.is_dir()
+    assert album_clutter.artist == "Artist Name"
+    assert album_clutter.album == "Album Name"
+    assert album_clutter.title == None
