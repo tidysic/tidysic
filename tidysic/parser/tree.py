@@ -2,6 +2,7 @@ from pathlib import Path
 
 from itertools import chain
 from functools import reduce
+from typing import Optional
 
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
@@ -19,6 +20,7 @@ class Tree:
         self.children: set['Tree'] = set()
         self.audio_files: set[AudioFile] = set()
         self.clutter_files: set[TaggedFile] = set()
+        self.common_tags: Optional[Taggable] = None
 
         self._parse()
 
@@ -48,6 +50,8 @@ class Tree:
         Returns True if this node or any of its children has audio files.
         """
         return (
+            self.common_tags is not None
+            or
             len(self.audio_files) > 0
             or
             any(
@@ -68,13 +72,18 @@ class Tree:
         """
         Finds the common tags shared by the given tagged objects.
         """
+        if self.common_tags is not None:
+            return self.common_tags
+
         children_tags = [
             child._find_common_tags()
             for child in self.children
             if child._contains_tags()
         ]
         all_tags = chain(self.audio_files, children_tags)
-        return reduce(Taggable.intersection, all_tags)
+        self.common_tags = reduce(Taggable.intersection, all_tags)
+
+        return self.common_tags
 
     def _apply_tags_to_clutter(self, tags: Taggable):
         """
