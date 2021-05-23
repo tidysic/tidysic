@@ -3,8 +3,10 @@ from pathlib import Path
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
 
+from tidysic.file.tagged_file import TaggedFile
 
-class AudioFile:
+
+class AudioFile(TaggedFile):
     """Parsed audio file with mutagene, for easily accessing its tags."""
 
     extensions = {
@@ -14,32 +16,28 @@ class AudioFile:
         '.wav',
     }
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
-
-        self.album: str = 'Unknown'
-        self.artist: str = 'Unknown'
-        self.title: str = path.stem
-        self.genre: str = 'Unknown'
-        self.tracknumber: str = 'Unknown'
-        self.date: str = 'Unknown'
+    def __init__(self, path: Path):
+        super().__init__(path)
         self.extension: str = self.path.suffix
 
         self._parse()
 
     def _parse(self) -> None:
         tags = self._get_mutagen_tags()
-        for k, v in tags.items():
-            setattr(self, k, v[0])
+        self.set_tags(tags)
 
     def _get_mutagen_tags(self) -> dict:
         try:
-            return dict(EasyID3(self.path.resolve()))
+            return {
+                k: v[0]
+                for k, v in EasyID3(self.path.resolve()).items()
+            }
         except ID3NoHeaderError:
             return dict()
 
     def get_title_with_extension(self) -> str:
-        return self.title + self.extension
+        title = self.title if self.title is not None else "Unknown track"
+        return title + self.extension
 
     @staticmethod
     def is_audio_file(path: Path) -> bool:

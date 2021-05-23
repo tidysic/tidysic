@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from tidysic.parser.audio_file import AudioFile
+from itertools import chain
+from functools import reduce
+from typing import Optional
+
+from tidysic.file.audio_file import AudioFile
+from tidysic.file.tagged_file import TaggedFile
+from tidysic.file.taggable import Taggable
 
 
 class Tree:
@@ -13,7 +19,8 @@ class Tree:
 
         self.children: set['Tree'] = set()
         self.audio_files: set[AudioFile] = set()
-        self.clutter_files: set[Path] = set()
+        self.clutter_files: set[TaggedFile] = set()
+        self.common_tags: Optional[Taggable] = None
 
         self._parse()
 
@@ -25,8 +32,46 @@ class Tree:
         """
         for path in self._root.iterdir():
             if path.is_dir():
-                self.children.add(Tree(path))
+                child = Tree(path)
+                if child.common_tags is not None:
+                    self.children.add(child)
+                else:
+                    self.clutter_files.add(TaggedFile(path))
             elif AudioFile.is_audio_file(path):
                 self.audio_files.add(AudioFile(path))
             else:
-                self.clutter_files.add(path)
+                self.clutter_files.add(TaggedFile(path))
+
+        self._tag_clutter()
+
+    def _tag_clutter(self):
+        """
+        Tags non-audio files with the tags common to all audio files in the same
+        directory and subdirectories.
+        """
+        self._find_common_tags()
+        self._apply_common_tags_to_clutter()
+
+    def _find_common_tags(self):
+        """
+        Finds the common tags shared by the given tagged objects.
+        """
+        children_tags = [
+            child.common_tags
+            for child in self.children
+            if child.common_tags is not None
+        ]
+        all_tags = list(chain(self.audio_files, children_tags))
+
+        if len(all_tags) > 0:
+            self.common_tags = reduce(Taggable.intersection, all_tags)
+
+    def _apply_common_tags_to_clutter(self):
+        """
+        Tags clutter in this node with the given tags.
+
+        Affects its children if they do not contain audio files.
+        """
+        if self.common_tags is not None:
+            for clutter_file in self.clutter_files:
+                clutter_file.copy_tags_from(self.common_tags)
