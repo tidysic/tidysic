@@ -28,7 +28,11 @@ class Tree:
         """
         for path in self._root.iterdir():
             if path.is_dir():
-                self.children.add(Tree(path))
+                child = Tree(path)
+                if child.audio_files:
+                    self.children.add(child)
+                else:
+                    self.clutter_files.add(ClutterFile(path))
             elif AudioFile.is_audio_file(path):
                 self.audio_files.add(AudioFile(path))
             else:
@@ -70,12 +74,12 @@ class Tree:
         common_tags = Taggable()
         if tagged_list:
             candidate = tagged_list.pop()
-            for key in common_tags.get_tags():
-                tag_value = getattr(candidate, key)
+            for tag_name in common_tags.get_tag_names():
+                tag_value = getattr(candidate, tag_name)
                 if all([
-                    getattr(tagged, key) == tag_value
+                    getattr(tagged, tag_name) == tag_value
                     for tagged in tagged_list
                 ]):
-                    setattr(common_tags, key, tag_value)
+                    setattr(common_tags, tag_name, tag_value)
         return common_tags
 

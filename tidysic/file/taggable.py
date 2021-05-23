@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 
 @dataclass
 class Taggable:
@@ -17,5 +17,9 @@ class Taggable:
         for k, v in tags.items():
             setattr(self, k, v)
 
-    def get_tags(self) -> dict[str, str]:
-        return asdict(self)
+    @staticmethod
+    def get_tag_names() -> tuple[str]:
+        return tuple(
+            field.name
+            for field in fields(Taggable)
+        )

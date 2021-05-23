@@ -28,7 +28,10 @@ class AudioFile(ClutterFile):
 
     def _get_mutagen_tags(self) -> dict:
         try:
-            return dict(EasyID3(self.path.resolve()))
+            return dict({
+                k: v[0]
+                for k, v in EasyID3(self.path.resolve()).items()
+            })
         except ID3NoHeaderError:
             return dict()
 
