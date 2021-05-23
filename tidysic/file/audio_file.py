@@ -28,15 +28,16 @@ class AudioFile(ClutterFile):
 
     def _get_mutagen_tags(self) -> dict:
         try:
-            return dict({
+            return {
                 k: v[0]
                 for k, v in EasyID3(self.path.resolve()).items()
-            })
+            }
         except ID3NoHeaderError:
             return dict()
 
     def get_title_with_extension(self) -> str:
-        return self.title + self.extension
+        title = self.title if self.title is not None else "Unknown track"
+        return title + self.extension
 
     @staticmethod
     def is_audio_file(path: Path) -> bool:

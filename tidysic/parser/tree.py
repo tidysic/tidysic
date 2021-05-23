@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from typing import Iterator, Callable
+
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.clutter_file import ClutterFile
 from tidysic.file.taggable import Taggable
@@ -50,15 +52,20 @@ class Tree:
         Tags non-audio files with the tags common to all audio files in the same
         directory and subdirectories, and returns the set of tags.
         """
-        all_tagged = (
-            list(self.audio_files)
-            +
-            [
-                child._tag_clutter_and_return_common_tags()
-                for child in self.children
-            ]
-        )
+
+        def all_tagged() -> Iterator[Taggable]:
+            for audio_file in self.audio_files:
+                yield audio_file
+            
+            for child in self.children:
+                yield child._tag_clutter_and_return_common_tags()
+
+        for t in all_tagged():
+            print(t)
+
         common_tags = self._find_common_tags(all_tagged)
+        print(common_tags)
+        print()
         for clutter_file in self.clutter_files:
             clutter_file.copy_tags_from(common_tags)
         
@@ -66,20 +73,21 @@ class Tree:
 
     @staticmethod
     def _find_common_tags(
-        tagged_list: list[Taggable]
+        taggables: Callable[[], Iterator[Taggable]]
     ) -> Taggable:
         """
         Finds the common tags shared by the given tagged objects.
         """
         common_tags = Taggable()
-        if tagged_list:
-            candidate = tagged_list.pop()
-            for tag_name in common_tags.get_tag_names():
-                tag_value = getattr(candidate, tag_name)
-                if all([
-                    getattr(tagged, tag_name) == tag_value
-                    for tagged in tagged_list
-                ]):
-                    setattr(common_tags, tag_name, tag_value)
+
+        for tag_name in common_tags.get_tag_names():
+            tag_values = set([
+                getattr(tagged, tag_name)
+                for tagged in taggables()
+            ])
+            if len(tag_values) == 1:
+                tag_value = tag_values.pop()
+                setattr(common_tags, tag_name, tag_value)
+
         return common_tags
 
