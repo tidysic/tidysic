@@ -72,6 +72,8 @@ class Tree:
         """
         Finds the common tags shared by the given tagged objects.
         """
+        assert self._contains_tags()
+
         if self.common_tags is not None:
             return self.common_tags
 
