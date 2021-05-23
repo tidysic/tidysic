@@ -4,7 +4,7 @@ from itertools import chain
 from functools import reduce
 
 from tidysic.file.audio_file import AudioFile
-from tidysic.file.clutter_file import ClutterFile
+from tidysic.file.tagged_file import TaggedFile
 from tidysic.file.taggable import Taggable
 
 
@@ -18,7 +18,7 @@ class Tree:
 
         self.children: set['Tree'] = set()
         self.audio_files: set[AudioFile] = set()
-        self.clutter_files: set[ClutterFile] = set()
+        self.clutter_files: set[TaggedFile] = set()
 
         self._parse()
 
@@ -34,7 +34,7 @@ class Tree:
             elif AudioFile.is_audio_file(path):
                 self.audio_files.add(AudioFile(path))
             else:
-                self.clutter_files.add(ClutterFile(path))
+                self.clutter_files.add(TaggedFile(path))
 
         self._tag_clutter()
 

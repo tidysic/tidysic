@@ -3,10 +3,10 @@ from pathlib import Path
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
 
-from tidysic.file.clutter_file import ClutterFile
+from tidysic.file.tagged_file import TaggedFile
 
 
-class AudioFile(ClutterFile):
+class AudioFile(TaggedFile):
     """Parsed audio file with mutagene, for easily accessing its tags."""
 
     extensions = {
