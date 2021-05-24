@@ -7,9 +7,8 @@ from tidysic.parser.tree import Tree
 
 
 class Organizer:
-
     def __init__(self, pattern: str) -> None:
-        self._attributes = pattern.split('/')
+        self._attributes = pattern.split("/")
 
     def organize(self, tree: Tree, target: Path) -> None:
         for audio_file in tree.audio_files:
