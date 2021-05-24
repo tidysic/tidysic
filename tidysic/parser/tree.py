@@ -1,12 +1,11 @@
-from pathlib import Path
-
-from itertools import chain
 from functools import reduce
+from itertools import chain
+from pathlib import Path
 from typing import Optional
 
 from tidysic.file.audio_file import AudioFile
-from tidysic.file.tagged_file import TaggedFile
 from tidysic.file.taggable import Taggable
+from tidysic.file.tagged_file import TaggedFile
 
 
 class Tree:
@@ -17,7 +16,7 @@ class Tree:
     def __init__(self, root: Path) -> None:
         self._root = root
 
-        self.children: set['Tree'] = set()
+        self.children: set["Tree"] = set()
         self.audio_files: set[AudioFile] = set()
         self.clutter_files: set[TaggedFile] = set()
         self.common_tags: Optional[Taggable] = None

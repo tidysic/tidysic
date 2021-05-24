@@ -1,5 +1,4 @@
-from dataclasses import dataclass, asdict, fields
-
+from dataclasses import asdict, dataclass, fields
 from typing import Optional
 
 
@@ -13,7 +12,7 @@ class Taggable:
     tracknumber: Optional[str] = None
     date: Optional[str] = None
 
-    def copy_tags_from(self, taggable: 'Taggable'):
+    def copy_tags_from(self, taggable: "Taggable"):
         self.set_tags(asdict(taggable))
 
     def set_tags(self, tags: dict[str, str]):
@@ -21,7 +20,7 @@ class Taggable:
             setattr(self, k, v)
 
     @staticmethod
-    def intersection(taggable: 'Taggable', other: 'Taggable') -> 'Taggable':
+    def intersection(taggable: "Taggable", other: "Taggable") -> "Taggable":
         """
         Returns the intersection of two `Taggable`. Each field will take either
         the common value, or keep its default value ("Unknown").
@@ -39,7 +38,4 @@ class Taggable:
 
     @staticmethod
     def get_tag_names() -> tuple[str, ...]:
-        return tuple(
-            field.name
-            for field in fields(Taggable)
-        )
+        return tuple(field.name for field in fields(Taggable))
