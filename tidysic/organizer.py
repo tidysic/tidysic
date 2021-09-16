@@ -25,6 +25,8 @@ class Organizer:
         for clutter_file in tree.clutter_files:
             path = target / self._build_path(clutter_file)
             path.mkdir(parents=True, exist_ok=True)
+
+            path /= clutter_file.path.name
             shutil.copyfile(clutter_file.path, path)
 
         for child in tree.children:
