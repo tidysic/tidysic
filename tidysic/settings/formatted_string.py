@@ -62,6 +62,7 @@ class FormattedString:
                     raise ValueError(f"too many closing brackets (col {i})")
 
                 if bracket_depth == 0:
+                    current_tag_name = current_tag_name.split(":")[0]
                     if current_tag_name not in Taggable.get_tag_names():
                         raise ValueError(f"unknown tag name '{current_tag_name}'")
                     current_tag_name = ""
