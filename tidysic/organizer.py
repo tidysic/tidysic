@@ -4,17 +4,23 @@ from pathlib import Path
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
 from tidysic.parser.tree import Tree
+from tidysic.settings.formatted_string import FormattedString
+from tidysic.settings.structure import Structure
 
 
 class Organizer:
-    def __init__(self, pattern: str) -> None:
-        self._attributes = pattern.split("/")
+    def __init__(self, structure: Structure) -> None:
+        self._structure = structure
 
     def organize(self, tree: Tree, target: Path) -> None:
         for audio_file in tree.audio_files:
             path = target / self._build_path(audio_file)
             path.mkdir(parents=True, exist_ok=True)
-            Organizer._copy_file(parent=path, audio_file=audio_file)
+            Organizer._copy_file(
+                parent=path,
+                audio_file=audio_file,
+                track_format=self._structure.track_format,
+            )
 
         for clutter_file in tree.clutter_files:
             path = target / self._build_path(clutter_file)
@@ -26,14 +32,15 @@ class Organizer:
 
     def _build_path(self, tagged_file: TaggedFile) -> Path:
         path = Path()
-        for attribute in self._attributes:
-            folder_name = getattr(tagged_file, attribute)
-            if folder_name is None:
-                folder_name = f"Unknown {attribute}"
+        for step in self._structure.folders:
+            folder_name = step.formatted_string.write(tagged_file)
             path = path / folder_name
         return path
 
     @staticmethod
-    def _copy_file(parent: Path, audio_file: AudioFile) -> None:
-        audio_path = parent / audio_file.get_title_with_extension()
+    def _copy_file(
+        parent: Path, audio_file: AudioFile, track_format: FormattedString
+    ) -> None:
+        target_name = track_format.write(audio_file) + audio_file.extension
+        audio_path = parent / target_name
         shutil.copyfile(audio_file.path, audio_path)
