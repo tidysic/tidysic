@@ -11,9 +11,9 @@ from tidysic.tidysic import Tidysic
 )
 @click.argument("source", type=click.Path(exists=True, file_okay=False))
 @click.argument("target", type=click.Path(exists=False, file_okay=False))
-@click.argument("pattern", type=str)
-def run(verbose: bool, source: str, target: str, pattern: str) -> None:
-    tidysic = Tidysic(source, target, pattern)
+@click.option("--config", "config_path", type=click.Path(exists=True, file_okay=True))
+def run(verbose: bool, source: str, target: str, config_path: str) -> None:
+    tidysic = Tidysic(source, target, config_path)
     tidysic.run()
 
 
