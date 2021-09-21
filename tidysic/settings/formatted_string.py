@@ -14,31 +14,29 @@ class FormattedString:
 
     def write(self, taggable: Taggable):
         """
-        Produces the string built using the tags found in the given taggable
+        Produces the string built using the tags found in the given taggable.
         """
         pattern = r"\{(.*?\{(\w+)(:.+?)?\}.*?)\}"
         matches = re.findall(pattern, self.raw_string)
 
         return_string = self.raw_string
 
-        substitutions = []
         for to_substitute, tag_name, format_spec in matches:
 
             value = getattr(taggable, tag_name, None)
-            if tag_name in Taggable.get_numeric_tag_names() and value:
+            if value and tag_name in Taggable.get_numeric_tag_names():
                 value = int(value)
-            if tag_name in Taggable.get_non_numeric_tag_names() and not value:
+            if not value and tag_name in Taggable.get_non_numeric_tag_names():
                 value = f"Unknown {tag_name}"
 
             formattable = to_substitute.replace(
-                f"{{{tag_name}{format_spec}}}", f"{{{format_spec}}}"
+                "{%s%s}" % (tag_name, format_spec), "{%s}" % format_spec
             )
-            substitutions.append(
-                (f"{{{to_substitute}}}", formattable.format(value) if value else "")
+            return_string = return_string.replace(
+                "{%s}" % to_substitute,
+                formattable.format(value) if value else "",
+                1,
             )
-
-        for old, new in substitutions:
-            return_string = return_string.replace(old, new)
 
         return return_string
 
