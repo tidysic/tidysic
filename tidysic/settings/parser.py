@@ -1,28 +1,37 @@
+from tidysic.file.taggable import Taggable
 from tidysic.settings.formatted_string import FormattedString
 from tidysic.settings.structure import Structure, StructureStep
 
 
-def parse_settings(settings_file: str) -> Structure:
+def parse_settings(settings_str: str) -> Structure:
 
-    with open(settings_file, "r") as file:
-        structure_lines = [line.strip() for line in file]
-        structure_lines = [
-            line for line in structure_lines if line != "" and line[0] != "#"
-        ]
-        try:
-            folders: list[StructureStep] = []
-            for line in structure_lines[:-1]:
-                [tag, raw_format] = line.split(" ", maxsplit=1)
-                formatted_string = FormattedString(raw_format)
-                folders.append(StructureStep(tag, formatted_string))
+    lines = settings_str.splitlines()
+    lines = [line.strip() for line in lines]
+    lines = [line for line in lines if line != "" and line[0] != "#"]
 
-            track_line = structure_lines[-1]
-            track_format = FormattedString(track_line)
+    if len(lines) == 0:
+        raise ValueError("Could not parse settings: nothing to parse")
+    try:
+        folders: list[StructureStep] = []
+        for line in lines[:-1]:
+            components = line.split(" ", maxsplit=1)
+            if len(components) == 1:
+                raise ValueError("expected tag name followed by format")
 
-            return Structure(folders=folders, track_format=track_format)
+            [tag, raw_format] = components
+            if tag not in Taggable.get_tag_names():
+                raise ValueError(f"invalid tag '{tag}'")
 
-        except ValueError as error:
-            raise ValueError(f"Could not parse settings file: {error}")
+            formatted_string = FormattedString(raw_format)
+            folders.append(StructureStep(tag, formatted_string))
+
+        track_line = lines[-1]
+        track_format = FormattedString(track_line)
+
+        return Structure(folders=folders, track_format=track_format)
+
+    except ValueError as error:
+        raise ValueError(f"Could not parse settings: {error}.") from error
 
 
 default_config = """\
