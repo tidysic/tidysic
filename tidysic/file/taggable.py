@@ -39,3 +39,11 @@ class Taggable:
     @staticmethod
     def get_tag_names() -> tuple[str, ...]:
         return tuple(field.name for field in fields(Taggable))
+
+    @staticmethod
+    def get_numeric_tag_names() -> tuple[str, ...]:
+        return ("date", "tracknumber")
+
+    @staticmethod
+    def get_non_numeric_tag_names() -> tuple[str, ...]:
+        return ("album", "artist", "title", "genre")

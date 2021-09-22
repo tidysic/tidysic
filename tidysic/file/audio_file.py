@@ -31,10 +31,6 @@ class AudioFile(TaggedFile):
         except ID3NoHeaderError:
             return dict()
 
-    def get_title_with_extension(self) -> str:
-        title = self.title if self.title is not None else "Unknown track"
-        return title + self.extension
-
     @staticmethod
     def is_audio_file(path: Path) -> bool:
         return path.is_file() and path.suffix in AudioFile.extensions
