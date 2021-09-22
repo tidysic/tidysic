@@ -16,26 +16,36 @@ class FormattedString:
         """
         Produces the string built using the tags found in the given taggable.
         """
-        pattern = r"\{(.*?\{(\w+)(:.+?)?\}.*?)\}"
+        pattern = r"\{((\*)?.*?\{(\w+)(:.+?)?\}.*?)\}"
         matches = re.findall(pattern, self.raw_string)
 
         return_string = self.raw_string
 
-        for to_substitute, tag_name, format_spec in matches:
+        for to_substitute, required_char, tag_name, format_spec in matches:
+
+            required = required_char == "*"
 
             value = getattr(taggable, tag_name, None)
             if value and tag_name in Taggable.get_numeric_tag_names():
                 value = int(value)
-            if not value and tag_name in Taggable.get_non_numeric_tag_names():
+
+            if not value and required:
                 value = f"Unknown {tag_name}"
 
             formattable = to_substitute.replace(
-                "{%s%s}" % (tag_name, format_spec), "{%s}" % format_spec
+                "%s{%s%s}" % (required_char, tag_name, format_spec),
+                "{%s}" % format_spec,
             )
             return_string = return_string.replace(
                 "{%s}" % to_substitute,
                 formattable.format(value) if value else "",
                 1,
+            )
+
+        if len(return_string) == 0:
+            raise RuntimeError(
+                "formatted string resulted in empty string. "
+                "Try using the {*{tag}} format to prevent this"
             )
 
         return return_string
@@ -67,3 +77,6 @@ class FormattedString:
 
             elif bracket_depth == 2:
                 current_tag_name += char
+
+        if bracket_depth != 0:
+            raise ValueError("mismatched brackets")

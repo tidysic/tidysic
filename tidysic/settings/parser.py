@@ -61,6 +61,14 @@ default_config = """\
 #     Intro
 # depending on whether the track number is set.
 #
+# By adding * right after the first bracket, it will behave differently if the
+# tag value hasn't been set. Instead of producing a blank string, it will turn
+# into "blank <tag name>". For instance,
+#     {{album}}
+# will turn into
+#     Unknown album
+# if the album tag isn't set.
+#
 # You can use formatting options as in python, for instance you can pad the
 # track number like so:
 #     {{tracknumber:02d}. }{{title}}
