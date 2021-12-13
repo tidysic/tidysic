@@ -8,6 +8,14 @@ from tidysic.parser.tree import Tree
 from tidysic.settings.structure import Structure
 
 
+class CollisionException(Exception):
+    def __init__(self, files, target):
+        super().__init__(f"more than one file must be moved to the same file {target}")
+
+        self.files = files
+        self.target = target
+
+
 @dataclass
 class _Operation:
 
@@ -36,6 +44,8 @@ class Organizer:
         self._operations = []
         self._build_operations(tree, target)
 
+        self._handle_collisions()
+
         for operation in self._operations:
             operation.copy()
 
@@ -60,3 +70,15 @@ class Organizer:
             filename = tagged_file.path.name
         path /= filename
         return path
+
+    def _handle_collisions(self):
+        target_sources: dict[Path, list[TaggedFile]] = {}
+        for operation in self._operations:
+            if operation.target not in target_sources:
+                target_sources[operation.target] = []
+            target_sources[operation.target].append(operation.file)
+
+        collision_causes = {k: v for (k, v) in target_sources.items() if len(v) > 1}
+
+        for target, sources in collision_causes.items():
+            raise CollisionException(sources, target)

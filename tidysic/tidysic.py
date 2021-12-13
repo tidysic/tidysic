@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tidysic.organizer import Organizer
+from tidysic.organizer import CollisionException, Organizer
 from tidysic.parser.tree import Tree
 from tidysic.settings.parser import parse_settings
 from tidysic.settings.structure import default_structure
@@ -22,4 +22,13 @@ class Tidysic:
         self._organizer = Organizer(structure)
 
     def run(self) -> None:
-        self._organizer.organize(self._tree, self._target)
+        try:
+            self._organizer.organize(self._tree, self._target)
+        except CollisionException as e:
+            print(f"Error: {e}")
+            print("They are the following:")
+            for file in e.files:
+                print(file.path)
+            print(
+                "Consider adapting the structure using different tags to differentiate them."
+            )
