@@ -27,6 +27,10 @@ class FormattedString:
 
             value = getattr(taggable, tag_name, None)
             if value and tag_name in Taggable.get_numeric_tag_names():
+                if tag_name == "tracknumber":
+                    match = re.match(r"(\d+)/\d+", value)
+                    if match is not None:
+                        value = match.group(1)
                 value = int(value)
 
             if not value and required:

@@ -54,3 +54,9 @@ def test_number_formatting():
     fs = FormattedString("{{tracknumber:03d}}")
     tagged = Taggable(tracknumber="34")
     assert fs.write(tagged) == "034"
+
+
+def test_rich_tracknumber():
+    fs = FormattedString("{{tracknumber:02d}}")
+    tagged = Taggable(tracknumber="03/12")
+    assert fs.write(tagged) == "03"
