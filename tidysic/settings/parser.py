@@ -63,7 +63,7 @@ default_config = """\
 #
 # By adding * right after the first bracket, it will behave differently if the
 # tag value hasn't been set. Instead of producing a blank string, it will turn
-# into "blank <tag name>". For instance,
+# into "Unknown <tag name>". For instance,
 #     {{album}}
 # will turn into
 #     Unknown album
