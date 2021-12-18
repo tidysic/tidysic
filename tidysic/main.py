@@ -1,3 +1,5 @@
+from typing import Any
+
 import click
 import pkg_resources
 
@@ -5,7 +7,7 @@ from tidysic.settings.parser import default_config
 from tidysic.tidysic import Tidysic
 
 
-def dump_config(ctx, param, value):
+def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
     if not value or ctx.resilient_parsing:
         return
     click.echo(default_config)

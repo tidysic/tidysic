@@ -43,7 +43,7 @@ class Tree:
 
         self._tag_clutter()
 
-    def _tag_clutter(self):
+    def _tag_clutter(self) -> None:
         """
         Tags non-audio files with the tags common to all audio files in the same
         directory and subdirectories.
@@ -51,7 +51,7 @@ class Tree:
         self._find_common_tags()
         self._apply_common_tags_to_clutter()
 
-    def _find_common_tags(self):
+    def _find_common_tags(self) -> None:
         """
         Finds the common tags shared by the given tagged objects.
         """
@@ -65,7 +65,7 @@ class Tree:
         if len(all_tags) > 0:
             self.common_tags = reduce(Taggable.intersection, all_tags)
 
-    def _apply_common_tags_to_clutter(self):
+    def _apply_common_tags_to_clutter(self) -> None:
         """
         Tags clutter in this node with the given tags.
 
