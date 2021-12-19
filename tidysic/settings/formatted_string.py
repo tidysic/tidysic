@@ -1,19 +1,16 @@
 import re
 from abc import ABC, abstractmethod
-from typing import Union
 
 from tidysic.file.taggable import Taggable
 
 
 class _Unit(ABC):
-
     @abstractmethod
     def write(self, taggable: Taggable) -> str:
         pass
 
 
 class _SubstitutableUnit(_Unit):
-
     def __init__(self, raw_string: str):
         pattern = r"(\*?)(.*)\{(\w*)(\:.+)?\}(.*)"
         match = re.fullmatch(pattern, raw_string)
@@ -21,7 +18,7 @@ class _SubstitutableUnit(_Unit):
         if match is None:
             raise ValueError(f"Could not parse formatted string: '{raw_string}'.")
 
-        self.is_required = (match.group(1) == "*")
+        self.is_required = match.group(1) == "*"
         self.text_before = match.group(2)
         self.tag_name = match.group(3)
         self.format_spec = match.group(4)
@@ -29,34 +26,31 @@ class _SubstitutableUnit(_Unit):
 
     def write(self, taggable: Taggable) -> str:
         value = self.get_value(taggable)
-        if value is None:
+        if value == "":
             if self.is_required:
                 return f"Unknown {self.tag_name}"
             else:
                 return ""
+
+        return "".join((self.text_before, value, self.text_after))
+
+    def get_value(self, taggable: Taggable) -> str:
+        value = getattr(taggable, self.tag_name, None)
+        if value is None:
+            return ""
         else:
+            if self.tag_name in Taggable.get_numeric_tag_names():
+                if self.tag_name == "tracknumber":
+                    match = re.fullmatch(r"(\d+)/\d+", value)
+                    if match is not None:
+                        value = match.group(1)
+                value = int(value)
             if self.format_spec is not None:
                 value = f"{{{self.format_spec}}}".format(value)
-
-            return "".join((
-                self.text_before,
-                value,
-                self.text_after
-            ))
-
-    def get_value(self, taggable: Taggable) -> Union[str, int]:
-        value = getattr(taggable, self.tag_name, None)
-        if value and self.tag_name in Taggable.get_numeric_tag_names():
-            if self.tag_name == "tracknumber":
-                match = re.fullmatch(r"(\d+)/\d+", value)
-                if match is not None:
-                    value = match.group(1)
-            value = int(value)
-        return value
+            return value
 
 
 class _TrivialUnit(_Unit):
-
     def __init__(self, string: str):
         self.string = string
 
@@ -65,7 +59,6 @@ class _TrivialUnit(_Unit):
 
 
 class FormattedString:
-
     def __init__(self, raw_string: str):
         try:
             self.validate(raw_string)
@@ -76,9 +69,9 @@ class FormattedString:
         self._build_units(raw_string)
 
     def _build_units(self, raw_string: str) -> None:
-        # Substitutable units are found ba looking for exactly two sets of curly
+        # Substitutable units are found by looking for exactly two sets of curly
         # brackets.
-        pattern = r"\{([^\{]*\{[^\{\}]*\}[^\}]*)\}"
+        pattern = r"\{(.*?\{.*?\}.*?)\}"
         split = re.split(pattern, raw_string)
 
         self._units.append(_TrivialUnit(split.pop(0)))
@@ -93,10 +86,7 @@ class FormattedString:
         """
         Produces the string built using the tags found in the given taggable.
         """
-        return_string = "".join(
-            unit.write(taggable)
-            for unit in self._units
-        )
+        return_string = "".join(unit.write(taggable) for unit in self._units)
 
         if len(return_string) == 0:
             raise RuntimeError(
