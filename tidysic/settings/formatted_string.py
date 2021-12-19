@@ -7,7 +7,7 @@ from tidysic.file.taggable import Taggable
 class _Unit(ABC):
 
     @abstractmethod
-    def write(self, taggable: Taggable):
+    def write(self, taggable: Taggable) -> str:
         pass
 
 
@@ -26,7 +26,7 @@ class _SubstitutableUnit(_Unit):
         self.format_spec = match.group(4)
         self.text_after = match.group(5)
 
-    def write(self, taggable: Taggable):
+    def write(self, taggable: Taggable) -> str:
         value = self.get_value(taggable)
         if value is None:
             if self.is_required:
@@ -59,7 +59,7 @@ class _TrivialUnit(_Unit):
     def __init__(self, string: str):
         self.string = string
 
-    def write(self, taggable: Taggable):
+    def write(self, taggable: Taggable) -> str:
         return self.string
 
 
@@ -74,7 +74,7 @@ class FormattedString:
         self._units: list[_Unit] = []
         self._build_units(raw_string)
 
-    def _build_units(self, raw_string: str):
+    def _build_units(self, raw_string: str) -> None:
         # Substitutable units are found ba looking for exactly two sets of curly
         # brackets.
         pattern = r"\{([^\{]*\{[^\{\}]*\}[^\}]*)\}"
@@ -88,7 +88,7 @@ class FormattedString:
         except ValueError as e:
             raise ValueError(f"Could not create formatted string, {e}")
 
-    def write(self, taggable: Taggable):
+    def write(self, taggable: Taggable) -> str:
         """
         Produces the string built using the tags found in the given taggable.
         """
@@ -106,7 +106,7 @@ class FormattedString:
         return return_string
 
     @staticmethod
-    def validate(raw_string: str):
+    def validate(raw_string: str) -> None:
         """
         Raises a ValueError if the given string is badly formatted.
         """
