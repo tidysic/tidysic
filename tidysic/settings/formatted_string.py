@@ -1,5 +1,6 @@
 import re
 from abc import ABC, abstractmethod
+from typing import Union
 
 from tidysic.file.taggable import Taggable
 
@@ -43,7 +44,7 @@ class _SubstitutableUnit(_Unit):
                 self.text_after
             ))
 
-    def get_value(self, taggable: Taggable):
+    def get_value(self, taggable: Taggable) -> Union[str, int]:
         value = getattr(taggable, self.tag_name, None)
         if value and self.tag_name in Taggable.get_numeric_tag_names():
             if self.tag_name == "tracknumber":
