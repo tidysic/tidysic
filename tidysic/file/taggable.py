@@ -12,10 +12,10 @@ class Taggable:
     tracknumber: Optional[str] = None
     date: Optional[str] = None
 
-    def copy_tags_from(self, taggable: "Taggable"):
+    def copy_tags_from(self, taggable: "Taggable") -> None:
         self.set_tags(asdict(taggable))
 
-    def set_tags(self, tags: dict[str, str]):
+    def set_tags(self, tags: dict[str, str]) -> None:
         for k, v in tags.items():
             setattr(self, k, v)
 

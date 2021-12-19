@@ -9,7 +9,7 @@ from tidysic.settings.structure import Structure
 
 
 class CollisionException(Exception):
-    def __init__(self, files, target):
+    def __init__(self, files: list[TaggedFile], target: Path):
         super().__init__(f"more than one file must be moved to the same file {target}")
 
         self.files = files
@@ -22,14 +22,14 @@ class _Operation:
     file: TaggedFile
     target: Path
 
-    def copy(self):
+    def copy(self) -> None:
         self.target.parent.mkdir(parents=True, exist_ok=True)
         if self.file.path.is_dir():
             shutil.copytree(self.file.path, self.target)
         else:
             shutil.copyfile(self.file.path, self.target)
 
-    def move(self):
+    def move(self) -> None:
         self.target.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(self.file.path, self.target)
 
@@ -71,7 +71,7 @@ class Organizer:
         path /= filename
         return path
 
-    def _handle_collisions(self):
+    def _handle_collisions(self) -> None:
         target_sources: dict[Path, list[TaggedFile]] = {}
         for operation in self._operations:
             if operation.target not in target_sources:

@@ -7,5 +7,5 @@ class TaggedFile(Taggable):
     def __init__(self, path: Path):
         self.path: Path = path
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.path)
