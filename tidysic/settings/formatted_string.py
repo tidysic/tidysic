@@ -71,7 +71,7 @@ class FormattedString:
     def _build_units(self, raw_string: str) -> None:
         # Substitutable units are found ba looking for exactly two sets of curly
         # brackets.
-        pattern = r"\{([^\{]*\{[^\{\}]*\}[^\}]*)\}"
+        pattern = r"\{(.*?\{.*?\}.*?)\}"
         split = re.split(pattern, raw_string)
 
         self._units.append(_TrivialUnit(split.pop(0)))
