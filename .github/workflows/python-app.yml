@@ -89,4 +89,4 @@ jobs:
         run: pip install mypy
 
       - name: Type checking
-        run: python -m mypy -p tidysic --ignore-missing-imports --install-types --non-interactive --disallow-untyped-defs --check-untyped-defs
+        run: mypy -p tidysic --ignore-missing-imports --install-types --non-interactive --disallow-untyped-defs --check-untyped-defs
