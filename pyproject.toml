@@ -16,9 +16,9 @@ mutagen = "^1.45.1"
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 flake8 = "^3.9.1"
-mypy = "^0.812"
 black = "^21.5b1"
 isort = "^5.8.0"
+mypy = "^0.920"
 
 [tool.poetry.scripts]
 tidysic = 'tidysic.main:run'
