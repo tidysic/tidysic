@@ -1,5 +1,5 @@
 import pytest
-from tidysic.settings.parser import parse_settings
+from tidysic.settings.structure import Structure
 
 settings_ok = """\
 artist {{artist}}
@@ -24,11 +24,11 @@ artist {{artist}}
 
 
 def test_parser():
-    parse_settings(settings_ok)
+    Structure.parse(settings_ok)
 
     with pytest.raises(ValueError):
-        parse_settings(settings_invalid_tag)
+        Structure.parse(settings_invalid_tag)
     with pytest.raises(ValueError):
-        parse_settings(settings_invalid_format)
+        Structure.parse(settings_invalid_format)
     with pytest.raises(ValueError):
-        parse_settings(settings_tag_in_step)
+        Structure.parse(settings_tag_in_step)

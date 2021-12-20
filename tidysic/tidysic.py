@@ -1,9 +1,8 @@
 from pathlib import Path
 
 from tidysic.organizer import CollisionException, Organizer
-from tidysic.parser.tree import Tree
-from tidysic.settings.parser import parse_settings
-from tidysic.settings.structure import default_structure
+from tidysic.parser import Tree
+from tidysic.settings.structure import Structure
 
 
 class Tidysic:
@@ -11,14 +10,14 @@ class Tidysic:
         self._tree = Tree(Path(source))
         self._target = Path(target)
 
-        structure = default_structure
+        structure = Structure.get_default()
         if settings_path:
             with open(settings_path, "r") as settings:
-                structure = parse_settings(settings.read())
+                structure = Structure.parse(settings.read())
         else:
             folder_settings_file = self._target / ".tidysic"
             if folder_settings_file.exists():
-                structure = parse_settings(folder_settings_file.read_text())
+                structure = Structure.parse(folder_settings_file.read_text())
         self._organizer = Organizer(structure)
 
     def run(self) -> None:

@@ -3,14 +3,15 @@ from typing import Any
 import click
 import pkg_resources
 
-from tidysic.settings.parser import default_config
 from tidysic.tidysic import Tidysic
 
 
 def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
     if not value or ctx.resilient_parsing:
         return
-    click.echo(default_config)
+    with pkg_resources.resource_stream("tidysic.settings", ".tidysic.default") as fp:
+        default_config = fp.read()
+        click.echo(default_config)
     ctx.exit()
 
 
