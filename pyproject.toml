@@ -1,22 +1,44 @@
 [tool.poetry]
 name = "tidysic"
 version = "0.1.0"
-description = "Keep your music tidy"
-authors = ["g-wizzy <pierre.burki@protonmail.com>", "Loic Jurasz <loic.jurasz@he-arc.ch>", "qtipee <quent.vallat@gmail.com>", "xiorcale <quentin.vaucher@protonmail.com>"]
+description = "Keep your music tidy."
+authors = [
+    "g-wizzy <pierre.burki@protonmail.com>",
+    "Loic Jurasz <loic.jurasz@he-arc.ch>",
+    "qtipee <quent.vallat@gmail.com>",
+    "xiorcale <quentin.vaucher@protonmail.com>"
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 mutagen = "^1.45.1"
-rich = "^10.0.0"
-click = "^7.1.2"
 
 [tool.poetry.dev-dependencies]
-autopep8 = "^1.5.6"
-flake8 = "^3.9.0"
-mypy = "^0.812"
+pytest = "^5.2"
+flake8 = "^3.9.1"
+black = "^21.5b1"
+isort = "^5.8.0"
+mypy = "^0.920"
 
 [tool.poetry.scripts]
 tidysic = 'tidysic.main:run'
+
+[tool.black]
+line-lenght = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

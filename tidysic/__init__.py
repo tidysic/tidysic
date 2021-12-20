@@ -1,5 +1,1 @@
-from .tidysic import Tidysic
-
-__all__ = [
-    'Tidysic'
-]
+__version__ = '0.1.0'
