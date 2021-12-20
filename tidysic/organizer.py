@@ -4,7 +4,7 @@ from pathlib import Path
 
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
-from tidysic.parser.tree import Tree
+from tidysic.parser import Tree
 from tidysic.settings.structure import Structure
 
 

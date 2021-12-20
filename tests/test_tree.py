@@ -2,11 +2,11 @@ from pathlib import Path
 
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
-from tidysic.parser.tree import Tree
+from tidysic.parser import Tree
 
 
 def test_tree():
-    tree = Tree(Path('tests/music'))
+    tree = Tree(Path("tests/music"))
 
     def iter(root: Tree):
         assert isinstance(root, Tree)
@@ -24,7 +24,7 @@ def test_tree():
 
 
 def test_clutter():
-    tree = Tree(Path('tests/music/clutter test'))
+    tree = Tree(Path("tests/music/clutter test"))
 
     assert len(tree.clutter_files) == 1
     artist_clutter = tree.clutter_files.pop()
