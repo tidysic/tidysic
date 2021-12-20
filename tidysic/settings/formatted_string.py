@@ -47,7 +47,7 @@ class _SubstitutableUnit(_Unit):
                 value = int(value)
             if self.format_spec is not None:
                 value = f"{{{self.format_spec}}}".format(value)
-            return value
+            return str(value)
 
 
 class _TrivialUnit(_Unit):
