@@ -7,9 +7,11 @@ from tidysic.settings.structure import Structure
 
 
 class Tidysic:
-    def __init__(self, source: str, target: str, settings_path: Optional[Path]) -> None:
-        self._tree = Tree(Path(source))
-        self._target = Path(target)
+    def __init__(
+        self, source: Path, target: Path, settings_path: Optional[Path]
+    ) -> None:
+        self._tree = Tree(source)
+        self._target = target
 
         if not settings_path:
             settings_path = self._target / ".tidysic"

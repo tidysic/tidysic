@@ -32,12 +32,12 @@ def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
 @click.option(
     "--config",
     "config_path",
-    type=click.Path(exists=True, file_okay=True),
+    type=Path(exists=True, file_okay=True),
     help="Optional, path to a .tidysic config file.",
 )
-@click.argument("source", type=click.Path(exists=True, file_okay=False))
-@click.argument("target", type=click.Path(exists=False, file_okay=False))
-def run(verbose: bool, config_path: Optional[Path], source: str, target: str) -> None:
+@click.argument("source", type=Path(exists=True, file_okay=False))
+@click.argument("target", type=Path(exists=False, file_okay=False))
+def run(verbose: bool, config_path: Optional[Path], source: Path, target: Path) -> None:
     tidysic = Tidysic(source, target, config_path)
     tidysic.run()
 
