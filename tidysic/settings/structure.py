@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from tidysic.file.taggable import Taggable
 from tidysic.settings.formatted_string import FormattedString
@@ -61,3 +62,16 @@ class Structure:
 
         except ValueError as error:
             raise ValueError(f"Could not parse settings: {error}.") from error
+
+    @classmethod
+    def build(cls, settings_path: Path) -> "Structure":
+        try:
+            settings = cls._load_settings(settings_path)
+            return cls.parse(settings)
+        except FileNotFoundError:
+            return cls.get_default()
+
+    @staticmethod
+    def _load_settings(settings_path: Path) -> str:
+        with open(settings_path, "r") as settings:
+            return settings.read()
