@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Iterable
+from typing import Iterable, TypeAlias
 
 from rich.console import Console
 from rich.progress import ProgressType
@@ -16,8 +16,8 @@ class LogLevel(IntEnum):
     NONE = 4
 
 
-String = str | Text
-Message = list[String] | String
+String: TypeAlias = str | Text
+Message: TypeAlias = list[String] | String
 
 theme = Theme(
     {
@@ -41,7 +41,8 @@ def track(
     """
     Wrapper for the track method using the correct console.
     """
-    return rich_track(
+
+    yield from rich_track(
         sequence, description=description, transient=transient, console=_stdout
     )
 

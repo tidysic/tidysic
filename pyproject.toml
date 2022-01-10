@@ -10,9 +10,10 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10.1"
 mutagen = "^1.45.1"
 rich = "^10.16.1"
+click = "^8.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
