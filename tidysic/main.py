@@ -1,8 +1,11 @@
+from sys import exit
 from typing import Any
 
 import click
 import pkg_resources
 
+from tidysic.exceptions import TidysicException
+from tidysic.logger import LogLevel, error, set_log_level
 from tidysic.tidysic import Tidysic
 
 
@@ -37,8 +40,18 @@ def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
 @click.argument("source", type=click.Path(exists=True, file_okay=False))
 @click.argument("target", type=click.Path(exists=False, file_okay=False))
 def run(verbose: bool, config_path: str, source: str, target: str) -> None:
-    tidysic = Tidysic(source, target, config_path)
-    tidysic.run()
+    if verbose:
+        set_log_level(LogLevel.INFO)
+    try:
+        tidysic = Tidysic(source, target, config_path)
+        tidysic.run()
+    except TidysicException as e:
+        error(e.get_error_message())
+        exit(1)
+    except Exception as e:
+        pass
+        error(str(e))
+        exit(1)
 
 
 if __name__ == "__main__":
