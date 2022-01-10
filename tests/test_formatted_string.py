@@ -1,4 +1,5 @@
 import pytest
+from tidysic.exceptions import EmptyStringException
 from tidysic.file.taggable import Taggable
 from tidysic.settings.formatted_string import FormattedString
 
@@ -43,7 +44,7 @@ def test_empty_string():
     fs = FormattedString("{{artist}}")
     tagged = Taggable()
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(EmptyStringException):
         fs.write(tagged)
 
     fs = FormattedString("{*{artist}}")

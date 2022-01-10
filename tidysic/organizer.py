@@ -2,18 +2,11 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+from tidysic.exceptions import CollisionException
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
 from tidysic.parser import Tree
 from tidysic.settings.structure import Structure
-
-
-class CollisionException(Exception):
-    def __init__(self, files: list[TaggedFile], target: Path):
-        super().__init__(f"more than one file must be moved to the same file {target}")
-
-        self.files = files
-        self.target = target
 
 
 @dataclass

@@ -1,6 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 
+from tidysic.exceptions import EmptyStringException
 from tidysic.file.taggable import Taggable
 
 
@@ -89,10 +90,7 @@ class FormattedString:
         return_string = "".join(unit.write(taggable) for unit in self._units)
 
         if len(return_string) == 0:
-            raise RuntimeError(
-                "formatted string resulted in empty string. "
-                "Try using the 'required' marker ({*{tag}}) to prevent this."
-            )
+            raise EmptyStringException(self._raw_string, taggable)
 
         return return_string
 
