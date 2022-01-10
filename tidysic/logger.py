@@ -4,7 +4,7 @@ from typing import Iterable
 from rich.console import Console
 from rich.progress import ProgressType
 from rich.progress import track as rich_track
-from rich.text import Text
+from rich.text import Text as Text  # Explicit re-export
 from rich.theme import Theme
 
 
@@ -17,7 +17,7 @@ class LogLevel(IntEnum):
 
 
 String = str | Text
-Message = String | list[String]
+Message = list[String] | String
 
 theme = Theme(
     {
@@ -35,11 +35,15 @@ _stdout = Console(theme=theme)
 _stderr = Console(theme=theme, stderr=True)
 
 
-def track(*args, **kwargs) -> Iterable[ProgressType]:
+def track(
+    sequence: Iterable[ProgressType], description: str, transient: bool
+) -> Iterable[ProgressType]:
     """
     Wrapper for the track method using the correct console.
     """
-    return rich_track(*args, **kwargs, console=_stdout)
+    return rich_track(
+        sequence, description=description, transient=transient, console=_stdout
+    )
 
 
 def set_log_level(level: LogLevel) -> None:
@@ -84,12 +88,11 @@ def _log(
     if prefix is not None:
         text.append(f"[{prefix}] ", prefix)
 
-    if isinstance(message, list):
-        text.append(message[0])
-        for line in message[1:]:
-            text.append("\n\t")
-            text.append(line)
-    else:
-        text.append(message)
+    lines: list[String] = message if isinstance(message, list) else [message]
+
+    text.append(lines[0])
+    for line in lines[1:]:
+        text.append("\n\t")
+        text.append(line)
 
     console.print(text)

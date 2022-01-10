@@ -17,7 +17,7 @@ class _Unit(ABC):
             return _SubstitutableUnit(raw_string)
         except ValueError as e:
             warn([str(e), "Ignoring and treating as constant."])
-        except:
+        except Exception:
             pass
         return _TrivialUnit(raw_string)
 
