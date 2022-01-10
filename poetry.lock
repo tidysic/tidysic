@@ -50,7 +50,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 name = "click"
 version = "8.0.3"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
