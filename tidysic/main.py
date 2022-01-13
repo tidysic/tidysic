@@ -51,15 +51,8 @@ def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
 def run(verbose: bool, config_path: Optional[Path], source: Path, target: Path) -> None:
     if verbose:
         log.level = LogLevel.INFO
-    try:
-        tidysic = Tidysic(source, target, config_path)
-        tidysic.run()
-    except TidysicException as e:
-        log.error(e.get_error_message())
-        exit(1)
-    except Exception as e:
-        log.error(str(e))
-        exit(1)
+    tidysic = Tidysic(source, target, config_path)
+    tidysic.run()
 
 
 if __name__ == "__main__":

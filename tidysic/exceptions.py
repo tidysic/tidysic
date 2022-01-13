@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Callable
 
 from tidysic.file.taggable import Taggable
 from tidysic.file.tagged_file import TaggedFile
-from tidysic.logger import Message, String, Text
+from tidysic.logger import Logger, Message, String, Text
+
+log = Logger()
 
 
 class TidysicException(Exception, ABC):
@@ -81,3 +84,35 @@ class UnknownTagException(TidysicException):
 
     def get_error_message(self) -> Message:
         return Text.assemble("Unknown tag name ", (self.tag_name, "tag"), ".")
+
+
+def log_and_exit_on_exception(cls: object) -> object:
+    class Inner:
+        def __init__(self, *args, **kwargs) -> None:
+            self._instance = cls(*args, **kwargs)
+
+        def __getattribute__(self, name: str) -> Any:
+            try:
+                return super(Inner, self).__getattribute__(name)
+            except AttributeError:
+                ...
+
+            attribute = self._instance.__getattribute__(name)
+            if isinstance(attribute, type(self.__init__)):  # type: ignore
+                return Inner.with_logged_error(attribute)
+
+        @staticmethod
+        def with_logged_error(func: Callable) -> Callable:
+            def logged_error_wrapper(*args: Any, **kwargs) -> Any:
+                try:
+                    return func(*args, **kwargs)
+                except TidysicException as e:
+                    log.error(e.get_error_message())
+                    exit(1)
+                except Exception as e:
+                    log.error(str(e))
+                    exit(1)
+
+            return logged_error_wrapper
+
+    return Inner
