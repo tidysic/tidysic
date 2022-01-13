@@ -12,7 +12,7 @@ class TidysicException(Exception, ABC):
         """
         Returns an error message friendly to the logger module.
         """
-        pass
+        ...
 
 
 class CollisionException(TidysicException):
