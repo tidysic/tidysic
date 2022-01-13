@@ -5,9 +5,11 @@ from pathlib import Path
 from tidysic.exceptions import CollisionException
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
-from tidysic.logger import Text, info, track
+from tidysic.logger import Logger, Text
 from tidysic.parser import Tree
 from tidysic.settings.structure import Structure
+
+log = Logger()
 
 
 @dataclass
@@ -17,7 +19,7 @@ class _Operation:
     target: Path
 
     def copy(self) -> None:
-        info(
+        log.info(
             Text.assemble(
                 "Copying file ",
                 (self.file.path.name, "path"),
@@ -33,7 +35,7 @@ class _Operation:
             shutil.copyfile(self.file.path, self.target)
 
     def move(self) -> None:
-        info(
+        log.info(
             Text.assemble(
                 "Moving file ",
                 (self.file.path.name, "path"),
@@ -58,7 +60,7 @@ class Organizer:
 
         self._handle_collisions()
 
-        for operation in track(
+        for operation in log.track(
             self._operations, description="Copying...", transient=True
         ):
             operation.copy()

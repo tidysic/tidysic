@@ -6,8 +6,10 @@ import click
 import pkg_resources
 
 from tidysic.exceptions import TidysicException
-from tidysic.logger import LogLevel, error, set_log_level
+from tidysic.logger import Logger, LogLevel
 from tidysic.tidysic import Tidysic
+
+log = Logger()
 
 
 def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
@@ -48,16 +50,15 @@ def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
 )
 def run(verbose: bool, config_path: Optional[Path], source: Path, target: Path) -> None:
     if verbose:
-        set_log_level(LogLevel.INFO)
+        log.level = LogLevel.INFO
     try:
         tidysic = Tidysic(source, target, config_path)
         tidysic.run()
     except TidysicException as e:
-        error(e.get_error_message())
+        log.error(e.get_error_message())
         exit(1)
     except Exception as e:
-        pass
-        error(str(e))
+        log.error(str(e))
         exit(1)
 
 

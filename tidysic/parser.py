@@ -6,7 +6,9 @@ from typing import Optional
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.taggable import Taggable
 from tidysic.file.tagged_file import TaggedFile
-from tidysic.logger import Text, info
+from tidysic.logger import Logger, Text
+
+log = Logger()
 
 
 class Tree:
@@ -24,7 +26,7 @@ class Tree:
 
         self._parse()
 
-        info(
+        log.info(
             [
                 Text.assemble("Parsed directory ", (str(self._root), "path"), "."),
                 f"Found {len(self.audio_files)} audio file(s).",

@@ -3,7 +3,9 @@ from abc import ABC, abstractmethod
 
 from tidysic.exceptions import EmptyStringException
 from tidysic.file.taggable import Taggable
-from tidysic.logger import warn
+from tidysic.logger import Logger
+
+log = Logger()
 
 
 class _Unit(ABC):
@@ -16,7 +18,7 @@ class _Unit(ABC):
         try:
             return _SubstitutableUnit(raw_string)
         except ValueError as e:
-            warn([str(e), "Ignoring and treating as constant."])
+            log.warn([str(e), "Ignoring and treating as constant."])
         except Exception:
             pass
         return _TrivialUnit(raw_string)

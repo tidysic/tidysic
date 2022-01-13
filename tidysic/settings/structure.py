@@ -3,8 +3,10 @@ from pathlib import Path
 
 from tidysic.exceptions import UnknownTagException
 from tidysic.file.taggable import Taggable
-from tidysic.logger import Text, info
+from tidysic.logger import Logger, Text
 from tidysic.settings.formatted_string import FormattedString
+
+log = Logger()
 
 
 @dataclass
@@ -46,7 +48,7 @@ class Structure:
         try:
             folders: list[StructureStep] = []
             for line in lines[:-1]:
-                info(Text.assemble("Parsing config line ", (line, "config"), "."))
+                log.info(Text.assemble("Parsing config line ", (line, "config"), "."))
                 components = line.split(" ", maxsplit=1)
                 if len(components) == 1:
                     raise ValueError("expected tag name followed by format")
@@ -57,7 +59,7 @@ class Structure:
                 folders.append(StructureStep(tag, formatted_string))
 
             track_line = lines[-1]
-            info(Text.assemble("Parsing config line ", (track_line, "config"), "."))
+            log.info(Text.assemble("Parsing config line ", (track_line, "config"), "."))
             track_format = FormattedString(track_line)
 
             return cls(folders=folders, track_format=track_format)
