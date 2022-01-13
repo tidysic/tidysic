@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import IntEnum
 from typing import Iterable, TypeAlias
 
@@ -33,15 +35,15 @@ theme = Theme(
 
 class Logger:
 
-    _instance: "Logger" = None
+    _instance: "Logger" | None = None
 
-    def __new__(cls):
+    def __new__(cls) -> "Logger":
         if cls._instance is None:
             cls._instance = super(Logger, cls).__new__(cls)
 
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._level = LogLevel.WARN
         self._stdout = Console(theme=theme)
         self._stderr = Console(theme=theme, stderr=True)

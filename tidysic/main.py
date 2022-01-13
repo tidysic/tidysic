@@ -1,11 +1,9 @@
 from pathlib import Path
-from sys import exit
 from typing import Any, Optional
 
 import click
 import pkg_resources
 
-from tidysic.exceptions import TidysicException
 from tidysic.logger import Logger, LogLevel
 from tidysic.tidysic import Tidysic
 

@@ -86,9 +86,9 @@ class UnknownTagException(TidysicException):
         return Text.assemble("Unknown tag name ", (self.tag_name, "tag"), ".")
 
 
-def log_and_exit_on_exception(cls: object) -> object:
+def log_and_exit_on_exception(cls: Any) -> Any:  # noqa: C901
     class Inner:
-        def __init__(self, *args, **kwargs) -> None:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
             self._instance = cls(*args, **kwargs)
 
         def __getattribute__(self, name: str) -> Any:
@@ -102,8 +102,8 @@ def log_and_exit_on_exception(cls: object) -> object:
                 return Inner.with_logged_error(attribute)
 
         @staticmethod
-        def with_logged_error(func: Callable) -> Callable:
-            def logged_error_wrapper(*args: Any, **kwargs) -> Any:
+        def with_logged_error(func: Callable[..., Any]) -> Callable[..., Any]:
+            def logged_error_wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:
                     return func(*args, **kwargs)
                 except TidysicException as e:
