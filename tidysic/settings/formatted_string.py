@@ -1,13 +1,27 @@
 import re
 from abc import ABC, abstractmethod
 
+from tidysic.exceptions import EmptyStringException
 from tidysic.file.taggable import Taggable
+from tidysic.logger import Logger
+
+log = Logger()
 
 
 class _Unit(ABC):
     @abstractmethod
     def write(self, taggable: Taggable) -> str:
         pass
+
+    @classmethod
+    def create(cls, raw_string: str) -> "_Unit":
+        try:
+            return _SubstitutableUnit(raw_string)
+        except ValueError as e:
+            log.warn([str(e), "Ignoring and treating as constant."])
+        except Exception:
+            pass
+        return _TrivialUnit(raw_string)
 
 
 class _SubstitutableUnit(_Unit):
@@ -16,13 +30,16 @@ class _SubstitutableUnit(_Unit):
         match = re.fullmatch(pattern, raw_string)
 
         if match is None:
-            raise ValueError(f"Could not parse formatted string: '{raw_string}'.")
+            raise Exception()
 
         self.is_required = match.group(1) == "*"
         self.text_before = match.group(2)
         self.tag_name = match.group(3)
         self.format_spec = match.group(4)
         self.text_after = match.group(5)
+
+        if self.tag_name not in Taggable.get_tag_names():
+            raise ValueError(f"unknown tag name [yellow]{self.tag_name}[/yellow].")
 
     def write(self, taggable: Taggable) -> str:
         value = self.get_value(taggable)
@@ -60,27 +77,18 @@ class _TrivialUnit(_Unit):
 
 class FormattedString:
     def __init__(self, raw_string: str):
-        try:
-            self.validate(raw_string)
-        except ValueError as e:
-            raise ValueError(f"Could not create formatted string, {e}")
-
+        self._raw_string = raw_string
         self._units: list[_Unit] = []
-        self._build_units(raw_string)
+        self._build_units()
 
-    def _build_units(self, raw_string: str) -> None:
-        # Substitutable units are found ba looking for exactly two sets of curly
+    def _build_units(self) -> None:
+        # Substitutable units are found by looking for exactly two sets of curly
         # brackets.
         pattern = r"\{(.*?\{.*?\}.*?)\}"
-        split = re.split(pattern, raw_string)
+        split = re.split(pattern, self._raw_string)
 
-        self._units.append(_TrivialUnit(split.pop(0)))
-        try:
-            while split:
-                self._units.append(_SubstitutableUnit(split.pop(0)))
-                self._units.append(_TrivialUnit(split.pop(0)))
-        except ValueError as e:
-            raise ValueError(f"Could not create formatted string, {e}")
+        while split:
+            self._units.append(_Unit.create(split.pop(0)))
 
     def write(self, taggable: Taggable) -> str:
         """
@@ -89,40 +97,6 @@ class FormattedString:
         return_string = "".join(unit.write(taggable) for unit in self._units)
 
         if len(return_string) == 0:
-            raise RuntimeError(
-                "formatted string resulted in empty string. "
-                "Try using the 'required' marker ({*{tag}}) to prevent this."
-            )
+            raise EmptyStringException(self._raw_string, taggable)
 
         return return_string
-
-    @staticmethod
-    def validate(raw_string: str) -> None:
-        """
-        Raises a ValueError if the given string is badly formatted.
-        """
-        bracket_depth = 0
-        current_tag_name = ""
-
-        for i, char in enumerate(raw_string):
-            if char == "{":
-                bracket_depth += 1
-                if bracket_depth > 2:
-                    raise ValueError(f"too many opening brackets (col {i})")
-
-            elif char == "}":
-                bracket_depth -= 1
-                if bracket_depth < 0:
-                    raise ValueError(f"too many closing brackets (col {i})")
-
-                if bracket_depth == 0:
-                    current_tag_name = current_tag_name.split(":")[0]
-                    if current_tag_name not in Taggable.get_tag_names():
-                        raise ValueError(f"unknown tag name '{current_tag_name}'")
-                    current_tag_name = ""
-
-            elif bracket_depth == 2:
-                current_tag_name += char
-
-        if bracket_depth != 0:
-            raise ValueError("mismatched brackets")

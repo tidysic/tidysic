@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Get full Python version
         id: full-python-version
@@ -25,9 +25,7 @@ jobs:
 
       - name: Bootstrap poetry
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-          | python -
-
+          curl -sSL https://install.python-poetry.org | python3 -
       - name: Update PATH
         run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH
@@ -51,7 +49,8 @@ jobs:
         run: poetry install
 
       - name: Run tests
-        run: poetry run python -m pytest tests/
+        run: |
+          poetry run pytest tests/
 
   linter:
     name: Linter
@@ -59,10 +58,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Set up flake8
         run: pip install flake8
@@ -80,13 +79,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Set up mypy
-        run: pip install mypy
+        run: pip install mypy click
 
       - name: Type checking
-        run: mypy -p tidysic --ignore-missing-imports --install-types --non-interactive --disallow-untyped-defs --check-untyped-defs --pretty
+        run: mypy -p tidysic --strict --install-types --non-interactive --ignore-missing-imports --pretty

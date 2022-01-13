@@ -2,18 +2,14 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+from tidysic.exceptions import CollisionException
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.tagged_file import TaggedFile
+from tidysic.logger import Logger, Text
 from tidysic.parser import Tree
 from tidysic.settings.structure import Structure
 
-
-class CollisionException(Exception):
-    def __init__(self, files: list[TaggedFile], target: Path):
-        super().__init__(f"more than one file must be moved to the same file {target}")
-
-        self.files = files
-        self.target = target
+log = Logger()
 
 
 @dataclass
@@ -23,6 +19,15 @@ class _Operation:
     target: Path
 
     def copy(self) -> None:
+        log.info(
+            Text.assemble(
+                "Copying file ",
+                (self.file.path.name, "path"),
+                " to ",
+                (str(self.target), "path"),
+                ".",
+            )
+        )
         self.target.parent.mkdir(parents=True, exist_ok=True)
         if self.file.path.is_dir():
             shutil.copytree(self.file.path, self.target)
@@ -30,6 +35,15 @@ class _Operation:
             shutil.copyfile(self.file.path, self.target)
 
     def move(self) -> None:
+        log.info(
+            Text.assemble(
+                "Moving file ",
+                (self.file.path.name, "path"),
+                " to ",
+                (str(self.target), "path"),
+                ".",
+            )
+        )
         self.target.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(self.file.path, self.target)
 
@@ -46,7 +60,9 @@ class Organizer:
 
         self._handle_collisions()
 
-        for operation in self._operations:
+        for operation in log.track(
+            self._operations, description="Copying...", transient=True
+        ):
             operation.copy()
 
     def _build_operations(self, tree: Tree, target: Path) -> None:

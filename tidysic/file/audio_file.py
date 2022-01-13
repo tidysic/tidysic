@@ -25,7 +25,7 @@ class AudioFile(TaggedFile):
         tags = self._get_mutagen_tags()
         self.set_tags(tags)
 
-    def _get_mutagen_tags(self) -> dict:
+    def _get_mutagen_tags(self) -> dict[str, str]:
         try:
             return {k: v[0] for k, v in EasyID3(self.path.resolve()).items()}
         except ID3NoHeaderError:

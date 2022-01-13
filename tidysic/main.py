@@ -4,7 +4,10 @@ from typing import Any, Optional
 import click
 import pkg_resources
 
+from tidysic.logger import Logger, LogLevel
 from tidysic.tidysic import Tidysic
+
+log = Logger()
 
 
 def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
@@ -32,12 +35,20 @@ def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
 @click.option(
     "--config",
     "config_path",
-    type=Path(exists=True, file_okay=True),
+    type=click.Path(exists=True, file_okay=True, path_type=Path),
     help="Optional, path to a .tidysic config file.",
 )
-@click.argument("source", type=Path(exists=True, file_okay=False))
-@click.argument("target", type=Path(exists=False, file_okay=False))
+@click.argument(
+    "source",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+)
+@click.argument(
+    "target",
+    type=click.Path(exists=False, file_okay=False, path_type=Path),
+)
 def run(verbose: bool, config_path: Optional[Path], source: Path, target: Path) -> None:
+    if verbose:
+        log.level = LogLevel.INFO
     tidysic = Tidysic(source, target, config_path)
     tidysic.run()
 

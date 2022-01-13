@@ -1,24 +1,7 @@
 import pytest
+from tidysic.exceptions import EmptyStringException
 from tidysic.file.taggable import Taggable
 from tidysic.settings.formatted_string import FormattedString
-
-
-def test_validation():
-    with pytest.raises(ValueError):
-        too_many_brackets = "{{{artist}}"
-        FormattedString(too_many_brackets)
-
-    with pytest.raises(ValueError):
-        too_few_brackets = "{artist}}"
-        FormattedString(too_few_brackets)
-
-    with pytest.raises(ValueError):
-        mismatched_brackets = "{{artist}"
-        FormattedString(mismatched_brackets)
-
-    with pytest.raises(ValueError):
-        invalid_tag = "{{invalid_tag}}"
-        FormattedString(invalid_tag)
 
 
 def test_extra_text():
@@ -43,7 +26,7 @@ def test_empty_string():
     fs = FormattedString("{{artist}}")
     tagged = Taggable()
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(EmptyStringException):
         fs.write(tagged)
 
     fs = FormattedString("{*{artist}}")

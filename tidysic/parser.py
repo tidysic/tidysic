@@ -6,6 +6,9 @@ from typing import Optional
 from tidysic.file.audio_file import AudioFile
 from tidysic.file.taggable import Taggable
 from tidysic.file.tagged_file import TaggedFile
+from tidysic.logger import Logger, Text
+
+log = Logger()
 
 
 class Tree:
@@ -22,6 +25,15 @@ class Tree:
         self.common_tags: Optional[Taggable] = None
 
         self._parse()
+
+        log.info(
+            [
+                Text.assemble("Parsed directory ", (str(self._root), "path"), "."),
+                f"Found {len(self.audio_files)} audio file(s).",
+                f"Found {len(self.children)} subfolder(s) containing audio files.",
+                f"Found {len(self.clutter_files)} clutter file(s).",
+            ]
+        )
 
     def _parse(self) -> None:
         """
