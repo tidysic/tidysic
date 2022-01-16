@@ -4,33 +4,63 @@ Keep your music library tidy.
 
 ## Requirements
 
-- `python3.9`
+- `python3.10`
 - `poetry`
 
 ## Getting Started
 
-Once you cloned the repository and entered the folder, you can run the
-application with:
+Once you cloned the repository and entered the folder, install the required libraries by
+running
 
-1. `poetry run tidysic`
-2. Alternatively, once inside the virtual environment created via `poetry shell`,
-   just run `tidysic`
+```sh
+poetry install
+```
 
+**Note:** from now on, every command given in this `README` will need to be launched
+through `poetry`. To do this, either activate `poetry`'s virtual environment using
 
-## Pattern
+```sh
+poetry shell
+```
+
+or prefix the commands with
+
+```sh
+poetry run <command>
+```
+
+Once ready, you can run the application with:
+
+```sh
+tidyisc
+```
+
+## Configuration
 
 The music files can be sorted in any possible combination of nested folders that
 can be created from their tags. To do so, the desired folder architecture must
-be specified through the `pattern` argument. The `pattern` must a be string of
-"slash-separated" tag names, e.g.:
+be specified either in a `.tidyisc` configuration file located in the target folder, or
+in another file explicitly given to the program with the `--config` option. The lookup
+order is as follow:
 
-```
-genre/artist/album
+1. Config file explicited in the program call
+2. `.tidysic` file in the target folder
+3. Default configuration
+
+Running
+
+```sh
+tidysic --dump-config
 ```
 
-Will create one folder per existing `genre` in the library. Each genre folder
-will contain one folder per `artist` tagged with this `genre`. And finally, each
-artist folder will contain one folder per `album`.
+will print the default configuration in `stdout`, along with an explanation of the
+syntax. It is then useful to run
+
+```sh
+tidysic --dump-config > ~/Music
+```
+
+once, and then modify it as needed.
 
 ### Supported tags
 
