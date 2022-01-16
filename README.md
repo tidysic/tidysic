@@ -39,7 +39,7 @@ tidyisc
 
 The music files can be sorted in any possible combination of nested folders that
 can be created from their tags. To do so, the desired folder architecture must
-be specified either in a `.tidyisc` configuration file located in the target folder, or
+be specified either in a `.tidysic` configuration file located in the target folder, or
 in another file explicitly given to the program with the `--config` option. The lookup
 order is as follow:
 
@@ -57,7 +57,7 @@ will print the default configuration in `stdout`, along with an explanation of t
 syntax. It is then useful to run
 
 ```sh
-tidysic --dump-config > ~/Music
+tidysic --dump-config > ~/Music/.tidysic
 ```
 
 once, and then modify it as needed.
