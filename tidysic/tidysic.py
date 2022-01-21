@@ -10,7 +10,7 @@ from tidysic.settings.structure import Structure
 @log_and_exit_on_exception
 class Tidysic:
     def __init__(
-        self, source: Path, target: Path, settings_path: Optional[Path]
+        self, source: Path, target: Path, move: bool, settings_path: Optional[Path]
     ) -> None:
         self._tree = Tree(source)
         self._target = target
@@ -19,7 +19,7 @@ class Tidysic:
             settings_path = self._target / ".tidysic"
 
         structure = Structure.build(settings_path)
-        self._organizer = Organizer(structure)
+        self._organizer = Organizer(structure, move)
 
     def run(self) -> None:
         self._organizer.organize(self._tree, self._target)
