@@ -49,8 +49,9 @@ class _Operation:
 
 
 class Organizer:
-    def __init__(self, structure: Structure) -> None:
+    def __init__(self, structure: Structure, move: bool) -> None:
         self._structure = structure
+        self._move = move
 
         self._operations: list[_Operation] = []
 
@@ -63,7 +64,10 @@ class Organizer:
         for operation in log.track(
             self._operations, description="Copying...", transient=True
         ):
-            operation.copy()
+            if self._move:
+                operation.move()
+            else:
+                operation.copy()
 
     def _build_operations(self, tree: Tree, target: Path) -> None:
         for file in tree.audio_files | tree.clutter_files:
