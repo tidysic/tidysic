@@ -17,6 +17,7 @@ class _Operation:
 
     file: TaggedFile
     target: Path
+    dry_run: bool
 
     def copy(self) -> None:
         log.info(
@@ -28,11 +29,12 @@ class _Operation:
                 ".",
             )
         )
-        self.target.parent.mkdir(parents=True, exist_ok=True)
-        if self.file.path.is_dir():
-            shutil.copytree(self.file.path, self.target)
-        else:
-            shutil.copyfile(self.file.path, self.target)
+        if not self.dry_run:
+            self.target.parent.mkdir(parents=True, exist_ok=True)
+            if self.file.path.is_dir():
+                shutil.copytree(self.file.path, self.target)
+            else:
+                shutil.copyfile(self.file.path, self.target)
 
     def move(self) -> None:
         log.info(
@@ -44,14 +46,16 @@ class _Operation:
                 ".",
             )
         )
-        self.target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(self.file.path, self.target)
+        if not self.dry_run:
+            self.target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(self.file.path, self.target)
 
 
 class Organizer:
-    def __init__(self, structure: Structure, move: bool) -> None:
+    def __init__(self, structure: Structure, move: bool, dry_run: bool) -> None:
         self._structure = structure
         self._move = move
+        self._dry_run = dry_run
 
         self._operations: list[_Operation] = []
 
@@ -62,7 +66,9 @@ class Organizer:
         self._handle_collisions()
 
         for operation in log.track(
-            self._operations, description="Copying...", transient=True
+            self._operations,
+            description="Copying..." if self._move else "Moving...",
+            transient=True,
         ):
             if self._move:
                 operation.move()
@@ -72,7 +78,9 @@ class Organizer:
     def _build_operations(self, tree: Tree, target: Path) -> None:
         for file in tree.audio_files | tree.clutter_files:
             path = target / self._build_target_path(file)
-            self._operations.append(_Operation(file=file, target=path))
+            self._operations.append(
+                _Operation(file=file, target=path, dry_run=self._dry_run)
+            )
 
         for child in tree.children:
             self._build_operations(child, target)
