@@ -23,3 +23,4 @@ class Tidysic:
 
     def run(self) -> None:
         self._organizer.organize(self._tree, self._target)
+        self._tree.clean_up()
