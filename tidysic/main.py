@@ -67,6 +67,11 @@ class FallbackArgument(click.Argument):
     "--move/--copy", help="Defines which file operations to apply. Defaults to `copy`"
 )
 @click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Does not apply any filesystem operation, but logs what would be done.",
+)
+@click.option(
     "--in-place",
     is_eager=True,
     is_flag=True,
@@ -93,6 +98,7 @@ class FallbackArgument(click.Argument):
 def run(
     verbose: bool,
     config_path: Optional[Path],
+    dry_run: bool,
     in_place: bool,
     move: bool,
     source: Path,
@@ -102,10 +108,10 @@ def run(
         target = source
         move = True
 
-    if verbose:
+    if verbose or dry_run:
         log.level = LogLevel.INFO
 
-    tidysic = Tidysic(source, target, move, config_path)
+    tidysic = Tidysic(source, target, move, dry_run, config_path)
     tidysic.run()
 
 
