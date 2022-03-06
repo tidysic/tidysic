@@ -86,3 +86,21 @@ class Tree:
         if self.common_tags is not None:
             for clutter_file in self.clutter_files:
                 clutter_file.copy_tags_from(self.common_tags)
+
+    def clean_up(self) -> None:
+        """
+        Traverse its children and removes any empty directory.
+
+        Running this will not result in the deletion of folders already empty before
+        running the organizer, since these are considered clutter.
+        """
+        for child in self.children:
+            child.clean_up()
+
+        if not any(self._root.iterdir()):
+            self._root.rmdir()
+            log.info(
+                Text.assemble(
+                    "Deleted empty directory ", (self._root.name, "path"), "."
+                )
+            )
