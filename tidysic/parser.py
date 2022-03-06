@@ -96,12 +96,11 @@ class Tree:
         """
         for child in self.children:
             child.clean_up()
-        try:
+
+        if not any(self._root.iterdir()):
             self._root.rmdir()
             log.info(
                 Text.assemble(
                     "Deleted empty directory ", (self._root.name, "path"), "."
                 )
             )
-        except OSError:
-            pass  # Directory not empty
