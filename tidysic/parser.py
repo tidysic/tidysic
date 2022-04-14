@@ -72,10 +72,10 @@ class Tree:
             for child in self.children
             if child.common_tags is not None
         ]
-        all_tags = list(chain(self.audio_files, children_tags))
+        all_tags = tuple(chain(self.audio_files, children_tags))
 
         if len(all_tags) > 0:
-            self.common_tags = reduce(Taggable.intersection, all_tags)
+            self.common_tags = Taggable.intersection(all_tags)
 
     def _apply_common_tags_to_clutter(self) -> None:
         """
