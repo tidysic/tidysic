@@ -11,6 +11,10 @@ log = Logger()
 
 
 def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
+    """
+    Prints out the default config (found in `settings/.tidysic.default`) to the console
+    and exits.
+    """
     if not value or ctx.resilient_parsing:
         return
     with pkg_resources.resource_stream("tidysic.settings", ".tidysic.default") as fp:
@@ -20,6 +24,9 @@ def dump_config(ctx: click.Context, param: click.Parameter, value: Any) -> None:
 
 
 class FallbackArgument(click.Argument):
+    """
+    Specializes `click.Argument` to provide an option that disable a required parameter.
+    """
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.not_required_if: str = kwargs.pop("not_required_if")
         assert self.not_required_if, "'not_required_if' parameter required"

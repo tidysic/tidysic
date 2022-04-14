@@ -52,6 +52,9 @@ class _Operation:
 
 
 class Organizer:
+    """
+    Class that manages the actual tidying of the files.
+    """
     def __init__(self, structure: Structure, move: bool, dry_run: bool) -> None:
         self._structure = structure
         self._move = move
@@ -60,6 +63,9 @@ class Organizer:
         self._operations: list[_Operation] = []
 
     def organize(self, tree: Tree, target: Path) -> None:
+        """
+        Copies or moves the source files into the target directory.
+        """
         self._operations = []
         self._build_operations(tree, target)
 

@@ -9,6 +9,11 @@ from tidysic.settings.structure import Structure
 
 @log_and_exit_on_exception
 class Tidysic:
+    """
+    Wrapper for the whole process of tidying.
+
+    Contains a parser and an organizer.
+    """
     def __init__(
         self,
         source: Path,
@@ -27,5 +32,8 @@ class Tidysic:
         self._organizer = Organizer(structure, move, dry_run)
 
     def run(self) -> None:
+        """
+        Runs the tidying.
+        """
         self._organizer.organize(self._tree, self._target)
         self._tree.clean_up()

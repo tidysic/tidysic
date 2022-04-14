@@ -1,4 +1,3 @@
-from functools import reduce
 from itertools import chain
 from pathlib import Path
 from typing import Optional
@@ -13,7 +12,10 @@ log = Logger()
 
 class Tree:
     """
-    Recursively parsed Tree, for easily accessing its file structure.
+    Node of the tree that is built by parsing the input folder.
+
+    Each node keeps track of its files (audio and otherwise), and the tags that are
+    common to each of them.
     """
 
     def __init__(self, root: Path) -> None:

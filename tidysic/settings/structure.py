@@ -11,6 +11,13 @@ log = Logger()
 
 @dataclass
 class StructureStep:
+    """
+    Class describing a step in the tidying order. That is to say, a level of directories
+    in the target folder.
+
+    Each step is defined by the tag deciding the splitting into subfolders, and the
+    template by which each subfolder will be named.
+    """
     tag: str
     formatted_string: FormattedString
 
@@ -24,11 +31,25 @@ class StructureStep:
 
 @dataclass
 class Structure:
+    """
+    Class defining the target structure of tidying.
+
+    It is composed of a list of steps, and the template by which each file will be
+    named.
+    """
     folders: list[StructureStep]
     track_format: FormattedString
 
     @classmethod
     def get_default(cls) -> "Structure":
+        """
+        Returns the default structure that is used unless specified otherwise.
+
+        This structure sorts by artist, then by album.
+
+        Returns:
+            Structure: The default structure.
+        """
         return cls(
             folders=[
                 StructureStep("artist", FormattedString("{{artist}}")),
@@ -39,6 +60,12 @@ class Structure:
 
     @classmethod
     def parse(cls, settings_str: str) -> "Structure":
+        """
+        Parses a Structure from a configuration string.
+
+        Returns:
+            Structure: The structure specified in the given string.
+        """
         lines = settings_str.splitlines()
         lines = [line.strip() for line in lines]
         lines = [line for line in lines if line != "" and line[0] != "#"]
@@ -69,6 +96,14 @@ class Structure:
 
     @classmethod
     def build(cls, settings_path: Path) -> "Structure":
+        """
+        Parses the given configuration file, and returns the structure it defines. If no
+        file is found, returns the default configuration.
+
+        Returns:
+            Structure: The structure specified in the given file, or the default
+                configuration if the file does not exist.
+        """
         try:
             settings = cls._load_settings(settings_path)
             return cls.parse(settings)

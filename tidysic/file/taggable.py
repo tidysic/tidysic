@@ -4,6 +4,10 @@ from typing import Optional
 
 @dataclass
 class Taggable:
+    """
+    Base class for anything that can hold tags. Audio files are such files obviously,
+    but so are folders containing audio files, and tree nodes in the parser module.
+    """
 
     album: Optional[str] = None
     artist: Optional[str] = None
@@ -53,12 +57,30 @@ class Taggable:
 
     @staticmethod
     def get_tag_names() -> tuple[str, ...]:
+        """
+        Returns a tuple of all the supported tags' names.
+
+        Returns:
+            tuple[str, ...]: Names of all the tags
+        """
         return tuple(field.name for field in fields(Taggable))
 
     @staticmethod
     def get_numeric_tag_names() -> tuple[str, ...]:
+        """
+        Returns a tuple of all the names of the supported tags that are numeric.
+
+        Returns:
+            tuple[str, ...]: Names of the tags that are numeric.
+        """
         return ("date", "tracknumber")
 
     @staticmethod
     def get_non_numeric_tag_names() -> tuple[str, ...]:
+        """
+        Returns a tuple of all the names of the supported tags that aren't numeric.
+
+        Returns:
+            tuple[str, ...]: Names of the tags that aren't numeric.
+        """
         return ("album", "artist", "title", "genre")
