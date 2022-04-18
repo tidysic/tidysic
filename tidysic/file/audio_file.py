@@ -6,7 +6,9 @@ from tidysic.file.tagged_file import TaggedFile
 
 
 class AudioFile(TaggedFile):
-    """Parsed audio file with mutagene, for easily accessing its tags."""
+    """
+    Audio file with its tags parsed by mutagen, for easy acces.
+    """
 
     extensions = {
         ".flac",
@@ -33,4 +35,12 @@ class AudioFile(TaggedFile):
 
     @staticmethod
     def is_audio_file(path: Path) -> bool:
+        """Return true if the given file is a (supported) audio file.
+
+        Args:
+            path (Path): Path of the file to test.
+
+        Returns:
+            bool: True if the given file is an audio file.
+        """
         return path.is_file() and path.suffix in AudioFile.extensions

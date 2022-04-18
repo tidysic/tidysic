@@ -76,6 +76,14 @@ class _TrivialUnit(_Unit):
 
 
 class FormattedString:
+    """
+    Tool used to build file and directory names using their tags from a user-given
+    template.
+
+    For more info on the format of the template, look at the default tidysic in the
+    file `.tidysic.default`.
+    """
+
     def __init__(self, raw_string: str):
         self._raw_string = raw_string
         self._units: list[_Unit] = []

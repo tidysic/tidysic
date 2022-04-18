@@ -1,4 +1,3 @@
-from functools import reduce
 from itertools import chain
 from pathlib import Path
 from typing import Optional
@@ -13,7 +12,10 @@ log = Logger()
 
 class Tree:
     """
-    Recursively parsed Tree, for easily accessing its file structure.
+    Node of the tree that is built by parsing the input folder.
+
+    Each node keeps track of its files (audio and otherwise), and the tags that are
+    common to each of them.
     """
 
     def __init__(self, root: Path) -> None:
@@ -72,10 +74,10 @@ class Tree:
             for child in self.children
             if child.common_tags is not None
         ]
-        all_tags = list(chain(self.audio_files, children_tags))
+        all_tags = tuple(chain(self.audio_files, children_tags))
 
         if len(all_tags) > 0:
-            self.common_tags = reduce(Taggable.intersection, all_tags)
+            self.common_tags = Taggable.intersection(all_tags)
 
     def _apply_common_tags_to_clutter(self) -> None:
         """
